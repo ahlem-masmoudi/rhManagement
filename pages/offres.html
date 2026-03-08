@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offres de stage - RH Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/main.css">
+  <style>
+    .offers-filters {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: center;
+      margin-bottom: var(--spacing-lg);
+      flex-wrap: wrap;
+    }
+
+    .offer-card {
+      display: flex;
+      gap: var(--spacing-lg);
+      align-items: start;
+      transition: var(--transition);
+    }
+
+    .offer-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .offer-main {
+      flex: 1;
+    }
+
+    .offer-meta {
+      display: flex;
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-sm);
+      font-size: 0.875rem;
+      color: var(--gray-500);
+    }
+
+    .offer-meta-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+
+    .offer-actions {
+      display: flex;
+      gap: var(--spacing-xs);
+      align-items: center;
+    }
+
+    .offer-stats {
+      display: flex;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-md);
+      background-color: var(--gray-50);
+      border-radius: var(--radius-md);
+      margin-top: var(--spacing-md);
+    }
+
+    .offer-stat {
+      text-align: center;
+    }
+
+    .offer-stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .offer-stat-label {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .modal-overlay {
+      display: none;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--spacing-xl);
+      position: relative;
+    }
+
+    .stepper::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background-color: var(--gray-200);
+      z-index: 0;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-xs);
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: white;
+      border: 2px solid var(--gray-300);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--gray-400);
+      transition: var(--transition);
+    }
+
+    .step.active .step-number {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+    }
+
+    .step.completed .step-number {
+      background-color: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+
+    .step-label {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--gray-500);
+      text-align: center;
+    }
+
+    .step.active .step-label {
+      color: var(--primary-color);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-lg);
+    }
+
+    .skills-input {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-xs);
+      padding: var(--spacing-sm);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      min-height: 80px;
+      cursor: text;
+    }
+
+    .skills-input:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .skill-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.625rem;
+      background-color: var(--primary-light);
+      color: var(--primary-color);
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      font-weight: 500;
+    }
+
+    .weight-slider {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-md);
+      background-color: var(--gray-50);
+      border-radius: var(--radius-md);
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .slider-label {
+      font-weight: 500;
+      font-size: 0.875rem;
+      color: var(--gray-700);
+    }
+
+    .slider-value {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 5px;
+      background: var(--gray-200);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      cursor: pointer;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- SIDEBAR (same as index.html) -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+        <h2>RH Stages</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Principal</div>
+          <a href="../index.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            Dashboard
+          </a>
+          
+          <a href="offres.html" class="nav-item active">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            Offres de stage
+          </a>
+          
+          <a href="candidatures.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+              <polyline points="17 2 12 7 7 2"></polyline>
+            </svg>
+            Candidatures
+            <span class="nav-item-badge">12</span>
+          </a>
+          
+          <a href="matching.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            Matching Intelligent
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="search-bar">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" placeholder="Rechercher une offre..." />
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="btn btn-primary" onclick="openCreateOfferModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Créer une offre
+          </button>
+
+          <div class="topbar-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </div>
+
+          <div class="user-profile">
+            <div class="user-avatar">MJ</div>
+            <div class="user-info">
+              <div class="user-name">Marie Dupont</div>
+              <div class="user-role">RH Manager</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT -->
+      <div class="page-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Offres de stage</h1>
+            <p style="color: var(--gray-500); margin: 0;">Gérez vos offres et suivez les candidatures</p>
+          </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="offers-filters">
+          <select class="form-select" style="width: auto;">
+            <option>Tous les statuts</option>
+            <option>Active</option>
+            <option>En pause</option>
+            <option>Clôturée</option>
+          </select>
+
+          <select class="form-select" style="width: auto;">
+            <option>Tous les départements</option>
+            <option>Informatique</option>
+            <option>Marketing</option>
+            <option>Finance</option>
+            <option>RH</option>
+          </select>
+
+          <select class="form-select" style="width: auto;">
+            <option>Tous les lieux</option>
+            <option>Paris</option>
+            <option>Lyon</option>
+            <option>Remote</option>
+          </select>
+
+          <select class="form-select" style="width: auto;">
+            <option>Type: Tous</option>
+            <option>Stage</option>
+            <option>Alternance</option>
+          </select>
+
+          <button class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="4" y1="21" x2="4" y2="14"></line>
+              <line x1="4" y1="10" x2="4" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12" y2="3"></line>
+              <line x1="20" y1="21" x2="20" y2="16"></line>
+              <line x1="20" y1="12" x2="20" y2="3"></line>
+              <line x1="1" y1="14" x2="7" y2="14"></line>
+              <line x1="9" y1="8" x2="15" y2="8"></line>
+              <line x1="17" y1="16" x2="23" y2="16"></line>
+            </svg>
+            Filtres avancés
+          </button>
+        </div>
+
+        <!-- OFFERS LIST -->
+        <div style="display: flex; flex-direction: column; gap: var(--spacing-lg);">
+          <!-- Offer 1 -->
+          <div class="card offer-card">
+            <div class="offer-main">
+              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                <h3 style="margin: 0; font-size: 1.125rem;">Data Analyst - Stage 6 mois</h3>
+                <span class="badge badge-success">Active</span>
+                <span class="badge badge-primary">Stage</span>
+              </div>
+
+              <div class="offer-meta">
+                <div class="offer-meta-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  Paris / Remote
+                </div>
+                <div class="offer-meta-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  Publié le 15 fév 2026
+                </div>
+                <div class="offer-meta-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  Expire le 15 avr 2026
+                </div>
+              </div>
+
+              <div style="margin-top: var(--spacing-sm); display: flex; gap: 0.375rem; flex-wrap: wrap;">
+                <span class="tag">Python</span>
+                <span class="tag">SQL</span>
+                <span class="tag">Power BI</span>
+                <span class="tag">Excel</span>
+                <span class="tag">Statistiques</span>
+              </div>
+
+              <div class="offer-stats">
+                <div class="offer-stat">
+                  <div class="offer-stat-value">18</div>
+                  <div class="offer-stat-label">Candidatures</div>
+                </div>
+                <div class="offer-stat">
+                  <div class="offer-stat-value">5</div>
+                  <div class="offer-stat-label">Présélection</div>
+                </div>
+                <div class="offer-stat">
+                  <div class="offer-stat-value">2</div>
+                  <div class="offer-stat-label">Entretien</div>
+                </div>
+                <div class="offer-stat">
+                  <div class="offer-stat-value">8</div>
+                  <div class="offer-stat-label">Top matches</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="offer-actions">
+              <button class="btn btn-sm btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                Voir
+              </button>
+              <button class="btn btn-sm btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Modifier
+              </button>
+              <button class="btn btn-sm btn-secondary">⋮</button>
+            </div>
+          </div>
+
+          <!-- Offer 2 -->
+          <div class="card offer-card">
+            <div class="offer-main">
+              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                <h3 style="margin: 0; font-size: 1.125rem;">Développeur Full Stack - Alternance</h3>
+                <span class="badge badge-warning">En pause</span>
+                <span class="badge badge-gray">Alternance</span>
+              </div>
+
+              <div class="offer-meta">
+                <div class="offer-meta-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  Lyon
+                </div>
+                <div class="offer-meta-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  Publié le 10 fév 2026
+                </div>
+              </div>
+
+              <div style="margin-top: var(--spacing-sm); display: flex; gap: 0.375rem; flex-wrap: wrap;">
+                <span class="tag">React</span>
+                <span class="tag">Node.js</span>
+                <span class="tag">MongoDB</span>
+                <span class="tag">TypeScript</span>
+              </div>
+
+              <div class="offer-stats">
+                <div class="offer-stat">
+                  <div class="offer-stat-value">2</div>
+                  <div class="offer-stat-label">Candidatures</div>
+                </div>
+                <div class="offer-stat">
+                  <div class="offer-stat-value">0</div>
+                  <div class="offer-stat-label">Présélection</div>
+                </div>
+                <div class="offer-stat">
+                  <div class="offer-stat-value">0</div>
+                  <div class="offer-stat-label">Entretien</div>
+                </div>
+                <div class="offer-stat">
+                  <div class="offer-stat-value">1</div>
+                  <div class="offer-stat-label">Top matches</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="offer-actions">
+              <button class="btn btn-sm btn-primary">Voir</button>
+              <button class="btn btn-sm btn-secondary">Modifier</button>
+              <button class="btn btn-sm btn-secondary">⋮</button>
+            </div>
+          </div>
+
+          <!-- Offer 3 -->
+          <div class="card offer-card">
+            <div class="offer-main">
+              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                <h3 style="margin: 0; font-size: 1.125rem;">UX/UI Designer - Stage 4-6 mois</h3>
+                <span class="badge badge-success">Active</span>
+                <span class="badge badge-primary">Stage</span>
+              </div>
+
+              <div class="offer-meta">
+                <div class="offer-meta-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  Paris
+                </div>
+                <div class="offer-meta-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  Publié le 20 fév 2026
+                </div>
+              </div>
+
+              <div style="margin-top: var(--spacing-sm); display: flex; gap: 0.375rem; flex-wrap: wrap;">
+                <span class="tag">Figma</span>
+                <span class="tag">Adobe XD</span>
+                <span class="tag">Design System</span>
+                <span class="tag">Prototypage</span>
+              </div>
+
+              <div class="offer-stats">
+                <div class="offer-stat">
+                  <div class="offer-stat-value">12</div>
+                  <div class="offer-stat-label">Candidatures</div>
+                </div>
+                <div class="offer-stat">
+                  <div class="offer-stat-value">3</div>
+                  <div class="offer-stat-label">Présélection</div>
+                </div>
+                <div class="offer-stat">
+                  <div class="offer-stat-value">1</div>
+                  <div class="offer-stat-label">Entretien</div>
+                </div>
+                <div class="offer-stat">
+                  <div class="offer-stat-value">4</div>
+                  <div class="offer-stat-label">Top matches</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="offer-actions">
+              <button class="btn btn-sm btn-primary">Voir</button>
+              <button class="btn btn-sm btn-secondary">Modifier</button>
+              <button class="btn btn-sm btn-secondary">⋮</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL CREATE/EDIT OFFER -->
+  <div class="modal-overlay" id="offerModal">
+    <div class="modal" style="max-width: 900px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Créer une nouvelle offre</h2>
+        <button class="modal-close" onclick="closeCreateOfferModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- STEPPER -->
+        <div class="stepper">
+          <div class="step active">
+            <div class="step-number">1</div>
+            <div class="step-label">Informations</div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-label">Description</div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-label">Exigences</div>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-label">Critères matching</div>
+          </div>
+        </div>
+
+        <!-- STEP 1: Informations générales -->
+        <div class="step-content">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required">Titre de l'offre</label>
+              <input type="text" class="form-input" placeholder="Ex: Data Analyst - Stage 6 mois" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required">Type</label>
+              <select class="form-select">
+                <option>Stage</option>
+                <option>Alternance</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required">Département</label>
+              <select class="form-select">
+                <option>Informatique</option>
+                <option>Marketing</option>
+                <option>Finance</option>
+                <option>RH</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required">Localisation</label>
+              <input type="text" class="form-input" placeholder="Ex: Paris, Lyon, Remote" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required">Durée</label>
+              <select class="form-select">
+                <option>3 mois</option>
+                <option>4-6 mois</option>
+                <option>6 mois</option>
+                <option>12 mois (alternance)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Date limite candidature</label>
+              <input type="date" class="form-input" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Rémunération</label>
+            <input type="text" class="form-input" placeholder="Ex: 1000€/mois" />
+          </div>
+        </div>
+
+        <!-- STEP 2: Description (hidden by default) -->
+        <div class="step-content" style="display: none;">
+          <div class="form-group">
+            <label class="form-label required">Description de l'offre</label>
+            <textarea class="form-textarea" rows="8" placeholder="Décrivez le poste, les missions principales, l'environnement de travail..."></textarea>
+            <div class="form-help">Minimum 200 caractères</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Avantages</label>
+            <textarea class="form-textarea" rows="4" placeholder="Tickets restaurant, télétravail, formation..."></textarea>
+          </div>
+        </div>
+
+        <!-- STEP 3: Exigences (hidden by default) -->
+        <div class="step-content" style="display: none;">
+          <div class="form-group">
+            <label class="form-label required">Compétences requises</label>
+            <div class="skills-input">
+              <span class="skill-tag">Python <span style="cursor: pointer;">×</span></span>
+              <span class="skill-tag">SQL <span style="cursor: pointer;">×</span></span>
+              <input type="text" placeholder="Ajouter une compétence..." style="border: none; outline: none; flex: 1; min-width: 150px; font-size: 0.875rem;" />
+            </div>
+            <div class="form-help">Appuyez sur Entrée pour ajouter une compétence</div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Niveau d'étude minimum</label>
+              <select class="form-select">
+                <option>Bac+2</option>
+                <option>Bac+3</option>
+                <option>Bac+4</option>
+                <option>Bac+5</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Années d'expérience minimum</label>
+              <select class="form-select">
+                <option>Aucune</option>
+                <option>1 an</option>
+                <option>2 ans</option>
+                <option>3+ ans</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Langues</label>
+            <div style="display: flex; gap: var(--spacing-md);">
+              <label style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                <input type="checkbox" checked />
+                <span>Français (courant)</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                <input type="checkbox" />
+                <span>Anglais (professionnel)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Critères matching (hidden by default) -->
+        <div class="step-content" style="display: none;">
+          <p style="color: var(--gray-600); margin-bottom: var(--spacing-lg);">
+            Configurez les pondérations pour le matching intelligent. Ces critères déterminent comment les candidats seront classés.
+          </p>
+
+          <div class="weight-slider">
+            <div class="slider-header">
+              <span class="slider-label">Compétences techniques</span>
+              <span class="slider-value">40%</span>
+            </div>
+            <input type="range" min="0" max="100" value="40" />
+          </div>
+
+          <div class="weight-slider">
+            <div class="slider-header">
+              <span class="slider-label">Expérience pertinente</span>
+              <span class="slider-value">30%</span>
+            </div>
+            <input type="range" min="0" max="100" value="30" />
+          </div>
+
+          <div class="weight-slider">
+            <div class="slider-header">
+              <span class="slider-label">Formation / Diplôme</span>
+              <span class="slider-value">20%</span>
+            </div>
+            <input type="range" min="0" max="100" value="20" />
+          </div>
+
+          <div class="weight-slider">
+            <div class="slider-header">
+              <span class="slider-label">Projets personnels</span>
+              <span class="slider-value">10%</span>
+            </div>
+            <input type="range" min="0" max="100" value="10" />
+          </div>
+
+          <div style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background-color: var(--primary-light); border-radius: var(--radius-md); border-left: 3px solid var(--primary-color);">
+            <div style="font-weight: 600; font-size: 0.875rem; color: var(--primary-color); margin-bottom: 0.25rem;">
+              💡 Astuce matching
+            </div>
+            <div style="font-size: 0.8125rem; color: var(--gray-700);">
+              Les compétences obligatoires que vous avez définies serviront de filtre automatique. Le matching intelligent classera ensuite les candidats selon ces pondérations.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeCreateOfferModal()">Annuler</button>
+        <button class="btn btn-secondary">Enregistrer comme brouillon</button>
+        <button class="btn btn-primary">Suivant →</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openCreateOfferModal() {
+      document.getElementById('offerModal').classList.add('active');
+    }
+
+    function closeCreateOfferModal() {
+      document.getElementById('offerModal').classList.remove('active');
+    }
+
+    // Close modal on overlay click
+    document.getElementById('offerModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeCreateOfferModal();
+      }
+    });
+  </script>
+</body>
+</html>

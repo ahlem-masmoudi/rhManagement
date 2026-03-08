@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil Candidat - RH Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/main.css">
+  <style>
+    .profile-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: var(--spacing-lg);
+    }
+
+    .profile-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+    }
+
+    .profile-card {
+      background-color: white;
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray-200);
+    }
+
+    .profile-avatar-section {
+      text-align: center;
+      padding-bottom: var(--spacing-lg);
+      border-bottom: 1px solid var(--gray-200);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .profile-avatar-large {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-color), #8B5CF6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0 auto var(--spacing-md);
+    }
+
+    .profile-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .profile-title {
+      font-size: 1rem;
+      color: var(--gray-600);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .profile-contact {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .profile-contact-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      font-size: 0.875rem;
+      color: var(--gray-600);
+    }
+
+    .profile-contact-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--gray-400);
+    }
+
+    .profile-status {
+      margin-top: var(--spacing-lg);
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--gray-200);
+    }
+
+    .profile-status-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gray-500);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .status-select {
+      width: 100%;
+      padding: var(--spacing-sm);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .profile-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: var(--spacing-sm);
+      position: relative;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 32px;
+      bottom: -16px;
+      width: 2px;
+      background-color: var(--gray-200);
+    }
+
+    .timeline-item:last-child::before {
+      display: none;
+    }
+
+    .timeline-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.875rem;
+      background-color: var(--gray-100);
+      color: var(--gray-600);
+    }
+
+    .timeline-dot.success {
+      background-color: #D1FAE5;
+      color: var(--success);
+    }
+
+    .timeline-dot.primary {
+      background-color: var(--primary-light);
+      color: var(--primary-color);
+    }
+
+    .timeline-content {
+      flex: 1;
+      padding-top: 4px;
+    }
+
+    .timeline-title {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--gray-900);
+      margin-bottom: 0.125rem;
+    }
+
+    .timeline-date {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+    }
+
+    .tabs {
+      display: flex;
+      gap: var(--spacing-sm);
+      border-bottom: 2px solid var(--gray-200);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .tab {
+      padding: var(--spacing-sm) var(--spacing-lg);
+      font-weight: 500;
+      font-size: 0.875rem;
+      color: var(--gray-600);
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: var(--transition);
+    }
+
+    .tab:hover {
+      color: var(--gray-900);
+    }
+
+    .tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .section-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--gray-900);
+      margin-bottom: var(--spacing-md);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .skill-card {
+      padding: var(--spacing-sm);
+      background-color: var(--gray-50);
+      border-radius: var(--radius-md);
+      text-align: center;
+      border: 1px solid var(--gray-200);
+    }
+
+    .skill-name {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--gray-800);
+      margin-bottom: 0.25rem;
+    }
+
+    .skill-level {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+    }
+
+    .experience-card {
+      padding: var(--spacing-lg);
+      background-color: var(--gray-50);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-md);
+      border: 1px solid var(--gray-200);
+    }
+
+    .experience-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .experience-role {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--gray-900);
+      margin-bottom: 0.25rem;
+    }
+
+    .experience-company {
+      font-size: 0.875rem;
+      color: var(--gray-600);
+      margin-bottom: 0.25rem;
+    }
+
+    .experience-date {
+      font-size: 0.8125rem;
+      color: var(--gray-500);
+    }
+
+    .experience-description {
+      font-size: 0.875rem;
+      color: var(--gray-700);
+      line-height: 1.6;
+      margin-top: var(--spacing-sm);
+    }
+
+    .notes-section {
+      margin-top: var(--spacing-lg);
+    }
+
+    .note-card {
+      background-color: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .note-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .note-author {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--gray-800);
+    }
+
+    .note-date {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+    }
+
+    .note-content {
+      font-size: 0.875rem;
+      color: var(--gray-700);
+      line-height: 1.6;
+    }
+
+    .add-note-form {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-md);
+    }
+
+    .questions-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .question-card {
+      padding: var(--spacing-md);
+      background-color: var(--gray-50);
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--primary-color);
+    }
+
+    .question-text {
+      font-size: 0.875rem;
+      color: var(--gray-700);
+      line-height: 1.6;
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .question-rationale {
+      font-size: 0.8125rem;
+      color: var(--gray-500);
+      font-style: italic;
+    }
+
+    @media (max-width: 1024px) {
+      .profile-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+        <h2>RH Stages</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Principal</div>
+          <a href="../index.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            Dashboard
+          </a>
+          
+          <a href="offres.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            Offres de stage
+          </a>
+          
+          <a href="candidatures.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+              <polyline points="17 2 12 7 7 2"></polyline>
+            </svg>
+            Candidatures
+            <span class="nav-item-badge">12</span>
+          </a>
+          
+          <a href="matching.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            Matching Intelligent
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="btn btn-secondary btn-sm" onclick="history.back()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Retour
+          </button>
+        </div>
+
+        <div class="topbar-right">
+          <div class="topbar-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </div>
+
+          <div class="user-profile">
+            <div class="user-avatar">MJ</div>
+            <div class="user-info">
+              <div class="user-name">Marie Dupont</div>
+              <div class="user-role">RH Manager</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT -->
+      <div class="page-content">
+        <div class="profile-layout">
+          <!-- LEFT SIDEBAR -->
+          <div class="profile-sidebar">
+            <!-- Profile Card -->
+            <div class="profile-card">
+              <div class="profile-avatar-section">
+                <div class="profile-avatar-large">SM</div>
+                <div class="profile-name">Sophie Martin</div>
+                <div class="profile-title">Candidat Data Analyst</div>
+                <div class="score-badge high" style="width: 56px; height: 56px; font-size: 1.125rem; margin: var(--spacing-md) auto 0;">92</div>
+              </div>
+
+              <div class="profile-contact">
+                <div class="profile-contact-item">
+                  <svg class="profile-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                  </svg>
+                  sophie.martin@email.com
+                </div>
+                <div class="profile-contact-item">
+                  <svg class="profile-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                  </svg>
+                  +33 6 12 34 56 78
+                </div>
+                <div class="profile-contact-item">
+                  <svg class="profile-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  Paris, France
+                </div>
+                <div class="profile-contact-item">
+                  <svg class="profile-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                    <rect x="2" y="9" width="4" height="12"></rect>
+                    <circle cx="4" cy="4" r="2"></circle>
+                  </svg>
+                  linkedin.com/in/sophiemartin
+                </div>
+              </div>
+
+              <div class="profile-status">
+                <div class="profile-status-label">Statut</div>
+                <select class="status-select">
+                  <option>Nouveau</option>
+                  <option selected>Présélection</option>
+                  <option>Entretien</option>
+                  <option>Test technique</option>
+                  <option>Offre</option>
+                  <option>Rejeté</option>
+                </select>
+              </div>
+
+              <div class="profile-actions" style="margin-top: var(--spacing-lg);">
+                <button class="btn btn-primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  Planifier entretien
+                </button>
+                <button class="btn btn-secondary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Télécharger CV
+                </button>
+                <button class="btn btn-secondary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  Ajouter une note
+                </button>
+                <button class="btn btn-danger">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                  Rejeter
+                </button>
+              </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="profile-card">
+              <h3 style="margin: 0 0 var(--spacing-md) 0; font-size: 1rem; font-weight: 600;">Timeline</h3>
+              <div class="timeline">
+                <div class="timeline-item">
+                  <div class="timeline-dot primary">📝</div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">Note ajoutée par Marie Dupont</div>
+                    <div class="timeline-date">Il y a 1 heure</div>
+                  </div>
+                </div>
+
+                <div class="timeline-item">
+                  <div class="timeline-dot success">✓</div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">Statut changé : Présélection</div>
+                    <div class="timeline-date">Il y a 3 heures</div>
+                  </div>
+                </div>
+
+                <div class="timeline-item">
+                  <div class="timeline-dot primary">🎯</div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">Matching score: 92%</div>
+                    <div class="timeline-date">Il y a 5 heures</div>
+                  </div>
+                </div>
+
+                <div class="timeline-item">
+                  <div class="timeline-dot">📄</div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">Candidature reçue</div>
+                    <div class="timeline-date">Il y a 2 jours</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MAIN CONTENT -->
+          <div>
+            <div class="profile-card">
+              <!-- Tabs -->
+              <div class="tabs">
+                <button class="tab active" onclick="switchTab('resume')">Résumé</button>
+                <button class="tab" onclick="switchTab('skills')">Compétences</button>
+                <button class="tab" onclick="switchTab('experience')">Expériences</button>
+                <button class="tab" onclick="switchTab('projects')">Projets</button>
+                <button class="tab" onclick="switchTab('matching')">Matching</button>
+                <button class="tab" onclick="switchTab('notes')">Notes</button>
+              </div>
+
+              <!-- Tab: Résumé -->
+              <div class="tab-content active" id="resume">
+                <div class="section-title">
+                  📝 Résumé du profil
+                </div>
+                <p style="font-size: 0.9375rem; color: var(--gray-700); line-height: 1.8; margin-bottom: var(--spacing-xl);">
+                  Étudiante en Master 2 Data Science à l'ESSEC Business School avec une forte orientation analytics et business intelligence. Possède une solide expérience en analyse de données marketing acquise lors de deux stages en entreprise. Maîtrise avancée des outils d'analyse (Python, SQL, Power BI) et des techniques statistiques. Démontre un excellent sens analytique et une capacité à traduire les données en insights actionnables pour les décideurs. Profil polyvalent alliant compétences techniques et compréhension business.
+                </p>
+
+                <div class="section-title">
+                  🎓 Formation
+                </div>
+                <div class="experience-card">
+                  <div class="experience-role">Master Data Science & Business Analytics</div>
+                  <div class="experience-company">ESSEC Business School</div>
+                  <div class="experience-date">2024 - 2026</div>
+                  <div class="experience-description">
+                    Spécialisation en analyse prédictive, machine learning appliqué au business, et visualisation de données. Projets : analyse de churn, optimisation pricing, segmentation clients.
+                  </div>
+                </div>
+
+                <div class="experience-card">
+                  <div class="experience-role">Licence Mathématiques & Informatique</div>
+                  <div class="experience-company">Université Paris-Saclay</div>
+                  <div class="experience-date">2021 - 2024</div>
+                  <div class="experience-description">
+                    Double cursus mathématiques appliquées et informatique. Major de promotion (mention Très Bien).
+                  </div>
+                </div>
+
+                <div class="section-title" style="margin-top: var(--spacing-xl);">
+                  🏆 Certifications
+                </div>
+                <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                  <span class="badge badge-primary">Google Data Analytics Professional</span>
+                  <span class="badge badge-primary">Microsoft Power BI Certified</span>
+                  <span class="badge badge-primary">Python for Data Science (IBM)</span>
+                </div>
+              </div>
+
+              <!-- Tab: Compétences -->
+              <div class="tab-content" id="skills">
+                <div class="section-title">
+                  💻 Compétences techniques
+                </div>
+                <div class="skills-grid">
+                  <div class="skill-card">
+                    <div class="skill-name">Python</div>
+                    <div class="skill-level">⭐⭐⭐⭐⭐ Expert</div>
+                  </div>
+                  <div class="skill-card">
+                    <div class="skill-name">SQL</div>
+                    <div class="skill-level">⭐⭐⭐⭐⭐ Expert</div>
+                  </div>
+                  <div class="skill-card">
+                    <div class="skill-name">Power BI</div>
+                    <div class="skill-level">⭐⭐⭐⭐ Avancé</div>
+                  </div>
+                  <div class="skill-card">
+                    <div class="skill-name">Excel</div>
+                    <div class="skill-level">⭐⭐⭐⭐⭐ Expert</div>
+                  </div>
+                  <div class="skill-card">
+                    <div class="skill-name">Statistiques</div>
+                    <div class="skill-level">⭐⭐⭐⭐ Avancé</div>
+                  </div>
+                  <div class="skill-card">
+                    <div class="skill-name">Machine Learning</div>
+                    <div class="skill-level">⭐⭐⭐ Intermédiaire</div>
+                  </div>
+                  <div class="skill-card">
+                    <div class="skill-name">Tableau</div>
+                    <div class="skill-level">⭐⭐⭐ Intermédiaire</div>
+                  </div>
+                  <div class="skill-card">
+                    <div class="skill-name">R</div>
+                    <div class="skill-level">⭐⭐⭐ Intermédiaire</div>
+                  </div>
+                </div>
+
+                <div class="section-title">
+                  🌐 Langues
+                </div>
+                <div class="skills-grid">
+                  <div class="skill-card">
+                    <div class="skill-name">Français</div>
+                    <div class="skill-level">Langue maternelle</div>
+                  </div>
+                  <div class="skill-card">
+                    <div class="skill-name">Anglais</div>
+                    <div class="skill-level">Courant (C1)</div>
+                  </div>
+                  <div class="skill-card">
+                    <div class="skill-name">Espagnol</div>
+                    <div class="skill-level">Intermédiaire (B1)</div>
+                  </div>
+                </div>
+
+                <div class="section-title">
+                  🎯 Compétences transversales
+                </div>
+                <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                  <span class="tag">Analyse de données</span>
+                  <span class="tag">Résolution de problèmes</span>
+                  <span class="tag">Communication</span>
+                  <span class="tag">Travail d'équipe</span>
+                  <span class="tag">Présentation</span>
+                  <span class="tag">Gestion de projet</span>
+                  <span class="tag">Esprit critique</span>
+                  <span class="tag">Autonomie</span>
+                </div>
+              </div>
+
+              <!-- Tab: Expériences -->
+              <div class="tab-content" id="experience">
+                <div class="section-title">
+                  💼 Expériences professionnelles
+                </div>
+
+                <div class="experience-card">
+                  <div class="experience-header">
+                    <div>
+                      <div class="experience-role">Data Analyst Intern</div>
+                      <div class="experience-company">L'Oréal - Division Marketing</div>
+                      <div class="experience-date">Juin 2025 - Septembre 2025 (4 mois)</div>
+                    </div>
+                  </div>
+                  <div class="experience-description">
+                    • Analyse des performances marketing digital sur 15 campagnes (ROI +22%)<br>
+                    • Création de dashboards Power BI pour le suivi temps réel des KPIs<br>
+                    • Développement de modèles prédictifs en Python pour optimiser les budgets publicitaires<br>
+                    • Présentation mensuelle des insights au CMO et équipe marketing (50+ personnes)
+                  </div>
+                  <div style="margin-top: var(--spacing-sm); display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                    <span class="tag">Python</span>
+                    <span class="tag">SQL</span>
+                    <span class="tag">Power BI</span>
+                    <span class="tag">Google Analytics</span>
+                  </div>
+                </div>
+
+                <div class="experience-card">
+                  <div class="experience-header">
+                    <div>
+                      <div class="experience-role">Business Analyst Intern</div>
+                      <div class="experience-company">BNP Paribas - Direction Stratégie</div>
+                      <div class="experience-date">Janvier 2024 - Mai 2024 (5 mois)</div>
+                    </div>
+                  </div>
+                  <div class="experience-description">
+                    • Analyse de la satisfaction client à partir de 50 000+ feedbacks<br>
+                    • Automatisation de rapports Excel/VBA pour réduire le temps de traitement de 70%<br>
+                    • Segmentation de la clientèle pour identifier les opportunités de cross-sell<br>
+                    • Support à la préparation du plan stratégique 2025
+                  </div>
+                  <div style="margin-top: var(--spacing-sm); display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                    <span class="tag">Excel</span>
+                    <span class="tag">VBA</span>
+                    <span class="tag">SQL</span>
+                    <span class="tag">Tableau</span>
+                  </div>
+                </div>
+
+                <div class="experience-card">
+                  <div class="experience-header">
+                    <div>
+                      <div class="experience-role">Tuteur Mathématiques</div>
+                      <div class="experience-company">Association Étudiante ESSEC</div>
+                      <div class="experience-date">Septembre 2023 - Présent</div>
+                    </div>
+                  </div>
+                  <div class="experience-description">
+                    • Accompagnement de 20+ étudiants en statistiques et probabilités<br>
+                    • Création de supports pédagogiques et exercices pratiques<br>
+                    • Taux de réussite aux examens : 95%
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab: Projets -->
+              <div class="tab-content" id="projects">
+                <div class="section-title">
+                  🚀 Projets personnels & académiques
+                </div>
+
+                <div class="experience-card">
+                  <div class="experience-header">
+                    <div>
+                      <div class="experience-role">Prédiction du churn client - E-commerce</div>
+                      <div class="experience-date">Projet académique • Septembre 2025</div>
+                    </div>
+                    <span class="badge badge-success">Machine Learning</span>
+                  </div>
+                  <div class="experience-description">
+                    Développement d'un modèle de machine learning (Random Forest) pour prédire le risque de churn sur une base de 100 000 clients e-commerce. Précision de 87%, permettant d'identifier les clients à risque et mettre en place des actions de rétention ciblées.
+                  </div>
+                  <div style="margin-top: var(--spacing-sm);">
+                    <strong>Technologies :</strong> Python, Scikit-learn, Pandas, Matplotlib
+                  </div>
+                  <div style="margin-top: var(--spacing-xs);">
+                    <a href="#" style="color: var(--primary-color); font-size: 0.875rem;">🔗 Voir sur GitHub →</a>
+                  </div>
+                </div>
+
+                <div class="experience-card">
+                  <div class="experience-header">
+                    <div>
+                      <div class="experience-role">Dashboard interactif - Analyse immobilière Paris</div>
+                      <div class="experience-date">Projet personnel • Juillet 2025</div>
+                    </div>
+                    <span class="badge badge-primary">Data Viz</span>
+                  </div>
+                  <div class="experience-description">
+                    Création d'un dashboard Power BI analysant les prix de l'immobilier parisien par arrondissement, évolution temporelle et caractéristiques des biens. Scraping de 20 000+ annonces, nettoyage et visualisation interactive.
+                  </div>
+                  <div style="margin-top: var(--spacing-sm);">
+                    <strong>Technologies :</strong> Python (BeautifulSoup), Power BI, SQL
+                  </div>
+                </div>
+
+                <div class="experience-card">
+                  <div class="experience-header">
+                    <div>
+                      <div class="experience-role">Optimisation de tournées - Logistique</div>
+                      <div class="experience-date">Hackathon Data Science • Mars 2025</div>
+                    </div>
+                    <span class="badge badge-warning">🏆 2ème place</span>
+                  </div>
+                  <div class="experience-description">
+                    Hackathon de 48h organisé par Renault. Développement d'un algorithme d'optimisation de tournées de livraison permettant de réduire la distance parcourue de 23% et le temps de 18%. Équipe de 4 personnes.
+                  </div>
+                  <div style="margin-top: var(--spacing-sm);">
+                    <strong>Technologies :</strong> Python, OR-Tools, Folium
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab: Matching -->
+              <div class="tab-content" id="matching">
+                <div class="section-title">
+                  🎯 Analyse de matching
+                </div>
+
+                <div style="background: linear-gradient(135deg, #F0F9FF, #E0F2FE); padding: var(--spacing-xl); border-radius: var(--radius-lg); margin-bottom: var(--spacing-xl);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+                    <div>
+                      <div style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.25rem;">Score total de matching</div>
+                      <div style="font-size: 3rem; font-weight: 700; color: var(--success);">92%</div>
+                    </div>
+                    <div class="score-badge high" style="width: 80px; height: 80px; font-size: 1.5rem;">92</div>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-lg);">
+                    <div>
+                      <div style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.25rem;">Score sémantique</div>
+                      <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">90%</div>
+                    </div>
+                    <div>
+                      <div style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.25rem;">Score règles</div>
+                      <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">95%</div>
+                    </div>
+                    <div>
+                      <div style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.25rem;">Rang</div>
+                      <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">1/18</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="section-title">
+                  ✅ Points forts identifiés
+                </div>
+                <ul class="match-strengths" style="margin-bottom: var(--spacing-xl);">
+                  <li>Maîtrise parfaite des 6 compétences techniques requises (Python, SQL, Power BI, Excel, Statistiques, Machine Learning)</li>
+                  <li>Expérience de 2 stages en analyse de données en entreprise (L'Oréal, BNP Paribas)</li>
+                  <li>Formation supérieure de haut niveau en Data Science (ESSEC - Bac+5)</li>
+                  <li>Portfolio de projets data pertinents et diversifiés</li>
+                  <li>Certifications professionnelles (Google, Microsoft, IBM)</li>
+                  <li>Excellentes compétences en présentation et communication</li>
+                </ul>
+
+                <div class="section-title">
+                  ⚠️ Points d'attention / Compétences manquantes
+                </div>
+                <ul class="match-strengths match-weaknesses" style="margin-bottom: var(--spacing-xl);">
+                  <li>Expérience limitée en Big Data (Spark, Hadoop non mentionnés)</li>
+                  <li>Pas de certification cloud (AWS, Azure, GCP)</li>
+                  <li>Aucune mention de méthodes Agile/Scrum</li>
+                </ul>
+
+                <div class="section-title">
+                  🎓 Questions d'entretien suggérées
+                </div>
+                <div class="questions-list">
+                  <div class="question-card">
+                    <div class="question-text">
+                      <strong>1.</strong> Pouvez-vous nous présenter un projet data analytics dont vous êtes particulièrement fier ? Quels ont été les défis rencontrés et comment les avez-vous surmontés ?
+                    </div>
+                    <div class="question-rationale">
+                      → Évalue la capacité de résolution de problèmes et la profondeur technique
+                    </div>
+                  </div>
+
+                  <div class="question-card">
+                    <div class="question-text">
+                      <strong>2.</strong> Lors de votre stage chez L'Oréal, vous avez travaillé sur l'optimisation des budgets publicitaires. Comment avez-vous construit votre modèle prédictif et comment l'avez-vous validé ?
+                    </div>
+                    <div class="question-rationale">
+                      → Évalue la méthodologie data science et la rigueur analytique
+                    </div>
+                  </div>
+
+                  <div class="question-card">
+                    <div class="question-text">
+                      <strong>3.</strong> Comment expliquez-vous des résultats d'analyse complexes à des interlocuteurs non-techniques (managers, direction) ?
+                    </div>
+                    <div class="question-rationale">
+                      → Évalue les compétences en communication et vulgarisation
+                    </div>
+                  </div>
+
+                  <div class="question-card">
+                    <div class="question-text">
+                      <strong>4.</strong> Vous maîtrisez Python et SQL. Pouvez-vous nous donner un exemple concret où vous avez dû combiner ces deux outils pour résoudre un problème d'analyse ?
+                    </div>
+                    <div class="question-rationale">
+                      → Évalue l'expertise technique et l'application pratique
+                    </div>
+                  </div>
+
+                  <div class="question-card">
+                    <div class="question-text">
+                      <strong>5.</strong> Quelles sont vos aspirations professionnelles à moyen terme (3-5 ans) dans le domaine de la data ?
+                    </div>
+                    <div class="question-rationale">
+                      → Évalue la motivation et l'alignement avec les perspectives d'évolution
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab: Notes -->
+              <div class="tab-content" id="notes">
+                <div class="section-title">
+                  📝 Notes et feedback
+                </div>
+
+                <div class="note-card">
+                  <div class="note-header">
+                    <div class="note-author">Marie Dupont (RH Manager)</div>
+                    <div class="note-date">Il y a 1 heure</div>
+                  </div>
+                  <div class="note-content">
+                    Profil très prometteur ! CV bien structuré, expériences pertinentes chez L'Oréal et BNP Paribas. Le portfolio de projets est impressionnant. À présélectionner pour entretien. Points à creuser : expérience en équipe data, capacité à gérer les deadlines serrées.
+                  </div>
+                </div>
+
+                <div class="note-card">
+                  <div class="note-header">
+                    <div class="note-author">Thomas Bernard (Manager Data)</div>
+                    <div class="note-date">Il y a 3 heures</div>
+                  </div>
+                  <div class="note-content">
+                    Les compétences techniques correspondent parfaitement à nos besoins. L'expérience chez L'Oréal est un gros plus (environnement similaire au nôtre). Je recommande un entretien technique pour valider la maîtrise de Python et SQL.
+                  </div>
+                </div>
+
+                <div class="notes-section">
+                  <h4 style="font-size: 0.9375rem; font-weight: 600; margin-bottom: var(--spacing-sm);">Ajouter une note</h4>
+                  <div class="add-note-form">
+                    <textarea class="form-textarea" rows="4" placeholder="Ajoutez vos observations, questions ou feedback sur ce candidat..."></textarea>
+                  </div>
+                  <button class="btn btn-primary" style="margin-top: var(--spacing-sm);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Ajouter la note
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function switchTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+
+      // Remove active class from all tabs
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // Show selected tab content
+      document.getElementById(tabName).classList.add('active');
+
+      // Add active class to clicked tab
+      event.target.classList.add('active');
+    }
+  </script>
+</body>
+</html>

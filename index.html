@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RH Management - Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+        <h2>RH Stages</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Principal</div>
+          <a href="index.html" class="nav-item active">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            Dashboard
+          </a>
+          
+          <a href="pages/offres.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Offres de stage
+          </a>
+          
+          <a href="pages/candidatures.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+              <polyline points="17 2 12 7 7 2"></polyline>
+            </svg>
+            Candidatures
+            <span class="nav-item-badge">12</span>
+          </a>
+          
+          <a href="pages/matching.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+              <path d="M11 8v6l4 2"></path>
+            </svg>
+            Matching Intelligent
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Gestion</div>
+          <a href="pages/candidats.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            Base candidats
+          </a>
+          
+          <a href="pages/calendrier.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Calendrier
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Paramètres</div>
+          <a href="pages/notifications.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            Notifications
+            <span class="nav-item-badge">3</span>
+          </a>
+          
+          <a href="pages/parametres.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 1v6m0 6v6"></path>
+              <path d="m4.93 4.93 4.24 4.24m5.66 5.66 4.24 4.24"></path>
+              <path d="M1 12h6m6 0h6"></path>
+              <path d="m4.93 19.07 4.24-4.24m5.66-5.66 4.24-4.24"></path>
+            </svg>
+            Paramètres
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="btn btn-icon btn-secondary" id="menuToggle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+
+          <div class="search-bar">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" placeholder="Rechercher un candidat, une offre..." />
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="btn btn-primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Créer une offre
+          </button>
+
+          <div class="topbar-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="badge"></span>
+          </div>
+
+          <div class="user-profile">
+            <div class="user-avatar">MJ</div>
+            <div class="user-info">
+              <div class="user-name">Marie Dupont</div>
+              <div class="user-role">RH Manager</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT -->
+      <div class="page-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p style="color: var(--gray-500); margin: 0;">Vue d'ensemble du recrutement</p>
+          </div>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div class="grid grid-4 mb-lg">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div>
+                <div class="kpi-title">Offres actives</div>
+              </div>
+              <div class="kpi-icon primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-value">8</div>
+            <div class="kpi-trend positive">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="18 15 12 9 6 15"></polyline>
+              </svg>
+              +2 cette semaine
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div>
+                <div class="kpi-title">Nouvelles candidatures</div>
+              </div>
+              <div class="kpi-icon success">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="8.5" cy="7" r="4"></circle>
+                  <line x1="20" y1="8" x2="20" y2="14"></line>
+                  <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-value">34</div>
+            <div class="kpi-trend positive">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="18 15 12 9 6 15"></polyline>
+              </svg>
+              +12 cette semaine
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div>
+                <div class="kpi-title">Profils "Top match"</div>
+              </div>
+              <div class="kpi-icon warning">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-value">16</div>
+            <div class="kpi-trend positive">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="18 15 12 9 6 15"></polyline>
+              </svg>
+              Score ≥ 85%
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div>
+                <div class="kpi-title">Temps moyen traitement</div>
+              </div>
+              <div class="kpi-icon info">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-value">3.2j</div>
+            <div class="kpi-trend negative">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+              +0.5j vs. mois dernier
+            </div>
+          </div>
+        </div>
+
+        <!-- ALERTS & TODO -->
+        <div class="grid grid-3 mb-lg">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">🚨 Alertes</h3>
+              <span class="badge badge-danger">3</span>
+            </div>
+            <div class="card-body">
+              <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                <div style="padding: var(--spacing-sm); background-color: var(--gray-50); border-radius: var(--radius-md); border-left: 3px solid var(--danger);">
+                  <div style="font-weight: 600; font-size: 0.875rem; color: var(--gray-800); margin-bottom: 0.25rem;">
+                    Offre "Développeur Full Stack" sans candidat
+                  </div>
+                  <div style="font-size: 0.8125rem; color: var(--gray-500);">
+                    Publiée il y a 15 jours
+                  </div>
+                </div>
+
+                <div style="padding: var(--spacing-sm); background-color: var(--gray-50); border-radius: var(--radius-md); border-left: 3px solid var(--warning);">
+                  <div style="font-weight: 600; font-size: 0.875rem; color: var(--gray-800); margin-bottom: 0.25rem;">
+                    5 candidats en attente depuis 7+ jours
+                  </div>
+                  <div style="font-size: 0.8125rem; color: var(--gray-500);">
+                    Action requise
+                  </div>
+                </div>
+
+                <div style="padding: var(--spacing-sm); background-color: var(--gray-50); border-radius: var(--radius-md); border-left: 3px solid var(--warning);">
+                  <div style="font-weight: 600; font-size: 0.875rem; color: var(--gray-800); margin-bottom: 0.25rem;">
+                    3 offres expirent dans 5 jours
+                  </div>
+                  <div style="font-size: 0.8125rem; color: var(--gray-500);">
+                    Renouveler ou clôturer
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="grid-column: span 2;">
+            <div class="card-header">
+              <h3 class="card-title">⚡ À traiter maintenant</h3>
+              <a href="pages/candidatures.html" style="font-size: 0.875rem;">Voir tout →</a>
+            </div>
+            <div class="card-body">
+              <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                <!-- Candidature 1 -->
+                <div style="display: flex; gap: var(--spacing-md); align-items: center; padding: var(--spacing-sm); border-radius: var(--radius-md); background-color: var(--gray-50);">
+                  <div class="score-badge high">92</div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 0.875rem; color: var(--gray-800);">
+                      Sophie Martin
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--gray-500); margin-bottom: 0.25rem;">
+                      Data Analyst - ESSEC Business School
+                    </div>
+                    <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                      <span class="tag">Python</span>
+                      <span class="tag">SQL</span>
+                      <span class="tag">Power BI</span>
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 0.75rem; color: var(--gray-500); margin-bottom: 0.25rem;">Il y a 2h</div>
+                    <button class="btn btn-sm btn-primary">Voir profil</button>
+                  </div>
+                </div>
+
+                <!-- Candidature 2 -->
+                <div style="display: flex; gap: var(--spacing-md); align-items: center; padding: var(--spacing-sm); border-radius: var(--radius-md); background-color: var(--gray-50);">
+                  <div class="score-badge high">88</div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 0.875rem; color: var(--gray-800);">
+                      Thomas Dubois
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--gray-500); margin-bottom: 0.25rem;">
+                      Développeur Full Stack - École 42
+                    </div>
+                    <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                      <span class="tag">React</span>
+                      <span class="tag">Node.js</span>
+                      <span class="tag">MongoDB</span>
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 0.75rem; color: var(--gray-500); margin-bottom: 0.25rem;">Il y a 5h</div>
+                    <button class="btn btn-sm btn-primary">Voir profil</button>
+                  </div>
+                </div>
+
+                <!-- Candidature 3 -->
+                <div style="display: flex; gap: var(--spacing-md); align-items: center; padding: var(--spacing-sm); border-radius: var(--radius-md); background-color: var(--gray-50);">
+                  <div class="score-badge medium">76</div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 0.875rem; color: var(--gray-800);">
+                      Julie Lefebvre
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--gray-500); margin-bottom: 0.25rem;">
+                      Marketing Digital - Paris Dauphine
+                    </div>
+                    <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                      <span class="tag">SEO</span>
+                      <span class="tag">Google Analytics</span>
+                      <span class="tag">Social Media</span>
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 0.75rem; color: var(--gray-500); margin-bottom: 0.25rem;">Il y a 1j</div>
+                    <button class="btn btn-sm btn-primary">Voir profil</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STATS & ACTIVITY -->
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">📊 Candidatures par offre</h3>
+            </div>
+            <div class="card-body">
+              <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                <div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-xs);">
+                    <span style="font-size: 0.875rem; font-weight: 500;">Data Analyst</span>
+                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--primary-color);">18</span>
+                  </div>
+                  <div class="score-bar">
+                    <div class="score-bar-fill high" style="width: 90%;"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-xs);">
+                    <span style="font-size: 0.875rem; font-weight: 500;">Développeur Full Stack</span>
+                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--primary-color);">2</span>
+                  </div>
+                  <div class="score-bar">
+                    <div class="score-bar-fill low" style="width: 10%;"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-xs);">
+                    <span style="font-size: 0.875rem; font-weight: 500;">UX/UI Designer</span>
+                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--primary-color);">12</span>
+                  </div>
+                  <div class="score-bar">
+                    <div class="score-bar-fill medium" style="width: 60%;"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-xs);">
+                    <span style="font-size: 0.875rem; font-weight: 500;">Marketing Digital</span>
+                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--primary-color);">15</span>
+                  </div>
+                  <div class="score-bar">
+                    <div class="score-bar-fill medium" style="width: 75%;"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-xs);">
+                    <span style="font-size: 0.875rem; font-weight: 500;">Business Analyst</span>
+                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--primary-color);">9</span>
+                  </div>
+                  <div class="score-bar">
+                    <div class="score-bar-fill medium" style="width: 45%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">🕒 Activité récente</h3>
+            </div>
+            <div class="card-body">
+              <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                <div style="display: flex; gap: var(--spacing-sm); align-items-start;">
+                  <div style="width: 8px; height: 8px; background-color: var(--success); border-radius: 50%; margin-top: 6px; flex-shrink: 0;"></div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 0.875rem; color: var(--gray-800); margin-bottom: 0.125rem;">
+                      <strong>Sophie Martin</strong> a été présélectionnée pour <strong>Data Analyst</strong>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--gray-500);">Il y a 15 minutes</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-sm); align-items-start;">
+                  <div style="width: 8px; height: 8px; background-color: var(--info); border-radius: 50%; margin-top: 6px; flex-shrink: 0;"></div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 0.875rem; color: var(--gray-800); margin-bottom: 0.125rem;">
+                      Nouvelle candidature de <strong>Thomas Dubois</strong> pour <strong>Développeur Full Stack</strong>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--gray-500);">Il y a 2 heures</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-sm); align-items-start;">
+                  <div style="width: 8px; height: 8px; background-color: var(--warning); border-radius: 50%; margin-top: 6px; flex-shrink: 0;"></div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 0.875rem; color: var(--gray-800); margin-bottom: 0.125rem;">
+                      Offre <strong>Stage Marketing Digital</strong> mise à jour
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--gray-500);">Il y a 3 heures</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-sm); align-items-start;">
+                  <div style="width: 8px; height: 8px; background-color: var(--success); border-radius: 50%; margin-top: 6px; flex-shrink: 0;"></div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 0.875rem; color: var(--gray-800); margin-bottom: 0.125rem;">
+                      Entretien programmé avec <strong>Alice Bernard</strong>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--gray-500);">Il y a 5 heures</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-sm); align-items-start;">
+                  <div style="width: 8px; height: 8px; background-color: var(--info); border-radius: 50%; margin-top: 6px; flex-shrink: 0;"></div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 0.875rem; color: var(--gray-800); margin-bottom: 0.125rem;">
+                      3 nouvelles candidatures pour <strong>UX/UI Designer</strong>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--gray-500);">Hier</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

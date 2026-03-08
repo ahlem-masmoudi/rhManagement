@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matching Intelligent - RH Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/main.css">
+  <style>
+    .matching-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: var(--spacing-lg);
+    }
+
+    .matching-header-box {
+      background: linear-gradient(135deg, var(--primary-color), #6366F1);
+      color: white;
+      padding: var(--spacing-xl);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .matching-header-box h2 {
+      color: white;
+      margin: 0 0 var(--spacing-sm) 0;
+      font-size: 1.5rem;
+    }
+
+    .matching-header-box p {
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0;
+    }
+
+    .matching-meta {
+      display: flex;
+      gap: var(--spacing-xl);
+      margin-top: var(--spacing-md);
+      padding-top: var(--spacing-md);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .matching-meta-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      font-size: 0.875rem;
+    }
+
+    .match-card {
+      background-color: white;
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray-200);
+      transition: var(--transition);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .match-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary-color);
+    }
+
+    .match-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .match-info {
+      flex: 1;
+    }
+
+    .match-name {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--gray-900);
+      margin-bottom: 0.25rem;
+    }
+
+    .match-school {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .match-summary {
+      font-size: 0.875rem;
+      color: var(--gray-600);
+      line-height: 1.6;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .match-scores {
+      display: flex;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-md);
+      background-color: var(--gray-50);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .match-score-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .match-score-label {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .match-score-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .match-score-value.high {
+      color: var(--success);
+    }
+
+    .match-score-value.medium {
+      color: var(--warning);
+    }
+
+    .match-score-value.low {
+      color: var(--danger);
+    }
+
+    .match-explanation {
+      margin-top: var(--spacing-md);
+      padding: var(--spacing-md);
+      background-color: #F0F9FF;
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--info);
+    }
+
+    .match-explanation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .match-explanation-title {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--info);
+    }
+
+    .match-explanation-content {
+      margin-top: var(--spacing-sm);
+      font-size: 0.875rem;
+      color: var(--gray-700);
+      line-height: 1.6;
+    }
+
+    .match-strengths {
+      list-style: none;
+      margin: var(--spacing-sm) 0;
+    }
+
+    .match-strengths li {
+      padding-left: 1.5rem;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .match-strengths li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .match-weaknesses li::before {
+      content: "⚠";
+      color: var(--warning);
+    }
+
+    .match-actions {
+      display: flex;
+      gap: var(--spacing-xs);
+      margin-top: var(--spacing-md);
+    }
+
+    .compare-drawer {
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 600px;
+      background-color: white;
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .compare-drawer.active {
+      transform: translateX(0);
+    }
+
+    .compare-drawer-header {
+      padding: var(--spacing-lg);
+      border-bottom: 1px solid var(--gray-200);
+      position: sticky;
+      top: 0;
+      background-color: white;
+      z-index: 10;
+    }
+
+    .compare-drawer-body {
+      padding: var(--spacing-lg);
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var(--spacing-md);
+    }
+
+    .compare-table th {
+      background-color: var(--gray-50);
+      padding: var(--spacing-sm);
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.875rem;
+      border-bottom: 2px solid var(--gray-200);
+    }
+
+    .compare-table td {
+      padding: var(--spacing-sm);
+      border-bottom: 1px solid var(--gray-200);
+      font-size: 0.875rem;
+    }
+
+    .compare-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .slider-container {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .slider-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .ai-explanation-box {
+      background: linear-gradient(135deg, #F0F9FF, #E0F2FE);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+      border: 1px solid #BAE6FD;
+    }
+
+    .ai-explanation-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .ai-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+    }
+
+    .ai-explanation-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--gray-900);
+    }
+
+    .ai-explanation-text {
+      font-size: 0.875rem;
+      color: var(--gray-700);
+      line-height: 1.6;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-xs);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .checkbox-item:hover {
+      background-color: var(--gray-50);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .checkbox-item label {
+      cursor: pointer;
+      font-size: 0.875rem;
+      color: var(--gray-700);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+        <h2>RH Stages</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Principal</div>
+          <a href="../index.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            Dashboard
+          </a>
+          
+          <a href="offres.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            Offres de stage
+          </a>
+          
+          <a href="candidatures.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+              <polyline points="17 2 12 7 7 2"></polyline>
+            </svg>
+            Candidatures
+            <span class="nav-item-badge">12</span>
+          </a>
+          
+          <a href="matching.html" class="nav-item active">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            Matching Intelligent
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="search-bar">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" placeholder="Rechercher un candidat..." />
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="topbar-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </div>
+
+          <div class="user-profile">
+            <div class="user-avatar">MJ</div>
+            <div class="user-info">
+              <div class="user-name">Marie Dupont</div>
+              <div class="user-role">RH Manager</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT -->
+      <div class="page-content">
+        <!-- HEADER -->
+        <div class="matching-header-box">
+          <h2>🎯 Matching Intelligent</h2>
+          <p>Trouvez les meilleurs candidats grâce à l'analyse sémantique et aux critères personnalisés</p>
+          
+          <div style="display: flex; gap: var(--spacing-md); align-items: center; margin-top: var(--spacing-lg);">
+            <select class="form-select" style="flex: 1; max-width: 400px; background-color: white;">
+              <option>📄 Data Analyst - Stage 6 mois</option>
+              <option>💻 Développeur Full Stack - Alternance</option>
+              <option>🎨 UX/UI Designer - Stage 4-6 mois</option>
+              <option>📱 Marketing Digital - Stage 6 mois</option>
+            </select>
+            
+            <button class="btn btn-success">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              Lancer le matching
+            </button>
+
+            <button class="btn" style="background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <polyline points="23 20 23 14 17 14"></polyline>
+                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+              </svg>
+              Actualiser
+            </button>
+          </div>
+
+          <div class="matching-meta">
+            <div class="matching-meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <strong>18</strong> candidats analysés
+            </div>
+            <div class="matching-meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              Dernière mise à jour : <strong>Il y a 5 min</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI EXPLANATION -->
+        <div class="ai-explanation-box">
+          <div class="ai-explanation-header">
+            <div class="ai-icon">AI</div>
+            <div class="ai-explanation-title">Comment fonctionne le matching intelligent ?</div>
+          </div>
+          <div class="ai-explanation-text">
+            Le système analyse automatiquement les CV et les compare avec votre offre d'emploi. Le <strong>score sémantique</strong> mesure la pertinence globale du profil en fonction du contenu (compétences, expériences, projets). Le <strong>score règles</strong> vérifie les critères obligatoires que vous avez définis (niveau d'étude, langues, années d'expérience).
+          </div>
+          <div class="ai-explanation-text">
+            <strong>🔍 Transparence :</strong> Chaque score est expliqué avec des points forts et des manques identifiés. Vous gardez le contrôle total sur les décisions finales.
+          </div>
+          <button class="btn btn-sm" style="background-color: white; color: var(--info); border: 1px solid var(--info);">
+            En savoir plus sur la méthodologie
+          </button>
+        </div>
+
+        <!-- MATCHING LAYOUT -->
+        <div class="matching-layout">
+          <!-- FILTERS PANEL -->
+          <div>
+            <div class="filter-panel">
+              <div class="filter-header">
+                <div class="filter-title">Filtres</div>
+                <div class="filter-reset">Réinitialiser</div>
+              </div>
+
+              <!-- Score filter -->
+              <div class="filter-section">
+                <div class="filter-section-title">Score total</div>
+                <div class="slider-container">
+                  <div class="slider-label-row">
+                    <span style="font-size: 0.8125rem; color: var(--gray-600);">Minimum</span>
+                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--primary-color);">70%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value="70" style="width: 100%;" />
+                  <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--gray-400); margin-top: var(--spacing-xs);">
+                    <span>0</span>
+                    <span>100</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Skills filter -->
+              <div class="filter-section">
+                <div class="filter-section-title">Compétences obligatoires</div>
+                <div class="checkbox-group">
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="skill-python" checked />
+                    <label for="skill-python">Python</label>
+                  </div>
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="skill-sql" checked />
+                    <label for="skill-sql">SQL</label>
+                  </div>
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="skill-powerbi" />
+                    <label for="skill-powerbi">Power BI</label>
+                  </div>
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="skill-excel" />
+                    <label for="skill-excel">Excel</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Education filter -->
+              <div class="filter-section">
+                <div class="filter-section-title">Niveau d'étude</div>
+                <select class="form-select">
+                  <option>Tous niveaux</option>
+                  <option>Bac+2 minimum</option>
+                  <option>Bac+3 minimum</option>
+                  <option selected>Bac+5</option>
+                </select>
+              </div>
+
+              <!-- Experience filter -->
+              <div class="filter-section">
+                <div class="filter-section-title">Années d'expérience</div>
+                <select class="form-select">
+                  <option selected>Toutes</option>
+                  <option>1 an minimum</option>
+                  <option>2 ans minimum</option>
+                  <option>3+ ans</option>
+                </select>
+              </div>
+
+              <!-- Location filter -->
+              <div class="filter-section">
+                <div class="filter-section-title">Localisation</div>
+                <div class="checkbox-group">
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="loc-paris" checked />
+                    <label for="loc-paris">Paris</label>
+                  </div>
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="loc-remote" checked />
+                    <label for="loc-remote">Remote</label>
+                  </div>
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="loc-lyon" />
+                    <label for="loc-lyon">Lyon</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Availability filter -->
+              <div class="filter-section">
+                <div class="filter-section-title">Disponibilité</div>
+                <select class="form-select">
+                  <option selected>Toutes</option>
+                  <option>Immédiate</option>
+                  <option>Sous 1 mois</option>
+                  <option>Sous 3 mois</option>
+                </select>
+              </div>
+
+              <!-- Languages filter -->
+              <div class="filter-section">
+                <div class="filter-section-title">Langues</div>
+                <div class="checkbox-group">
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="lang-fr" checked disabled />
+                    <label for="lang-fr">Français (requis)</label>
+                  </div>
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="lang-en" />
+                    <label for="lang-en">Anglais professionnel</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RESULTS -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+              <div style="font-size: 0.875rem; color: var(--gray-600);">
+                <strong>8 candidats</strong> correspondent à vos critères
+              </div>
+              <div style="display: flex; gap: var(--spacing-xs);">
+                <button class="btn btn-sm btn-secondary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Exporter
+                </button>
+                <button class="btn btn-sm btn-primary" onclick="openCompareDrawer()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 4"></path>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                  </svg>
+                  Comparer (0)
+                </button>
+              </div>
+            </div>
+
+            <!-- Match Card 1 -->
+            <div class="match-card">
+              <div class="match-header">
+                <div class="match-info">
+                  <div class="match-name">Sophie Martin</div>
+                  <div class="match-school">ESSEC Business School • Bac+5 • Paris</div>
+                  <div class="match-summary">
+                    Étudiante en Master Data Science avec une forte orientation business analytics. Expérience en analyse de données marketing et maîtrise avancée de Python et SQL.
+                  </div>
+                  <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
+                    <span class="tag">Python</span>
+                    <span class="tag">SQL</span>
+                    <span class="tag">Power BI</span>
+                    <span class="tag">Excel</span>
+                    <span class="tag">Statistiques</span>
+                    <span class="tag">Machine Learning</span>
+                  </div>
+                </div>
+                <div class="score-badge high" style="width: 60px; height: 60px; font-size: 1.25rem;">92</div>
+              </div>
+
+              <div class="match-scores">
+                <div class="match-score-item">
+                  <div class="match-score-label">Score sémantique</div>
+                  <div class="match-score-value high">90%</div>
+                </div>
+                <div class="match-score-item">
+                  <div class="match-score-label">Score règles</div>
+                  <div class="match-score-value high">95%</div>
+                </div>
+                <div class="match-score-item">
+                  <div class="match-score-label">Compétences</div>
+                  <div class="match-score-value high">6/6</div>
+                </div>
+                <div class="match-score-item">
+                  <div class="match-score-label">Disponibilité</div>
+                  <div class="match-score-value high">✓</div>
+                </div>
+              </div>
+
+              <div class="match-explanation">
+                <div class="match-explanation-header">
+                  <div class="match-explanation-title">💡 Pourquoi ce match est excellent ?</div>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+                <div class="match-explanation-content">
+                  <div style="font-weight: 600; margin-bottom: var(--spacing-xs); color: var(--success);">✓ Points forts :</div>
+                  <ul class="match-strengths">
+                    <li>Maîtrise parfaite des 6 compétences techniques requises</li>
+                    <li>Expérience de 2 projets data analytics en entreprise</li>
+                    <li>Formation supérieure en Data Science (Bac+5)</li>
+                  </ul>
+
+                  <div style="font-weight: 600; margin-bottom: var(--spacing-xs); color: var(--warning); margin-top: var(--spacing-sm);">⚠ Points d'attention :</div>
+                  <ul class="match-strengths match-weaknesses">
+                    <li>Expérience limitée en Big Data (Spark, Hadoop)</li>
+                    <li>Pas de mention de certification AWS/Azure</li>
+                  </ul>
+
+                  <div style="margin-top: var(--spacing-sm); padding-top: var(--spacing-sm); border-top: 1px solid var(--gray-200); font-size: 0.8125rem; color: var(--gray-600);">
+                    <strong>Basé sur :</strong> Analyse sémantique du CV + Description de l'offre + Critères définis
+                  </div>
+                </div>
+              </div>
+
+              <div class="match-actions">
+                <button class="btn btn-primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  Voir le profil complet
+                </button>
+                <button class="btn btn-success">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Présélectionner
+                </button>
+                <button class="btn btn-secondary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  Planifier entretien
+                </button>
+                <button class="btn btn-secondary">
+                  <input type="checkbox" style="margin-right: 4px;" />
+                  Comparer
+                </button>
+              </div>
+            </div>
+
+            <!-- Match Card 2 -->
+            <div class="match-card">
+              <div class="match-header">
+                <div class="match-info">
+                  <div class="match-name">Alice Bernard</div>
+                  <div class="match-school">HEC Paris • Bac+5 • Paris</div>
+                  <div class="match-summary">
+                    Profil analytique avec expérience en conseil. Expertise en modélisation prédictive et visualisation de données. A réalisé plusieurs projets d'analyse de marché.
+                  </div>
+                  <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
+                    <span class="tag">Python</span>
+                    <span class="tag">R</span>
+                    <span class="tag">SQL</span>
+                    <span class="tag">Tableau</span>
+                    <span class="tag">Excel</span>
+                  </div>
+                </div>
+                <div class="score-badge high" style="width: 60px; height: 60px; font-size: 1.25rem;">88</div>
+              </div>
+
+              <div class="match-scores">
+                <div class="match-score-item">
+                  <div class="match-score-label">Score sémantique</div>
+                  <div class="match-score-value high">87%</div>
+                </div>
+                <div class="match-score-item">
+                  <div class="match-score-label">Score règles</div>
+                  <div class="match-score-value high">90%</div>
+                </div>
+                <div class="match-score-item">
+                  <div class="match-score-label">Compétences</div>
+                  <div class="match-score-value medium">5/6</div>
+                </div>
+                <div class="match-score-item">
+                  <div class="match-score-label">Disponibilité</div>
+                  <div class="match-score-value high">✓</div>
+                </div>
+              </div>
+
+              <div class="match-explanation">
+                <div class="match-explanation-header">
+                  <div class="match-explanation-title">💡 Pourquoi ce match est très bon ?</div>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+                <div class="match-explanation-content">
+                  <div style="font-weight: 600; margin-bottom: var(--spacing-xs); color: var(--success);">✓ Points forts :</div>
+                  <ul class="match-strengths">
+                    <li>Excellente formation business (HEC) avec orientation data</li>
+                    <li>Expérience en conseil strategy & analytics</li>
+                    <li>Portfolio de 4 projets d'analyse de données</li>
+                  </ul>
+
+                  <div style="font-weight: 600; margin-bottom: var(--spacing-xs); color: var(--warning); margin-top: var(--spacing-sm);">⚠ Points d'attention :</div>
+                  <ul class="match-strengths match-weaknesses">
+                    <li>Power BI non mentionné (utilise Tableau à la place)</li>
+                    <li>Moins de focus technique que Sophie Martin</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="match-actions">
+                <button class="btn btn-primary">Voir le profil complet</button>
+                <button class="btn btn-success">Présélectionner</button>
+                <button class="btn btn-secondary">Planifier entretien</button>
+                <button class="btn btn-secondary">
+                  <input type="checkbox" style="margin-right: 4px;" />
+                  Comparer
+                </button>
+              </div>
+            </div>
+
+            <!-- Match Card 3 -->
+            <div class="match-card">
+              <div class="match-header">
+                <div class="match-info">
+                  <div class="match-name">Marc Rousseau</div>
+                  <div class="match-school">Université Paris-Saclay • Bac+5 • Paris</div>
+                  <div class="match-summary">
+                    Master en Mathématiques Appliquées. Solide background en statistiques et programmation. Stage précédent en analyse financière.
+                  </div>
+                  <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
+                    <span class="tag">Python</span>
+                    <span class="tag">SQL</span>
+                    <span class="tag">R</span>
+                    <span class="tag">Statistiques</span>
+                  </div>
+                </div>
+                <div class="score-badge medium" style="width: 60px; height: 60px; font-size: 1.25rem;">76</div>
+              </div>
+
+              <div class="match-scores">
+                <div class="match-score-item">
+                  <div class="match-score-label">Score sémantique</div>
+                  <div class="match-score-value medium">78%</div>
+                </div>
+                <div class="match-score-item">
+                  <div class="match-score-label">Score règles</div>
+                  <div class="match-score-value medium">75%</div>
+                </div>
+                <div class="match-score-item">
+                  <div class="match-score-label">Compétences</div>
+                  <div class="match-score-value medium">4/6</div>
+                </div>
+                <div class="match-score-item">
+                  <div class="match-score-label">Disponibilité</div>
+                  <div class="match-score-value high">✓</div>
+                </div>
+              </div>
+
+              <div class="match-explanation">
+                <div class="match-explanation-header">
+                  <div class="match-explanation-title">💡 Pourquoi ce match est moyen ?</div>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+                <div class="match-explanation-content">
+                  <div style="font-weight: 600; margin-bottom: var(--spacing-xs); color: var(--success);">✓ Points forts :</div>
+                  <ul class="match-strengths">
+                    <li>Solide base mathématiques et statistiques</li>
+                    <li>Maîtrise Python et SQL</li>
+                    <li>Formation Bac+5 pertinente</li>
+                  </ul>
+
+                  <div style="font-weight: 600; margin-bottom: var(--spacing-xs); color: var(--warning); margin-top: var(--spacing-sm);">⚠ Points d'attention :</div>
+                  <ul class="match-strengths match-weaknesses">
+                    <li>Power BI et Excel avancé non mentionnés</li>
+                    <li>Peu d'expérience en visualisation de données</li>
+                    <li>Profil plus académique que business</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="match-actions">
+                <button class="btn btn-primary">Voir le profil complet</button>
+                <button class="btn btn-secondary">Présélectionner</button>
+                <button class="btn btn-secondary">
+                  <input type="checkbox" style="margin-right: 4px;" />
+                  Comparer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- COMPARE DRAWER -->
+  <div class="compare-drawer" id="compareDrawer">
+    <div class="compare-drawer-header">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 1.25rem;">Comparer les candidats</h3>
+        <button class="btn btn-sm btn-secondary" onclick="closeCompareDrawer()">✕ Fermer</button>
+      </div>
+      <p style="margin: var(--spacing-sm) 0 0 0; color: var(--gray-500); font-size: 0.875rem;">
+        Analysez et comparez jusqu'à 3 profils côte à côte
+      </p>
+    </div>
+
+    <div class="compare-drawer-body">
+      <div style="background-color: var(--gray-50); padding: var(--spacing-lg); border-radius: var(--radius-md); text-align: center;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--gray-400); margin-bottom: var(--spacing-md);">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="8.5" cy="7" r="4"></circle>
+          <line x1="20" y1="8" x2="20" y2="14"></line>
+          <line x1="23" y1="11" x2="17" y2="11"></line>
+        </svg>
+        <div style="font-weight: 600; color: var(--gray-700); margin-bottom: var(--spacing-xs);">
+          Aucun candidat sélectionné
+        </div>
+        <div style="font-size: 0.875rem; color: var(--gray-500);">
+          Cochez "Comparer" sur 2 ou 3 candidats pour les analyser côte à côte
+        </div>
+      </div>
+
+      <!-- Example comparison table (hidden by default) -->
+      <div style="display: none;">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Critère</th>
+              <th>Sophie Martin</th>
+              <th>Alice Bernard</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Score total</strong></td>
+              <td style="color: var(--success); font-weight: 600;">92%</td>
+              <td style="color: var(--success); font-weight: 600;">88%</td>
+            </tr>
+            <tr>
+              <td><strong>Formation</strong></td>
+              <td>ESSEC - Data Science</td>
+              <td>HEC - Management</td>
+            </tr>
+            <tr>
+              <td><strong>Compétences</strong></td>
+              <td>Python, SQL, Power BI, Excel, Stats, ML</td>
+              <td>Python, R, SQL, Tableau, Excel</td>
+            </tr>
+            <tr>
+              <td><strong>Expérience</strong></td>
+              <td>2 projets data analytics</td>
+              <td>Conseil strategy & analytics</td>
+            </tr>
+            <tr>
+              <td><strong>Disponibilité</strong></td>
+              <td>Immédiate</td>
+              <td>Sous 1 mois</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background-color: var(--primary-light); border-radius: var(--radius-md);">
+          <div style="font-weight: 600; color: var(--primary-color); margin-bottom: var(--spacing-xs);">
+            🎯 Recommandation IA
+          </div>
+          <div style="font-size: 0.875rem; color: var(--gray-700);">
+            <strong>Sophie Martin</strong> semble être le meilleur choix pour ce poste car elle possède l'ensemble des compétences techniques requises et une formation spécialisée en Data Science.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openCompareDrawer() {
+      document.getElementById('compareDrawer').classList.add('active');
+    }
+
+    function closeCompareDrawer() {
+      document.getElementById('compareDrawer').classList.remove('active');
+    }
+  </script>
+</body>
+</html>

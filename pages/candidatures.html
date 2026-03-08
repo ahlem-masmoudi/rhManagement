@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Candidatures - RH Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/main.css">
+  <style>
+    .kanban-board {
+      display: flex;
+      gap: var(--spacing-lg);
+      overflow-x: auto;
+      padding-bottom: var(--spacing-lg);
+      min-height: calc(100vh - var(--topbar-height) - 200px);
+    }
+
+    .kanban-column {
+      flex: 0 0 320px;
+      background-color: var(--gray-100);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-md);
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - var(--topbar-height) - 180px);
+    }
+
+    .kanban-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-md);
+      padding-bottom: var(--spacing-md);
+      border-bottom: 2px solid var(--gray-200);
+    }
+
+    .kanban-title {
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gray-700);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+
+    .kanban-count {
+      background-color: white;
+      color: var(--gray-600);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      padding: 0.125rem 0.5rem;
+      border-radius: 10px;
+    }
+
+    .kanban-cards {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      padding-right: var(--spacing-xs);
+    }
+
+    .kanban-cards::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .kanban-cards::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .kanban-cards::-webkit-scrollbar-thumb {
+      background: var(--gray-300);
+      border-radius: 10px;
+    }
+
+    .candidate-card {
+      background-color: white;
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      cursor: grab;
+      transition: var(--transition);
+      border: 1px solid var(--gray-200);
+    }
+
+    .candidate-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .candidate-card:active {
+      cursor: grabbing;
+    }
+
+    .candidate-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .candidate-name {
+      font-weight: 600;
+      font-size: 0.9375rem;
+      color: var(--gray-900);
+      margin-bottom: 0.25rem;
+    }
+
+    .candidate-info {
+      font-size: 0.8125rem;
+      color: var(--gray-500);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .candidate-tags {
+      display: flex;
+      gap: 0.25rem;
+      flex-wrap: wrap;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .candidate-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: var(--spacing-sm);
+      padding-top: var(--spacing-sm);
+      border-top: 1px solid var(--gray-200);
+    }
+
+    .candidate-date {
+      font-size: 0.75rem;
+      color: var(--gray-400);
+    }
+
+    .candidate-actions {
+      display: flex;
+      gap: var(--spacing-xs);
+    }
+
+    .action-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      background: none;
+      border: none;
+      color: var(--gray-500);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .action-btn:hover {
+      background-color: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .filters-bar {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: center;
+      margin-bottom: var(--spacing-lg);
+      background-color: white;
+      padding: var(--spacing-md);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      flex-wrap: wrap;
+    }
+
+    .column-nouveau { border-top: 3px solid var(--info); }
+    .column-preselection { border-top: 3px solid var(--warning); }
+    .column-entretien { border-top: 3px solid #8B5CF6; }
+    .column-test { border-top: 3px solid #F59E0B; }
+    .column-offre { border-top: 3px solid var(--success); }
+    .column-rejete { border-top: 3px solid var(--danger); }
+
+    .empty-state {
+      text-align: center;
+      padding: var(--spacing-xl);
+      color: var(--gray-400);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+        <h2>RH Stages</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Principal</div>
+          <a href="../index.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            Dashboard
+          </a>
+          
+          <a href="offres.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            Offres de stage
+          </a>
+          
+          <a href="candidatures.html" class="nav-item active">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+              <polyline points="17 2 12 7 7 2"></polyline>
+            </svg>
+            Candidatures
+            <span class="nav-item-badge">12</span>
+          </a>
+          
+          <a href="matching.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            Matching Intelligent
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="search-bar">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" placeholder="Rechercher un candidat..." />
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="topbar-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </div>
+
+          <div class="user-profile">
+            <div class="user-avatar">MJ</div>
+            <div class="user-info">
+              <div class="user-name">Marie Dupont</div>
+              <div class="user-role">RH Manager</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT -->
+      <div class="page-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Pipeline de candidatures</h1>
+            <p style="color: var(--gray-500); margin: 0;">Glissez-déposez les candidats entre les étapes</p>
+          </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filters-bar">
+          <select class="form-select" style="width: auto;">
+            <option>Toutes les offres</option>
+            <option>Data Analyst</option>
+            <option>Développeur Full Stack</option>
+            <option>UX/UI Designer</option>
+            <option>Marketing Digital</option>
+          </select>
+
+          <select class="form-select" style="width: auto;">
+            <option>Score: Tous</option>
+            <option>Score ≥ 80%</option>
+            <option>Score ≥ 70%</option>
+            <option>Score ≥ 60%</option>
+          </select>
+
+          <select class="form-select" style="width: auto;">
+            <option>Trier par: Date</option>
+            <option>Trier par: Score</option>
+            <option>Trier par: Nom</option>
+          </select>
+
+          <div style="margin-left: auto; display: flex; gap: var(--spacing-xs);">
+            <button class="btn btn-secondary btn-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="21" x2="4" y2="14"></line>
+                <line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line>
+                <line x1="20" y1="12" x2="20" y2="3"></line>
+              </svg>
+              Filtres
+            </button>
+            <button class="btn btn-secondary btn-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                <rect x="1" y="3" width="22" height="5"></rect>
+                <line x1="10" y1="12" x2="14" y2="12"></line>
+              </svg>
+              Archive
+            </button>
+          </div>
+        </div>
+
+        <!-- KANBAN BOARD -->
+        <div class="kanban-board">
+          <!-- Nouveau -->
+          <div class="kanban-column column-nouveau">
+            <div class="kanban-header">
+              <div class="kanban-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M12 6v6l4 2"></path>
+                </svg>
+                Nouveau
+              </div>
+              <span class="kanban-count">5</span>
+            </div>
+
+            <div class="kanban-cards">
+              <div class="candidate-card">
+                <div class="candidate-header">
+                  <div style="flex: 1;">
+                    <div class="candidate-name">Sophie Martin</div>
+                    <div class="candidate-info">ESSEC Business School • Paris</div>
+                  </div>
+                  <div class="score-badge high" style="width: 40px; height: 40px; font-size: 0.8125rem;">92</div>
+                </div>
+
+                <div class="candidate-tags">
+                  <span class="tag">Python</span>
+                  <span class="tag">SQL</span>
+                  <span class="tag">Power BI</span>
+                </div>
+
+                <div style="font-size: 0.8125rem; color: var(--gray-600); margin-bottom: var(--spacing-xs);">
+                  📄 Data Analyst
+                </div>
+
+                <div class="candidate-footer">
+                  <span class="candidate-date">Il y a 2h</span>
+                  <div class="candidate-actions">
+                    <button class="action-btn" title="Voir profil">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                    <button class="action-btn" title="Planifier entretien">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                    </button>
+                    <button class="action-btn" title="Rejeter">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="candidate-card">
+                <div class="candidate-header">
+                  <div style="flex: 1;">
+                    <div class="candidate-name">Thomas Dubois</div>
+                    <div class="candidate-info">École 42 • Paris</div>
+                  </div>
+                  <div class="score-badge high" style="width: 40px; height: 40px; font-size: 0.8125rem;">88</div>
+                </div>
+
+                <div class="candidate-tags">
+                  <span class="tag">React</span>
+                  <span class="tag">Node.js</span>
+                  <span class="tag">MongoDB</span>
+                </div>
+
+                <div style="font-size: 0.8125rem; color: var(--gray-600); margin-bottom: var(--spacing-xs);">
+                  📄 Développeur Full Stack
+                </div>
+
+                <div class="candidate-footer">
+                  <span class="candidate-date">Il y a 5h</span>
+                  <div class="candidate-actions">
+                    <button class="action-btn" title="Voir profil">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                    <button class="action-btn" title="Planifier entretien">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                    </button>
+                    <button class="action-btn" title="Rejeter">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="candidate-card">
+                <div class="candidate-header">
+                  <div style="flex: 1;">
+                    <div class="candidate-name">Julie Lefebvre</div>
+                    <div class="candidate-info">Paris Dauphine • Paris</div>
+                  </div>
+                  <div class="score-badge medium" style="width: 40px; height: 40px; font-size: 0.8125rem;">76</div>
+                </div>
+
+                <div class="candidate-tags">
+                  <span class="tag">SEO</span>
+                  <span class="tag">Analytics</span>
+                  <span class="tag">Social Media</span>
+                </div>
+
+                <div style="font-size: 0.8125rem; color: var(--gray-600); margin-bottom: var(--spacing-xs);">
+                  📄 Marketing Digital
+                </div>
+
+                <div class="candidate-footer">
+                  <span class="candidate-date">Il y a 1j</span>
+                  <div class="candidate-actions">
+                    <button class="action-btn" title="Voir profil">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                    <button class="action-btn" title="Planifier entretien">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                    </button>
+                    <button class="action-btn" title="Rejeter">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Présélection -->
+          <div class="kanban-column column-preselection">
+            <div class="kanban-header">
+              <div class="kanban-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Présélection
+              </div>
+              <span class="kanban-count">3</span>
+            </div>
+
+            <div class="kanban-cards">
+              <div class="candidate-card">
+                <div class="candidate-header">
+                  <div style="flex: 1;">
+                    <div class="candidate-name">Alice Bernard</div>
+                    <div class="candidate-info">HEC Paris • Paris</div>
+                  </div>
+                  <div class="score-badge high" style="width: 40px; height: 40px; font-size: 0.8125rem;">94</div>
+                </div>
+
+                <div class="candidate-tags">
+                  <span class="tag">Python</span>
+                  <span class="tag">Machine Learning</span>
+                </div>
+
+                <div style="font-size: 0.8125rem; color: var(--gray-600); margin-bottom: var(--spacing-xs);">
+                  📄 Data Analyst
+                </div>
+
+                <div class="candidate-footer">
+                  <span class="candidate-date">Il y a 3j</span>
+                  <div class="candidate-actions">
+                    <button class="action-btn" title="Voir profil">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                    <button class="action-btn" title="Planifier entretien">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                    </button>
+                    <button class="action-btn" title="Rejeter">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="candidate-card">
+                <div class="candidate-header">
+                  <div style="flex: 1;">
+                    <div class="candidate-name">Marc Rousseau</div>
+                    <div class="candidate-info">ESCP • Lyon</div>
+                  </div>
+                  <div class="score-badge medium" style="width: 40px; height: 40px; font-size: 0.8125rem;">82</div>
+                </div>
+
+                <div class="candidate-tags">
+                  <span class="tag">SEO</span>
+                  <span class="tag">Content</span>
+                </div>
+
+                <div style="font-size: 0.8125rem; color: var(--gray-600); margin-bottom: var(--spacing-xs);">
+                  📄 Marketing Digital
+                </div>
+
+                <div class="candidate-footer">
+                  <span class="candidate-date">Il y a 4j</span>
+                  <div class="candidate-actions">
+                    <button class="action-btn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                    <button class="action-btn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                    </button>
+                    <button class="action-btn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entretien -->
+          <div class="kanban-column column-entretien">
+            <div class="kanban-header">
+              <div class="kanban-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Entretien
+              </div>
+              <span class="kanban-count">2</span>
+            </div>
+
+            <div class="kanban-cards">
+              <div class="candidate-card">
+                <div class="candidate-header">
+                  <div style="flex: 1;">
+                    <div class="candidate-name">Emma Petit</div>
+                    <div class="candidate-info">Gobelins • Paris</div>
+                  </div>
+                  <div class="score-badge high" style="width: 40px; height: 40px; font-size: 0.8125rem;">90</div>
+                </div>
+
+                <div class="candidate-tags">
+                  <span class="tag">Figma</span>
+                  <span class="tag">UI Design</span>
+                </div>
+
+                <div style="font-size: 0.8125rem; color: var(--gray-600); margin-bottom: var(--spacing-xs);">
+                  📄 UX/UI Designer
+                </div>
+
+                <div style="background-color: #EEF2FF; padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-size: 0.75rem; color: var(--primary-color); margin-bottom: var(--spacing-xs);">
+                  🗓️ Entretien le 5 mars à 14h
+                </div>
+
+                <div class="candidate-footer">
+                  <span class="candidate-date">Il y a 6j</span>
+                  <div class="candidate-actions">
+                    <button class="action-btn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test -->
+          <div class="kanban-column column-test">
+            <div class="kanban-header">
+              <div class="kanban-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                Test technique
+              </div>
+              <span class="kanban-count">1</span>
+            </div>
+
+            <div class="kanban-cards">
+              <div class="candidate-card">
+                <div class="candidate-header">
+                  <div style="flex: 1;">
+                    <div class="candidate-name">Lucas Martin</div>
+                    <div class="candidate-info">Epitech • Paris</div>
+                  </div>
+                  <div class="score-badge medium" style="width: 40px; height: 40px; font-size: 0.8125rem;">85</div>
+                </div>
+
+                <div class="candidate-tags">
+                  <span class="tag">Vue.js</span>
+                  <span class="tag">PHP</span>
+                </div>
+
+                <div style="font-size: 0.8125rem; color: var(--gray-600); margin-bottom: var(--spacing-xs);">
+                  📄 Développeur Full Stack
+                </div>
+
+                <div class="candidate-footer">
+                  <span class="candidate-date">Il y a 8j</span>
+                  <div class="candidate-actions">
+                    <button class="action-btn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Offre -->
+          <div class="kanban-column column-offre">
+            <div class="kanban-header">
+              <div class="kanban-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                Offre
+              </div>
+              <span class="kanban-count">1</span>
+            </div>
+
+            <div class="kanban-cards">
+              <div class="candidate-card">
+                <div class="candidate-header">
+                  <div style="flex: 1;">
+                    <div class="candidate-name">Clara Moreau</div>
+                    <div class="candidate-info">Sorbonne • Paris</div>
+                  </div>
+                  <div class="score-badge high" style="width: 40px; height: 40px; font-size: 0.8125rem;">96</div>
+                </div>
+
+                <div class="candidate-tags">
+                  <span class="tag">Python</span>
+                  <span class="tag">R</span>
+                  <span class="tag">Tableau</span>
+                </div>
+
+                <div style="font-size: 0.8125rem; color: var(--gray-600); margin-bottom: var(--spacing-xs);">
+                  📄 Data Analyst
+                </div>
+
+                <div class="candidate-footer">
+                  <span class="candidate-date">Il y a 12j</span>
+                  <div class="candidate-actions">
+                    <button class="action-btn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rejeté -->
+          <div class="kanban-column column-rejete">
+            <div class="kanban-header">
+              <div class="kanban-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                Rejeté
+              </div>
+              <span class="kanban-count">0</span>
+            </div>
+
+            <div class="kanban-cards">
+              <div class="empty-state">
+                Aucun candidat rejeté
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
