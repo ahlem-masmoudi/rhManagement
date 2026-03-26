@@ -1,14 +1,18 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
 import { Application, MatchingScore, MatchingExplanation } from '../models';
 import { CandidateService } from './candidate.service';
 import { OfferService } from './offer.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MatchingService {
+  private http = inject(HttpClient);
+  private apiUrl = environment.apiUrl;
   private applicationsSubject = new BehaviorSubject<Application[]>([]);
   public applications$: Observable<Application[]> = this.applicationsSubject.asObservable();
 
@@ -16,11 +20,68 @@ export class MatchingService {
     private candidateService: CandidateService,
     private offerService: OfferService
   ) {
-    this.loadDemoData();
+    // Load applications if user is recruiter
+    this.loadApplicationsIfRecruiter();
   }
 
+  // Get auth headers with token
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('authToken');
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    });
+  }
+
+  // Load applications from backend if user is recruiter
+  private loadApplicationsIfRecruiter(): void {
+    const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    if (user && user.role === 'recruiter') {
+      this.loadApplications();
+    }
+  }
+
+  // Load all applications from backend
+  private loadApplications(): void {
+    console.log('Loading applications from backend...');
+    this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiUrl}/applications`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => {
+        console.log('Applications loaded:', response);
+        return response.data;
+      }),
+      catchError(error => {
+        console.error('Error loading applications:', error);
+        console.error('Error status:', error.status);
+        console.error('Error message:', error.error);
+        return of([]);
+      })
+    ).subscribe(applications => {
+      console.log('Setting applications:', applications);
+      this.applicationsSubject.next(applications);
+    });
+  }
+
+  // Get all applications
   getApplications(): Observable<Application[]> {
+    this.loadApplications();
     return this.applications$;
+  }
+
+  // Get candidate's own applications
+  getMyApplications(): Observable<any[]> {
+    return this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiUrl}/applications/my`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error loading my applications:', error);
+        return throwError(() => new Error(error.error?.message || 'Failed to load applications'));
+      })
+    );
   }
 
   getApplicationsByOffer(offerId: string): Observable<Application[]> {
@@ -138,28 +199,5 @@ export class MatchingService {
     }
 
     return { strengths, weaknesses, recommendations };
-  }
-
-  private loadDemoData(): void {
-    const demoData: Application[] = [
-      {
-        id: '1',
-        candidateId: '1',
-        offerId: '1',
-        status: 'nouveau',
-        appliedAt: new Date('2024-01-15'),
-        matchingScore: this.calculateMatchingScore('1', '1')
-      },
-      {
-        id: '2',
-        candidateId: '2',
-        offerId: '2',
-        status: 'preselectionne',
-        appliedAt: new Date('2024-01-10'),
-        matchingScore: this.calculateMatchingScore('2', '2')
-      }
-    ];
-
-    this.applicationsSubject.next(demoData);
   }
 }

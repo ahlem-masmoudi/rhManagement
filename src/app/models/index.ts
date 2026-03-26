@@ -53,6 +53,22 @@ export interface Application {
   trackingToken?: string; // Lien unique pour cette candidature spécifique
   documents?: ApplicationDocument[];
   statusHistory?: StatusChange[];
+  // Embedded data from backend
+  candidate?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    school?: string;
+    skills?: string[];
+  };
+  offer?: {
+    title: string;
+    company: string;
+    location: string;
+    type: string;
+    status?: string;
+  };
 }
 
 // Gestion des documents pour les candidatures
@@ -232,7 +248,11 @@ export type DocumentStatus =
 export type OfferStatus = 
   | 'brouillon'
   | 'publiee'
-  | 'archivee';
+  | 'archivee'
+  | 'draft'
+  | 'published'
+  | 'closed'
+  | 'active';
 
 export type OfferType = 
   | 'stage'

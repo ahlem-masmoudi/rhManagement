@@ -192,11 +192,11 @@ exports.applyToOffer = async (req, res) => {
       });
     }
 
-    // Create application
+    // Create application - use 'nouveau' to match Application schema enum
     const application = await Application.create({
       candidate: candidate._id,
       offer: req.params.id,
-      status: 'pending'
+      status: 'nouveau'
     });
 
     res.status(200).json({

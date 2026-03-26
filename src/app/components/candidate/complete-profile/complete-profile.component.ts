@@ -54,8 +54,8 @@ import { CandidateProfile } from '../../../models/auth.models';
               </div>
 
               <div class="form-group">
-                <label>Mot de passe *</label>
-                <input type="password" [(ngModel)]="password" name="password" placeholder="Minimum 6 caractères" required>
+                <label>Mot de passe (optionnel)</label>
+                <input type="password" [(ngModel)]="password" name="password" placeholder="Minimum 6 caractères">
               </div>
 
               <div class="form-group">
@@ -168,7 +168,7 @@ import { CandidateProfile } from '../../../models/auth.models';
                 type="submit" 
                 class="btn btn-success" 
                 *ngIf="currentStep === 3"
-                [disabled]="!isFormValid()">
+                (click)="onSubmit()">
                 Terminer
               </button>
             </div>
@@ -419,8 +419,6 @@ export class CompleteProfileComponent implements OnInit {
       this.profile.firstName.trim() !== '' &&
       this.profile.lastName.trim() !== '' &&
       this.profile.email.trim() !== '' &&
-      this.password.trim() !== '' &&
-      this.password.length >= 6 &&
       this.profile.phone.trim() !== '' &&
       this.profile.location.trim() !== '' &&
       this.profile.school.trim() !== '' &&
@@ -441,10 +439,12 @@ export class CompleteProfileComponent implements OnInit {
     
     // If user is not logged in, create account first
     if (!user) {
-      // Use the password entered by the user
+      // Register user. Password is optional for first-time candidate; if not provided backend will generate a secure one.
+      const passwordToSend = (this.password && this.password.trim().length >= 6) ? this.password : undefined;
+
       this.authService.register(
         this.profile.email,
-        this.password,
+        passwordToSend,
         this.profile.firstName,
         this.profile.lastName
       ).subscribe({
@@ -467,32 +467,36 @@ export class CompleteProfileComponent implements OnInit {
   }
 
   private createCandidateProfile(userId: string): void {
-    // Create candidate in the system
-    const newCandidate = {
-      id: userId,
-      firstName: this.profile.firstName,
-      lastName: this.profile.lastName,
-      email: this.profile.email,
+    // Prepare profile data for backend
+    const profileData = {
       phone: this.profile.phone,
-      status: 'nouveau' as const,
+      location: this.profile.location,
       school: this.profile.school,
-      level: this.profile.level,
+      educationLevel: this.profile.level,
       expectedDegree: this.profile.expectedDegree,
       expectedGraduation: this.profile.expectedGraduation,
-      location: this.profile.location,
       availability: this.profile.availability,
-      skills: this.profile.skills.map((s: string) => ({ name: s, level: 3, years: 1 })),
-      experiences: [],
-      projects: [],
-      languages: [],
-      createdAt: new Date(),
-      updatedAt: new Date()
+      skills: this.profile.skills,
+      linkedin: this.profile.linkedIn || '',
+      github: this.profile.github || '',
+      portfolio: this.profile.portfolio || ''
     };
 
-    // Update profile complete status
-    this.authService.updateProfileComplete(userId);
+    // Save to backend
+    this.candidateService.updateProfile(profileData).subscribe({
+      next: (response) => {
+        console.log('Profile saved successfully:', response);
+        
+        // Update profile complete status
+        this.authService.updateProfileComplete(userId);
 
-    // Redirect to candidate dashboard
-    this.router.navigate(['/candidate']);
+        // Redirect to candidate dashboard
+        this.router.navigate(['/candidate']);
+      },
+      error: (error) => {
+        console.error('Error saving profile:', error);
+        alert('Erreur lors de la sauvegarde du profil. Veuillez réessayer.');
+      }
+    });
   }
 }

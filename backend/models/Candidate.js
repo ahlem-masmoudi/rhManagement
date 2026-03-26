@@ -54,6 +54,57 @@ const candidateSchema = new mongoose.Schema({
     url: String,
     uploadedAt: Date
   },
+  // Current status of the candidate in recruitment pipeline
+  status: {
+    type: String,
+    enum: [
+      'nouveau',
+      'preselectionne',
+      'en_attente_documents',
+      'documents_recus',
+      'entretien_programme',
+      'entretien_realise',
+      'test_technique',
+      'validation_finale',
+      'offre_envoyee',
+      'offre_acceptee',
+      'offre_refusee',
+      'rejete',
+      'abandonne'
+    ],
+    default: 'nouveau'
+  },
+  // History of status changes
+  statusHistory: [
+    {
+      id: String,
+      previousStatus: String,
+      newStatus: String,
+      changedBy: String,
+      changedAt: Date,
+      comment: String,
+      emailSent: { type: Boolean, default: false },
+      emailSentAt: Date
+    }
+  ],
+  // Tracking token for candidate to follow application
+  trackingToken: {
+    type: String,
+    index: true,
+    unique: false
+  },
+  // Documents uploaded by candidate or RH (store minimal metadata and content for dev)
+  documents: [
+    {
+      id: String,
+      name: String,
+      content: String, // base64 or text (for demo)
+      isSigned: { type: Boolean, default: false },
+      uploadedBy: String,
+      uploadedAt: Date,
+      signedAt: Date
+    }
+  ],
   createdAt: {
     type: Date,
     default: Date.now

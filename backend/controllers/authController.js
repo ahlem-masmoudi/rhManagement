@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Candidate = require('../models/Candidate');
 const { generateToken } = require('../utils/jwt');
+const crypto = require('crypto');
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -8,6 +9,14 @@ const { generateToken } = require('../utils/jwt');
 exports.register = async (req, res) => {
   try {
     const { email, password, firstName, lastName, role } = req.body;
+
+    // If no password provided by frontend (first-time candidate), generate a secure random one
+    let userPassword = password;
+    if (!userPassword || userPassword.trim() === '') {
+      // Generate a 12-byte hex string (24 chars) password
+      userPassword = crypto.randomBytes(12).toString('hex');
+      // Note: we do not return the password to the client for security; the user will be authenticated via token
+    }
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
@@ -21,7 +30,7 @@ exports.register = async (req, res) => {
     // Create user
     const user = await User.create({
       email,
-      password,
+      password: userPassword,
       firstName,
       lastName,
       role: role || 'candidate',

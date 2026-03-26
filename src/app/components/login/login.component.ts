@@ -19,8 +19,7 @@ import { AuthService } from '../../services/auth.service';
                 <path d="M12 10h8v2h-8v-2zm0 5h8v2h-8v-2zm0 5h5v2h-5v-2z" fill="white"/>
               </svg>
             </div>
-            <h1>RH Management</h1>
-            <p>Plateforme de gestion des stages</p>
+            <h1>Authentification</h1>
           </div>
 
           <!-- Login Form -->

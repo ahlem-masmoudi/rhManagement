@@ -404,7 +404,9 @@ export class CandidateOffersComponent implements OnInit {
 
   ngOnInit(): void {
     this.offerService.getOffers().subscribe(offers => {
-      this.offers = offers.filter(o => o.status === 'publiee');
+      console.log('Toutes les offres récupérées:', offers);
+      this.offers = offers.filter(o => o.status === 'active' || o.status === 'published' || o.status === 'publiee');
+      console.log('Offres filtrées:', this.offers);
       this.filteredOffers = this.offers;
       
       // Extract unique departments and locations
@@ -415,12 +417,15 @@ export class CandidateOffersComponent implements OnInit {
     // Load user's applications
     const user = this.authService.getCurrentUser();
     if (user) {
-      this.matchingService.getApplications().subscribe(apps => {
-        apps.forEach(app => {
-          if (app.candidateId === user.id) {
+      this.matchingService.getMyApplications().subscribe({
+        next: (apps) => {
+          apps.forEach(app => {
             this.appliedOffers.add(app.offerId);
-          }
-        });
+          });
+        },
+        error: (error) => {
+          console.error('Error loading applications:', error);
+        }
       });
     }
   }
@@ -459,21 +464,42 @@ export class CandidateOffersComponent implements OnInit {
 
   applyToOffer(offer: Offer): void {
     const user = this.authService.getCurrentUser();
-    if (!user) return;
+    if (!user) {
+      alert('Vous devez être connecté pour postuler.');
+      return;
+    }
 
-    // Create application
-    const application = {
-      id: Date.now().toString(),
-      candidateId: user.id,
-      offerId: offer.id,
-      status: 'nouveau' as const,
-      appliedAt: new Date()
-    };
+    // Check if user has candidate role
+    if (user.role !== 'candidate') {
+      alert(`⚠️ Accès refusé\n\nVous êtes connecté en tant que "${user.role}".\nSeuls les candidats peuvent postuler aux offres.\n\nVeuillez vous connecter avec un compte candidat pour postuler.`);
+      return;
+    }
 
-    this.appliedOffers.add(offer.id);
-    
-    // Show success message (you could add a notification service)
-    alert(`Votre candidature pour "${offer.title}" a été envoyée avec succès !`);
+    this.offerService.applyToOffer(offer.id).subscribe({
+      next: (response) => {
+        console.log('Application submitted successfully:', response);
+        this.appliedOffers.add(offer.id);
+        alert(`✅ Candidature envoyée !\n\nVotre candidature pour "${offer.title}" a été envoyée avec succès !`);
+      },
+      error: (error) => {
+        console.error('Error applying to offer:', error);
+        
+        // Show specific error messages
+        let message = 'Erreur lors de l\'envoi de la candidature';
+        
+        if (error.message?.includes('not authorized') || error.message?.includes('role')) {
+          message = '⚠️ Accès refusé\n\nSeuls les candidats peuvent postuler aux offres.\nVeuillez vous connecter avec un compte candidat.';
+        } else if (error.message?.includes('profile not found')) {
+          message = '⚠️ Profil incomplet\n\nVeuillez compléter votre profil candidat avant de postuler.';
+        } else if (error.message?.includes('Already applied')) {
+          message = 'ℹ️ Vous avez déjà postulé à cette offre.';
+        } else if (error.message) {
+          message = error.message;
+        }
+        
+        alert(message);
+      }
+    });
   }
 
   formatDate(dateString: string): string {

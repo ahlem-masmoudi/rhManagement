@@ -19,28 +19,35 @@ exports.getAllApplications = async (req, res) => {
       .populate('offer', 'title company location type status')
       .sort('-appliedAt');
 
-    const formattedApplications = applications.map(app => ({
-      id: app._id,
-      candidateId: app.candidate._id,
-      candidate: {
-        id: app.candidate.userId._id,
-        firstName: app.candidate.userId.firstName,
-        lastName: app.candidate.userId.lastName,
-        email: app.candidate.userId.email,
-        school: app.candidate.school || '',
-        skills: app.candidate.skills || []
-      },
-      offerId: app.offer._id,
-      offer: {
-        title: app.offer.title,
-        company: app.offer.company,
-        location: app.offer.location,
-        type: app.offer.type,
-        status: app.offer.status
-      },
-      status: app.status,
-      appliedAt: app.appliedAt
-    }));
+    const formattedApplications = applications.map(app => {
+      // Defensive checks: some seeded/legacy applications may have missing candidate or userId
+      const candidateObj = app.candidate || {};
+      const userObj = candidateObj.userId || {};
+      const offerObj = app.offer || {};
+
+      return {
+        id: app._id,
+        candidateId: candidateObj._id || null,
+        candidate: {
+          id: userObj._id || null,
+          firstName: userObj.firstName || '',
+          lastName: userObj.lastName || '',
+          email: userObj.email || '',
+          school: candidateObj.school || '',
+          skills: candidateObj.skills || []
+        },
+        offerId: offerObj._id || null,
+        offer: {
+          title: offerObj.title || '',
+          company: offerObj.company || '',
+          location: offerObj.location || '',
+          type: offerObj.type || '',
+          status: offerObj.status || ''
+        },
+        status: app.status,
+        appliedAt: app.appliedAt
+      };
+    });
 
     res.status(200).json({
       success: true,

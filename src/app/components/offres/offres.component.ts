@@ -26,29 +26,39 @@ import { Offer } from '../../models';
       <!-- Filters -->
       <div class="card mb-lg">
         <div class="filters-grid">
-          <input type="search" placeholder="Rechercher une offre..." class="search-input">
-          <select>
-            <option>Tous les départements</option>
-            <option>Engineering</option>
-            <option>Data Science</option>
-            <option>Marketing</option>
+          <input type="search" placeholder="Rechercher une offre..." class="search-input" [(ngModel)]="searchTerm" (input)="filterOffers()">
+          <select [(ngModel)]="selectedDepartment" (change)="filterOffers()">
+            <option value="">Tous les départements</option>
+            <option value="Consulting ERP">Consulting ERP</option>
+            <option value="Système management Qualité">Système management Qualité</option>
+            <option value="Intelligence artificielle">Intelligence artificielle</option>
+            <option value="Data Analytics / Business Intelligence">Data Analytics / Business Intelligence</option>
+            <option value="Développement informatique">Développement informatique</option>
+            <option value="Marketing & Commercial">Marketing & Commercial</option>
           </select>
-          <select>
-            <option>Tous les statuts</option>
-            <option value="publiee">Publiée</option>
-            <option value="brouillon">Brouillon</option>
-            <option value="archivee">Archivée</option>
+          <select [(ngModel)]="selectedStatus" (change)="filterOffers()">
+            <option value="">Tous les statuts</option>
+            <option value="published">Publiée</option>
+            <option value="draft">Brouillon</option>
+            <option value="closed">Fermée</option>
           </select>
         </div>
       </div>
 
       <!-- Offers Grid -->
+      <div *ngIf="offers.length === 0" class="card">
+        <p style="text-align: center; padding: 40px; color: #666;">
+          Aucune offre ne correspond à vos critères de recherche.
+        </p>
+      </div>
+      
       <div class="grid-3">
         <div *ngFor="let offer of offers" class="card offer-card">
           <div class="offer-header">
             <h3 class="offer-title">{{ offer.title }}</h3>
-            <span class="badge badge-success" *ngIf="offer.status === 'publiee'">Publiée</span>
-            <span class="badge badge-gray" *ngIf="offer.status === 'brouillon'">Brouillon</span>
+            <span class="badge badge-success" *ngIf="offer.status === 'publiee' || offer.status === 'published'">Publiée</span>
+            <span class="badge badge-gray" *ngIf="offer.status === 'brouillon' || offer.status === 'draft'">Brouillon</span>
+            <span class="badge badge-warning" *ngIf="offer.status === 'archivee' || offer.status === 'closed'">Fermée</span>
           </div>
 
           <div class="offer-meta">
@@ -65,6 +75,13 @@ import { Offer } from '../../models';
               {{ offer.duration }}
             </div>
           </div>
+          
+          <div class="meta-item" style="margin-top: 8px; color: #4F46E5; font-weight: 500;">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20" style="margin-right: 4px;">
+              <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
+            </svg>
+            {{ offer.department }}
+          </div>
 
           <p class="offer-description">{{ offer.description }}</p>
 
@@ -80,17 +97,17 @@ import { Offer } from '../../models';
           </div>
 
           <div class="offer-actions">
-            <button class="btn btn-secondary btn-sm">Modifier</button>
-            <button class="btn btn-primary btn-sm">Voir candidats</button>
+            <button class="btn btn-secondary btn-sm" (click)="openEditModal(offer)">Modifier</button>
+            <button class="btn btn-danger btn-sm" (click)="deleteOffer(offer.id)">Supprimer</button>
           </div>
         </div>
       </div>
 
-      <!-- Create Modal -->
+      <!-- Create/Edit Modal -->
       <div class="modal" *ngIf="showModal" (click)="closeModal()">
         <div class="modal-content" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h2>Créer une offre de stage</h2>
+            <h2>{{ editingOffer ? 'Modifier' : 'Créer' }} une offre de stage</h2>
             <button class="close-btn" (click)="closeModal()">
               <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -109,9 +126,12 @@ import { Offer } from '../../models';
                 <label>Département *</label>
                 <select [(ngModel)]="newOffer.department">
                   <option value="">Sélectionner...</option>
-                  <option value="Engineering">Engineering</option>
-                  <option value="Data Science">Data Science</option>
-                  <option value="Marketing">Marketing</option>
+                  <option value="Consulting ERP">Consulting ERP</option>
+                  <option value="Système management Qualité">Système management Qualité</option>
+                  <option value="Intelligence artificielle">Intelligence artificielle</option>
+                  <option value="Data Analytics / Business Intelligence">Data Analytics / Business Intelligence</option>
+                  <option value="Développement informatique">Développement informatique</option>
+                  <option value="Marketing & Commercial">Marketing & Commercial</option>
                 </select>
               </div>
 
@@ -141,7 +161,7 @@ import { Offer } from '../../models';
 
           <div class="modal-footer">
             <button class="btn btn-secondary" (click)="closeModal()">Annuler</button>
-            <button class="btn btn-primary" (click)="createOffer()">Créer l'offre</button>
+            <button class="btn btn-primary" (click)="saveOffer()">{{ editingOffer ? 'Sauvegarder' : 'Créer' }}</button>
           </div>
         </div>
       </div>
@@ -324,7 +344,15 @@ import { Offer } from '../../models';
 })
 export class OffresComponent implements OnInit {
   offers: Offer[] = [];
+  allOffers: Offer[] = []; // Pour stocker toutes les offres
   showModal = false;
+  editingOffer: Offer | null = null;
+  
+  // Filtres
+  searchTerm: string = '';
+  selectedDepartment: string = '';
+  selectedStatus: string = '';
+  
   newOffer: any = {
     title: '',
     department: '',
@@ -353,25 +381,160 @@ export class OffresComponent implements OnInit {
   constructor(private offerService: OfferService) {}
 
   ngOnInit(): void {
+    this.loadOffers();
+  }
+
+  loadOffers(): void {
     this.offerService.getOffers().subscribe(offers => {
+      console.log('📦 Offres reçues du backend:', offers);
+      console.log('📊 Nombre total d\'offres:', offers.length);
+      if (offers.length > 0) {
+        console.log('🔍 Premier département:', offers[0].department);
+        console.log('🔍 Premier statut:', offers[0].status);
+      }
+      this.allOffers = offers;
       this.offers = offers;
+      this.filterOffers();
     });
   }
 
+  filterOffers(): void {
+    let filtered = [...this.allOffers];
+
+    console.log('🔍 Filtrage en cours...');
+    console.log('📊 Total offres avant filtre:', filtered.length);
+    console.log('🏢 Département sélectionné:', this.selectedDepartment);
+    console.log('📋 Statut sélectionné:', this.selectedStatus);
+    console.log('🔎 Recherche:', this.searchTerm);
+
+    // Filtre par recherche
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(offer => 
+        offer.title.toLowerCase().includes(term) ||
+        offer.description.toLowerCase().includes(term) ||
+        (offer.department && offer.department.toLowerCase().includes(term))
+      );
+      console.log('📊 Après filtre recherche:', filtered.length);
+    }
+
+    // Filtre par département
+    if (this.selectedDepartment) {
+      console.log('🏢 Filtrage par département:', this.selectedDepartment);
+      filtered = filtered.filter(offer => {
+        const match = offer.department === this.selectedDepartment;
+        if (!match) {
+          console.log(`❌ Rejeté: "${offer.title}" - département: "${offer.department}"`);
+        }
+        return match;
+      });
+      console.log('📊 Après filtre département:', filtered.length);
+    }
+
+    // Filtre par statut
+    if (this.selectedStatus) {
+      filtered = filtered.filter(offer => offer.status === this.selectedStatus);
+      console.log('📊 Après filtre statut:', filtered.length);
+    }
+
+    this.offers = filtered;
+    console.log('✅ Offres affichées:', this.offers.length);
+  }
+
   openModal(): void {
+    this.editingOffer = null;
+    this.resetForm();
+    this.showModal = true;
+  }
+
+  openEditModal(offer: Offer): void {
+    this.editingOffer = offer;
+    this.newOffer = {
+      title: offer.title,
+      department: offer.department,
+      location: offer.location,
+      type: offer.type,
+      duration: offer.duration,
+      startDate: offer.startDate,
+      description: offer.description,
+      requirements: [...offer.requirements],
+      benefits: offer.benefits ? [...offer.benefits] : [],
+      status: offer.status,
+      matchingCriteria: offer.matchingCriteria ? {
+        ...offer.matchingCriteria,
+        requiredSkills: [...(offer.matchingCriteria.requiredSkills || [])]
+      } : {
+        requiredSkills: [],
+        preferredSkills: [],
+        experienceYears: 0,
+        educationLevel: ['Master 1', 'Master 2'],
+        weights: {
+          skills: 40,
+          experience: 20,
+          education: 20,
+          projects: 20
+        }
+      }
+    };
     this.showModal = true;
   }
 
   closeModal(): void {
     this.showModal = false;
+    this.editingOffer = null;
     this.resetForm();
   }
 
-  createOffer(): void {
-    if (this.newOffer.title && this.newOffer.department && this.newOffer.location) {
-      this.offerService.createOffer(this.newOffer);
-      this.closeModal();
+  saveOffer(): void {
+    if (!this.newOffer.title || !this.newOffer.department || !this.newOffer.location) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
     }
+
+    if (this.editingOffer) {
+      // Update existing offer
+      this.offerService.updateOffer(this.editingOffer.id, this.newOffer).subscribe({
+        next: (offer) => {
+          console.log('Offer updated successfully:', offer);
+          this.closeModal();
+          this.loadOffers();
+        },
+        error: (error) => {
+          console.error('Error updating offer:', error);
+          alert('Erreur lors de la modification de l\'offre. Veuillez réessayer.');
+        }
+      });
+    } else {
+      // Create new offer
+      this.offerService.createOffer(this.newOffer).subscribe({
+        next: (offer) => {
+          console.log('Offer created successfully:', offer);
+          this.closeModal();
+          this.loadOffers();
+        },
+        error: (error) => {
+          console.error('Error creating offer:', error);
+          alert('Erreur lors de la création de l\'offre. Veuillez réessayer.');
+        }
+      });
+    }
+  }
+
+  deleteOffer(offerId: string): void {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette offre ?')) {
+      return;
+    }
+
+    this.offerService.deleteOffer(offerId).subscribe({
+      next: () => {
+        console.log('Offer deleted successfully');
+        this.loadOffers();
+      },
+      error: (error) => {
+        console.error('Error deleting offer:', error);
+        alert('Erreur lors de la suppression de l\'offre. Veuillez réessayer.');
+      }
+    });
   }
 
   resetForm(): void {

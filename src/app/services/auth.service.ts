@@ -1,95 +1,57 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
 import { User, UserRole, LoginCredentials, AuthResponse } from '../models/auth.models';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private http = inject(HttpClient);
+  private apiUrl = environment.apiUrl;
+  
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
-
-  // Demo users for testing
-  private demoUsers: Array<User & { password: string }> = [
-    {
-      id: '1',
-      email: 'admin@rh.com',
-      password: 'admin123',
-      firstName: 'Admin',
-      lastName: 'RH',
-      role: 'recruiter',
-      profileComplete: true,
-      createdAt: new Date('2024-01-01')
-    },
-    {
-      id: '1b',
-      email: 'rh@example.com',
-      password: 'password',
-      firstName: 'Admin',
-      lastName: 'RH',
-      role: 'recruiter',
-      profileComplete: true,
-      createdAt: new Date('2024-01-01')
-    },
-    {
-      id: '2',
-      email: 'candidate@example.com',
-      password: 'candidate123',
-      firstName: 'Sophie',
-      lastName: 'Martin',
-      role: 'candidate',
-      profileComplete: true,
-      createdAt: new Date('2024-01-15')
-    },
-    {
-      id: '3',
-      email: 'newcandidate@example.com',
-      password: 'new123',
-      firstName: 'Jean',
-      lastName: 'Dupont',
-      role: 'candidate',
-      profileComplete: false,
-      createdAt: new Date('2024-03-01')
-    }
-  ];
 
   constructor() {
     // Check if user is already logged in (from localStorage)
     const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
+    const savedToken = localStorage.getItem('authToken');
+    
+    if (savedUser && savedToken) {
       this.currentUserSubject.next(JSON.parse(savedUser));
     }
   }
 
-  login(credentials: LoginCredentials): Observable<AuthResponse> {
-    // Simulate API call with delay
-    const user = this.demoUsers.find(
-      u => u.email === credentials.email && u.password === credentials.password
-    );
-
-    if (user) {
-      const { password, ...userWithoutPassword } = user;
-      const authResponse: AuthResponse = {
-        user: userWithoutPassword,
-        token: 'demo-jwt-token-' + user.id
-      };
-
-      // Save to localStorage
-      localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
-      localStorage.setItem('authToken', authResponse.token);
-      
-      this.currentUserSubject.next(userWithoutPassword);
-
-      return of(authResponse).pipe(delay(300));
-    }
-
-    // Return an error Observable
-    return new Observable(observer => {
-      setTimeout(() => {
-        observer.error(new Error('Invalid credentials'));
-      }, 300);
+  // Get auth headers with token
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('authToken');
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
     });
+  }
+
+  login(credentials: LoginCredentials): Observable<AuthResponse> {
+    return this.http.post<{ success: boolean; data: AuthResponse }>(
+      `${this.apiUrl}/auth/login`,
+      credentials
+    ).pipe(
+      map(response => response.data),
+      tap(authResponse => {
+        // Save to localStorage
+        localStorage.setItem('currentUser', JSON.stringify(authResponse.user));
+        localStorage.setItem('authToken', authResponse.token);
+        
+        this.currentUserSubject.next(authResponse.user);
+      }),
+      catchError(error => {
+        console.error('Login error:', error);
+        return throwError(() => new Error(error.error?.message || 'Invalid credentials'));
+      })
+    );
   }
 
   logout(): void {
@@ -103,7 +65,7 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return this.currentUserSubject.value !== null;
+    return this.currentUserSubject.value !== null && !!localStorage.getItem('authToken');
   }
 
   hasRole(role: UserRole): boolean {
@@ -120,31 +82,48 @@ export class AuthService {
     }
   }
 
-  // Register new candidate (demo)
-  register(email: string, password: string, firstName: string, lastName: string): Observable<AuthResponse> {
-    const newUser: User & { password: string } = {
-      id: Date.now().toString(),
-      email,
-      password,
-      firstName,
-      lastName,
-      role: 'candidate',
-      profileComplete: false,
-      createdAt: new Date()
-    };
+  // Register new candidate. Password is optional for first-time candidate.
+  register(email: string, password: string | undefined, firstName: string, lastName: string): Observable<AuthResponse> {
+    const payload: any = { email, firstName, lastName, role: 'candidate' };
+    if (password && password.trim().length > 0) {
+      payload.password = password;
+    }
 
-    this.demoUsers.push(newUser);
+    return this.http.post<{ success: boolean; data: AuthResponse }>(
+      `${this.apiUrl}/auth/register`,
+      payload
+    ).pipe(
+      map(response => response.data),
+      tap(authResponse => {
+        // Save to localStorage
+        localStorage.setItem('currentUser', JSON.stringify(authResponse.user));
+        localStorage.setItem('authToken', authResponse.token);
+        
+        this.currentUserSubject.next(authResponse.user);
+      }),
+      catchError(error => {
+        console.error('Registration error:', error);
+        return throwError(() => new Error(error.error?.message || 'Registration failed'));
+      })
+    );
+  }
 
-    const { password: _, ...userWithoutPassword } = newUser;
-    const authResponse: AuthResponse = {
-      user: userWithoutPassword,
-      token: 'demo-jwt-token-' + newUser.id
-    };
-
-    localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
-    localStorage.setItem('authToken', authResponse.token);
-    this.currentUserSubject.next(userWithoutPassword);
-
-    return of(authResponse).pipe(delay(500));
+  // Verify token and get current user from backend
+  verifyToken(): Observable<User> {
+    return this.http.get<{ success: boolean; data: User }>(
+      `${this.apiUrl}/auth/me`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data),
+      tap(user => {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+      }),
+      catchError(error => {
+        console.error('Token verification failed:', error);
+        this.logout();
+        return throwError(() => new Error('Session expired'));
+      })
+    );
   }
 }

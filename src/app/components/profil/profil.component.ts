@@ -554,7 +554,16 @@ export class ProfilComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.candidate = this.candidateService.getCandidateById(id);
+      // Try to get from local cache first
+      const cached = this.candidateService.getCandidateById(id);
+      if (cached) {
+        this.candidate = cached;
+      } else {
+        // Fetch from backend if not in cache
+        this.candidateService.getCandidates().subscribe(candidates => {
+          this.candidate = candidates.find(c => c.id === id || (c as any)._id === id);
+        });
+      }
     }
   }
 

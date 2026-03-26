@@ -1,25 +1,139 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
 import { Candidate, CandidateStatus, StatusChange, BulkStatusChange, StatusChangeEmail } from '../models';
 import { NotificationService } from './notification.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CandidateService {
+  private http = inject(HttpClient);
+  private apiUrl = environment.apiUrl;
   private candidatesSubject = new BehaviorSubject<Candidate[]>([]);
   public candidates$: Observable<Candidate[]> = this.candidatesSubject.asObservable();
 
   constructor(private notificationService: NotificationService) {
-    this.loadDemoData();
+    this.loadCandidates();
+  }
+
+  // Get auth headers with token
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('authToken');
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    });
+  }
+
+  // Load candidates from backend
+  private loadCandidates(): void {
+    this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiUrl}/candidates`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => {
+        // Transform backend data to frontend format
+        return response.data.map((candidate: any) => ({
+          id: candidate._id,
+          firstName: candidate.userId?.firstName || '',
+          lastName: candidate.userId?.lastName || '',
+          email: candidate.userId?.email || '',
+          phone: candidate.phone || '',
+          avatar: undefined,
+          status: 'nouveau' as CandidateStatus,
+          school: candidate.school || '',
+          level: candidate.educationLevel || '',
+          expectedDegree: candidate.expectedDegree || '',
+          expectedGraduation: candidate.expectedGraduation || '',
+          location: candidate.location || '',
+          availability: candidate.availability || '',
+          skills: (candidate.skills || []).map((skill: string) => ({ 
+            name: skill, 
+            level: 'intermediate'  
+          })),
+          experiences: [],
+          projects: [],
+          languages: [],
+          createdAt: candidate.createdAt,
+          updatedAt: candidate.updatedAt
+        }));
+      }),
+      catchError(error => {
+        console.error('Error loading candidates:', error);
+        return of([]);
+      })
+    ).subscribe(candidates => {
+      console.log('Candidates loaded:', candidates);
+      this.candidatesSubject.next(candidates);
+    });
   }
 
   getCandidates(): Observable<Candidate[]> {
     return this.candidates$;
   }
 
+  // Get current candidate profile
+  getProfile(): Observable<any> {
+    return this.http.get<{ success: boolean; data: any }>(
+      `${this.apiUrl}/candidates/profile`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error loading profile:', error);
+        throw error;
+      })
+    );
+  }
+
+  // Update candidate profile
+  updateProfile(profileData: any): Observable<any> {
+    return this.http.put<{ success: boolean; data: any }>(
+      `${this.apiUrl}/candidates/profile`,
+      profileData,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error updating profile:', error);
+        throw error;
+      })
+    );
+  }
+
   getCandidateById(id: string): Candidate | undefined {
     return this.candidatesSubject.value.find(c => c.id === id);
+  }
+
+  // Fetch full candidate record from backend (includes documents)
+  getCandidateFull(id: string) {
+    return this.http.get<{ success: boolean; data: any }>(
+      `${this.apiUrl}/candidates/${id}`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error loading candidate full:', error);
+        throw error;
+      })
+    );
+  }
+
+  // Download a specific document for a candidate
+  downloadDocument(candidateId: string, docId: string) {
+    return this.http.get<{ success: boolean; data: any }>(
+      `${this.apiUrl}/candidates/${candidateId}/documents/${docId}/download`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error downloading document:', error);
+        throw error;
+      })
+    );
   }
 
   updateCandidateStatus(candidateId: string, status: CandidateStatus, comment?: string, changedBy: string = 'RH'): void {
@@ -59,68 +173,31 @@ export class CandidateService {
   /**
    * Met à jour le statut de plusieurs candidats en masse
    */
-  bulkUpdateStatus(bulkChange: BulkStatusChange): Observable<{ success: number; failed: number }> {
-    return new Observable(observer => {
-      let success = 0;
-      let failed = 0;
-      const emails: StatusChangeEmail[] = [];
+  bulkUpdateStatus(bulkChange: BulkStatusChange): Observable<{ success: number; failed: number; emailsSent?: number }> {
+    // Call backend API to perform bulk update (persistence + email sending)
+    const payload: any = {
+      candidateIds: bulkChange.candidateIds,
+      newStatus: bulkChange.newStatus,
+      comment: bulkChange.comment,
+      sendEmail: bulkChange.sendEmail
+    };
 
-      const candidates = this.candidatesSubject.value;
-      const updatedCandidates = [...candidates];
-
-      bulkChange.candidateIds.forEach(candidateId => {
-        const index = updatedCandidates.findIndex(c => c.id === candidateId);
-        
-        if (index !== -1) {
-          const candidate = updatedCandidates[index];
-          const previousStatus = candidate.status;
-          
-          // Créer l'entrée d'historique
-          const statusChange: StatusChange = {
-            id: this.generateId(),
-            previousStatus,
-            newStatus: bulkChange.newStatus,
-            changedBy: 'RH',
-            changedAt: new Date(),
-            comment: bulkChange.comment,
-            emailSent: false
-          };
-
-          // Mettre à jour le candidat
-          updatedCandidates[index] = {
-            ...candidate,
-            status: bulkChange.newStatus,
-            updatedAt: new Date(),
-            statusHistory: [...(candidate.statusHistory || []), statusChange]
-          };
-
-          success++;
-
-          // Préparer l'email si demandé
-          if (bulkChange.sendEmail) {
-            emails.push(this.prepareStatusChangeEmail(updatedCandidates[index], statusChange));
-          }
-        } else {
-          failed++;
-        }
-      });
-
-      // Mettre à jour tous les candidats
-      this.candidatesSubject.next(updatedCandidates);
-
-      // Envoyer les emails en masse
-      if (emails.length > 0) {
-        this.notificationService.sendBulkStatusChangeEmails(emails).subscribe(result => {
-          console.log(`✓ ${result.sent} emails envoyés, ${result.failed} échecs`);
-          
-          // Marquer les emails comme envoyés dans l'historique
-          this.markEmailsAsSent(bulkChange.candidateIds);
-        });
-      }
-
-      observer.next({ success, failed });
-      observer.complete();
-    });
+    return this.http.post<{ success: boolean; data: { success: number; failed: number; emailsSent?: number } }>(
+      `${this.apiUrl}/candidates/bulk-status`,
+      payload,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => {
+        // Refresh candidates from backend
+        this.loadCandidates();
+        // Include emailsSent if backend provides it
+        return { success: response.data.success, failed: response.data.failed, emailsSent: response.data.emailsSent || 0 };
+      }),
+      catchError(error => {
+        console.error('Error performing bulk status update:', error);
+        return of({ success: 0, failed: bulkChange.candidateIds.length, emailsSent: 0 });
+      })
+    );
   }
 
   /**
@@ -235,64 +312,4 @@ export class CandidateService {
     }
   }
 
-  private loadDemoData(): void {
-    const demoData: Candidate[] = [
-      {
-        id: '1',
-        firstName: 'Sophie',
-        lastName: 'Martin',
-        email: 'sophie.martin@email.fr',
-        phone: '+33 6 12 34 56 78',
-        status: 'nouveau',
-        school: 'EPITECH Paris',
-        level: 'Master 2',
-        expectedDegree: 'Expert en Informatique',
-        expectedGraduation: 'Septembre 2024',
-        location: 'Paris, France',
-        availability: 'Juin 2024 - 6 mois',
-        skills: [
-          { name: 'React', level: 4, years: 2 },
-          { name: 'TypeScript', level: 4, years: 2 },
-          { name: 'Node.js', level: 3, years: 1 }
-        ],
-        experiences: [],
-        projects: [],
-        languages: [
-          { name: 'Français', level: 'natif' },
-          { name: 'Anglais', level: 'C1' }
-        ],
-        createdAt: new Date('2024-01-15'),
-        updatedAt: new Date('2024-01-15')
-      },
-      {
-        id: '2',
-        firstName: 'Thomas',
-        lastName: 'Dubois',
-        email: 'thomas.dubois@email.fr',
-        phone: '+33 6 23 45 67 89',
-        status: 'preselectionne',
-        school: 'CentraleSupélec',
-        level: 'Master 1',
-        expectedDegree: 'Ingénieur Généraliste',
-        expectedGraduation: 'Septembre 2025',
-        location: 'Lyon, France',
-        availability: 'Juillet 2024 - 4 mois',
-        skills: [
-          { name: 'Python', level: 5, years: 3 },
-          { name: 'Django', level: 4, years: 2 },
-          { name: 'PostgreSQL', level: 3, years: 1 }
-        ],
-        experiences: [],
-        projects: [],
-        languages: [
-          { name: 'Français', level: 'natif' },
-          { name: 'Anglais', level: 'B2' }
-        ],
-        createdAt: new Date('2024-01-10'),
-        updatedAt: new Date('2024-01-12')
-      }
-    ];
-
-    this.candidatesSubject.next(demoData);
-  }
 }

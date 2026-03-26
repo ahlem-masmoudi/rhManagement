@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CandidateService } from '../../services/candidate.service';
 import { MatchingService } from '../../services/matching.service';
-import { Candidate, CandidateStatus, Application } from '../../models';
+import { OfferService } from '../../services/offer.service';
+import { Candidate, CandidateStatus, Application, Offer } from '../../models';
 import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.component';
 
 @Component({
   selector: 'app-candidatures',
   standalone: true,
-  imports: [CommonModule, BulkStatusUpdateComponent],
+  imports: [CommonModule, FormsModule, BulkStatusUpdateComponent],
   template: `
     <div class="candidatures-page">
       <div class="page-header">
@@ -27,17 +29,96 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
         </div>
       </div>
 
+      <!-- Document preview modal -->
+      <div *ngIf="previewVisible" class="doc-preview-overlay" (click)="closePreview()">
+        <div class="doc-preview" (click)="$event.stopPropagation()">
+          <div class="doc-preview-header">
+            <h3 style="margin:0">{{ previewData?.name }}</h3>
+            <button class="btn-secondary" (click)="closePreview()">Fermer</button>
+          </div>
+
+            <div class="doc-preview-body">
+              <ng-container *ngIf="previewData && previewData.mime === 'application/pdf'">
+                <object [data]="getPreviewDataUrl()" type="application/pdf" width="100%" height="600">Votre navigateur ne peut pas afficher le PDF.</object>
+              </ng-container>
+              <ng-container *ngIf="previewData && previewData.mime && previewData.mime.indexOf('image/') === 0">
+                <img [src]="getPreviewDataUrl()" alt="{{ previewData.name }}" style="max-width:100%; max-height:600px; display:block; margin:auto;" />
+              </ng-container>
+              <ng-container *ngIf="previewData && previewData.mime === 'text/plain'">
+                <pre style="white-space:pre-wrap; max-height:600px; overflow:auto">{{ previewData.content }}</pre>
+              </ng-container>
+              <ng-container *ngIf="previewData && previewData.mime === 'application/octet-stream'">
+                <p>Prévisualisation non disponible pour ce type de fichier. Vous pouvez le télécharger.</p>
+              </ng-container>
+            </div>
+
+          <div class="doc-preview-footer">
+            <button class="btn-primary" (click)="saveContentAsFilePublic(previewData?.name || 'document', previewData?.content || '')">Télécharger</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Archives section for accepted candidates -->
+      <div class="archives-section card mt-lg">
+        <div class="archives-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h2>Archives (Acceptés)</h2>
+          </div>
+          <div class="archives-actions">
+            <button class="btn-secondary" (click)="exportArchivedCSV()">Exporter CSV</button>
+          </div>
+        </div>
+
+        <div class="archives-grid" style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
+          <div *ngFor="let app of getArchivedApplications()" class="archive-card card" style="width:320px; padding:12px; position:relative;">
+            <div style="display:flex; gap:12px; align-items:center;">
+              <div class="candidate-avatar">{{ getInitials(app.candidateId) }}</div>
+              <div style="flex:1; min-width:0;">
+                <h4 style="margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ app.candidate?.firstName || '' }} {{ app.candidate?.lastName || '' }}</h4>
+                <div style="font-size:12px; color:var(--gray-500)">{{ app.offer?.title || '' }}</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <div style="font-size:12px; color:var(--gray-500);">Candidature : {{ formatDate(app.appliedAt) }}</div>
+
+              <div *ngIf="(archivedDocs[app.candidateId] || []).length > 0" style="margin-top:8px;">
+                <div *ngFor="let doc of archivedDocs[app.candidateId]" style="display:flex; justify-content:space-between; align-items:center; gap:8px; padding:6px 0; border-top:1px solid var(--gray-100);">
+                  <div style="min-width:0;">
+                    <div style="font-size:13px; font-weight:600">{{ doc.name }}</div>
+                    <div style="font-size:12px; color:var(--gray-500);">{{ doc.isSigned ? 'Signé' : 'Non signé' }}{{ doc.signedAt ? ' • ' + formatDate(doc.signedAt) : '' }}</div>
+                  </div>
+                  <div style="display:flex; gap:8px;">
+                    <button class="btn-secondary" (click)="openPreview(app.candidateId, doc.id)">Prévisualiser</button>
+                    <button class="btn-secondary" (click)="downloadSingleDocument(app.candidateId, doc.id, doc.name)">Télécharger</button>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="!(archivedDocs[app.candidateId] || []).length" style="margin-top:8px; color:var(--gray-500);">
+                <div *ngIf="archivedDocsLoading[app.candidateId]" style="margin-top:4px;">Chargement des documents...</div>
+                <div *ngIf="!archivedDocsLoading[app.candidateId]" style="display:flex; gap:8px; align-items:center;">
+                  <button class="btn-secondary" (click)="loadArchivedDocumentsForCandidate(app.candidateId)">Charger les documents</button>
+                  <div style="color:var(--gray-500);">Aucun document disponible</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Filters -->
       <div class="card filters-bar mb-lg">
-        <input type="search" placeholder="Rechercher un candidat..." class="search-input">
-        <select>
-          <option>Toutes les offres</option>
+        <input type="search" placeholder="Rechercher un candidat..." class="search-input" [(ngModel)]="searchTerm">
+        <select [(ngModel)]="selectedOffer">
+          <option value="">Toutes les offres</option>
+          <option *ngFor="let o of offers" [value]="o.id">{{ o.title || ('Offre ' + o.id) }}</option>
         </select>
-        <select>
-          <option>Tous les scores</option>
-          <option>80-100</option>
-          <option>60-79</option>
-          <option>0-59</option>
+        <select [(ngModel)]="selectedScoreRange">
+          <option value="">Tous les scores</option>
+          <option value="80-100">80-100</option>
+          <option value="60-79">60-79</option>
+          <option value="0-59">0-59</option>
         </select>
       </div>
 
@@ -50,10 +131,11 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
           </div>
 
           <div class="column-body">
-            <div *ngFor="let application of getApplicationsByStatus(column.status)" 
-                 class="candidate-card"
-                 [class.selected]="isCandidateSelected(application.candidateId)"
-                 (click)="handleCardClick(application.candidateId, $event)">
+      <div *ngFor="let application of getApplicationsByStatus(column.status)" 
+        class="candidate-card"
+        [class.selected]="isCandidateSelected(application.candidateId)"
+        [class.accepted]="application.status === 'offre_acceptee'"
+        (click)="handleCardClick(application.candidateId, $event)">
               
               <!-- Checkbox en mode sélection -->
               <div *ngIf="selectMode" class="selection-checkbox" (click)="$event.stopPropagation()">
@@ -71,6 +153,11 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
 
               <h4 class="candidate-name">{{ getCandidateName(application.candidateId) }}</h4>
               <p class="candidate-school">{{ getCandidateSchool(application.candidateId) }}</p>
+
+              <!-- Badge for accepted candidates -->
+              <div *ngIf="application.status === 'offre_acceptee'" class="accepted-badge">
+                Accepté
+              </div>
 
               <div class="candidate-skills">
                 <span *ngFor="let skill of getCandidateSkills(application.candidateId).slice(0, 3)" class="skill-tag">
@@ -209,6 +296,7 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       cursor: pointer;
       transition: all 0.2s;
       position: relative;
+      overflow: visible; /* allow badges to sit outside the card without being clipped */
     }
 
     .candidate-card:hover {
@@ -220,6 +308,28 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       border-color: #667eea;
       background: #f5f3ff;
       box-shadow: 0 0 0 2px #667eea;
+    }
+
+    /* Accepted card visual */
+    .candidate-card.accepted {
+      border-color: #059669;
+      background: #f0fdf4;
+      box-shadow: 0 0 0 4px rgba(5,150,105,0.06);
+    }
+
+    .accepted-badge {
+      position: absolute;
+      /* place the badge slightly above the top edge so it doesn't overlap the score */
+      top: -10px;
+      right: 12px;
+      background: #059669;
+      color: white;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 11px;
+      box-shadow: 0 2px 6px rgba(5,150,105,0.18);
+      z-index: 20;
     }
 
     .selection-checkbox {
@@ -350,12 +460,22 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
 export class CandidaturesComponent implements OnInit {
   applications: Application[] = [];
   candidates: Candidate[] = [];
+  offers: Offer[] = [];
+  // Map candidateId -> documents[] for archived candidates
+  archivedDocs: { [candidateId: string]: any[] } = {};
+  // loading state per candidate when fetching documents on demand
+  archivedDocsLoading: { [candidateId: string]: boolean } = {};
+  selectedOffer: string = '';
+  searchTerm: string = '';
+  selectedScoreRange: string = '';
   selectMode = false;
   selectedCandidates: Set<string> = new Set();
   
   kanbanColumns = [
     { status: 'nouveau' as CandidateStatus, title: 'Nouveau' },
     { status: 'preselectionne' as CandidateStatus, title: 'Présélection' },
+    { status: 'en_attente_documents' as CandidateStatus, title: 'En attente de documents' },
+    { status: 'documents_recus' as CandidateStatus, title: 'Documents reçus' },
     { status: 'entretien_programme' as CandidateStatus, title: 'Entretien' },
     { status: 'test_technique' as CandidateStatus, title: 'Test technique' },
     { status: 'offre_envoyee' as CandidateStatus, title: 'Offre envoyée' },
@@ -365,16 +485,31 @@ export class CandidaturesComponent implements OnInit {
   constructor(
     private candidateService: CandidateService,
     private matchingService: MatchingService,
+    private offerService: OfferService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.candidateService.getCandidates().subscribe(candidates => {
-      this.candidates = candidates;
-    });
-
     this.matchingService.getApplications().subscribe(applications => {
       this.applications = applications;
+      console.log('Applications loaded in component:', this.applications);
+      // preload archived candidates' documents
+      this.loadArchivedDocuments();
+    });
+
+    // Load candidate objects so getSelectedCandidates() can return the actual Candidate[]
+    // (selectedCandidates is a Set of ids; we need the candidate list to map ids -> objects
+    // for the bulk component input)
+    this.candidateService.getCandidates().subscribe(candidates => {
+      this.candidates = candidates;
+      // keep a quick log for debugging selection issues
+      console.log('Candidates loaded in component:', this.candidates.length);
+    });
+
+    // Load offers for the filter dropdown
+    this.offerService.getOffers().subscribe(offers => {
+      this.offers = offers;
+      console.log('Offers loaded in candidatures component:', this.offers.length);
     });
   }
 
@@ -401,8 +536,8 @@ export class CandidaturesComponent implements OnInit {
     if (this.selectMode) {
       this.toggleCandidateSelection(candidateId);
     } else {
-      // Navigation vers le profil du candidat
-      this.router.navigate(['/profil', candidateId]);
+      // Navigation vers le profil du candidat (relative path since we're inside /rh)
+      this.router.navigate(['/rh/profil', candidateId]);
     }
   }
 
@@ -421,10 +556,28 @@ export class CandidaturesComponent implements OnInit {
   }
 
   getApplicationsByStatus(status: CandidateStatus): Application[] {
-    return this.applications.filter(app => {
-      const candidate = this.candidates.find(c => c.id === app.candidateId);
-      return candidate?.status === status;
-    });
+    return this.applications
+      .filter(app => app.status === status)
+      .filter(app => !this.selectedOffer || app.offerId === this.selectedOffer)
+      .filter(app => {
+        // Text search across candidate name, email and skills
+        if (!this.searchTerm) return true;
+        const term = this.searchTerm.toLowerCase();
+        const cand = app.candidate || {} as any;
+        const fullName = `${cand.firstName || ''} ${cand.lastName || ''}`.toLowerCase();
+        const email = (cand.email || '').toLowerCase();
+        const skills = (cand.skills || []).join(' ').toLowerCase();
+        return fullName.includes(term) || email.includes(term) || skills.includes(term);
+      })
+      .filter(app => {
+        // Score range filter (matchingScore.global)
+        if (!this.selectedScoreRange) return true;
+        const score = app.matchingScore?.global || 0;
+        if (this.selectedScoreRange === '80-100') return score >= 80 && score <= 100;
+        if (this.selectedScoreRange === '60-79') return score >= 60 && score <= 79;
+        if (this.selectedScoreRange === '0-59') return score >= 0 && score <= 59;
+        return true;
+      });
   }
 
   getColumnCount(status: CandidateStatus): number {
@@ -432,23 +585,33 @@ export class CandidaturesComponent implements OnInit {
   }
 
   getCandidateName(candidateId: string): string {
-    const candidate = this.candidates.find(c => c.id === candidateId);
-    return candidate ? `${candidate.firstName} ${candidate.lastName}` : '';
+    const application = this.applications.find(app => app.candidateId === candidateId);
+    if (application && application.candidate) {
+      return `${application.candidate.firstName} ${application.candidate.lastName}`;
+    }
+    return '';
   }
 
   getInitials(candidateId: string): string {
-    const candidate = this.candidates.find(c => c.id === candidateId);
-    return candidate ? `${candidate.firstName[0]}${candidate.lastName[0]}` : '';
+    const application = this.applications.find(app => app.candidateId === candidateId);
+    if (application && application.candidate) {
+      const firstInitial = application.candidate.firstName?.[0] || '';
+      const lastInitial = application.candidate.lastName?.[0] || '';
+      return firstInitial + lastInitial;
+    }
+    return '?';
   }
 
   getCandidateSchool(candidateId: string): string {
-    const candidate = this.candidates.find(c => c.id === candidateId);
-    return candidate?.school || '';
+    const application = this.applications.find(app => app.candidateId === candidateId);
+    return application?.candidate?.school || '';
   }
 
   getCandidateSkills(candidateId: string): any[] {
-    const candidate = this.candidates.find(c => c.id === candidateId);
-    return candidate?.skills || [];
+    const application = this.applications.find(app => app.candidateId === candidateId);
+    const skills = application?.candidate?.skills || [];
+    // Convert string array to objects with name property for template
+    return skills.map((skill: string) => ({ name: skill }));
   }
 
   getScoreColor(score: number): string {
@@ -460,5 +623,206 @@ export class CandidaturesComponent implements OnInit {
   formatDate(date: Date): string {
     const d = new Date(date);
     return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  }
+
+  // --- Archives helpers ---
+  getArchivedApplications(): Application[] {
+    return this.applications.filter(a => a.status === 'offre_acceptee');
+  }
+
+  exportArchivedCSV(): void {
+    const apps = this.getArchivedApplications();
+    if (!apps || apps.length === 0) return;
+
+    const header = ['Candidate','Email','Offer','AppliedAt','ApplicationId','CandidateId','Documents'];
+    const rows = apps.map(a => {
+      const docs = (this.archivedDocs[a.candidateId] || []).map(d => `${d.name}${d.isSigned ? ' (Signé' + (d.signedAt ? ' ' + this.formatDate(d.signedAt) : '') + ')' : ''}`);
+      return [
+        `${a.candidate?.firstName || ''} ${a.candidate?.lastName || ''}`,
+        a.candidate?.email || '',
+        a.offer?.title || '',
+        new Date(a.appliedAt).toLocaleString('fr-FR'),
+        a.id,
+        a.candidateId,
+        docs.join(' | ')
+      ];
+    });
+
+    const csvContent = [header, ...rows].map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `archives_candidats_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // Load documents for archived applicants (offre_acceptee)
+  loadArchivedDocuments(): void {
+    const archived = this.getArchivedApplications();
+    const uniqueCandidateIds = Array.from(new Set(archived.map(a => a.candidateId).filter(id => !!id)));
+
+    uniqueCandidateIds.forEach(id => {
+      // Only fetch if not already loaded
+      if (this.archivedDocs[id]) return;
+      this.candidateService.getCandidateFull(id).subscribe(candidate => {
+        this.archivedDocs[id] = candidate.documents || [];
+      }, err => {
+        console.error('Failed to load candidate documents for', id, err);
+        this.archivedDocs[id] = [];
+      });
+    });
+  }
+
+  // Load documents for a single archived candidate on demand (shows loading state)
+  loadArchivedDocumentsForCandidate(id: string): void {
+    if (!id) return;
+    if (this.archivedDocs[id]) return; // already loaded
+    this.archivedDocsLoading[id] = true;
+    this.candidateService.getCandidateFull(id).subscribe(candidate => {
+      this.archivedDocs[id] = candidate.documents || [];
+      this.archivedDocsLoading[id] = false;
+    }, err => {
+      console.error('Failed to load candidate documents for', id, err);
+      this.archivedDocs[id] = [];
+      this.archivedDocsLoading[id] = false;
+      alert('Impossible de charger les documents pour ce candidat. Vérifiez la connexion au serveur.');
+    });
+  }
+
+  // Download a single document for a candidate
+  downloadSingleDocument(candidateId: string, docId: string, filename?: string): void {
+    this.candidateService.downloadDocument(candidateId, docId).subscribe(resp => {
+      const name = resp.name || filename || 'document';
+      const content = resp.content || '';
+      this.saveContentAsFile(name, content);
+    }, err => {
+      console.error('Failed to download document', err);
+      alert('Erreur lors du téléchargement du document.');
+    });
+  }
+
+  downloadAllDocuments(app: Application): void {
+    if (!app?.candidateId) return;
+    // Fetch full candidate record (contains documents)
+    this.candidateService.getCandidateFull(app.candidateId).subscribe(candidate => {
+      const docs = candidate.documents || [];
+      if (!docs || docs.length === 0) {
+        alert('Aucun document disponible pour ce candidat.');
+        return;
+      }
+
+      // Download each document sequentially
+      docs.forEach((doc: any) => {
+        this.candidateService.downloadDocument(app.candidateId, doc.id).subscribe(resp => {
+          const name = resp.name || doc.name || 'document';
+          const content = resp.content || doc.content || '';
+          this.saveContentAsFile(name, content);
+        }, err => {
+          console.error('Failed to download document', err);
+        });
+      });
+    }, err => {
+      console.error('Failed to load candidate for documents', err);
+    });
+  }
+
+  private saveContentAsFile(filename: string, content: string) {
+    try {
+      // Try to treat content as base64
+      const byteChars = atob(content);
+      const byteNumbers = new Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) {
+        byteNumbers[i] = byteChars.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray]);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      // Fallback: save as plain text
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  // Public wrapper so template can call download (private method is not accessible from template)
+  saveContentAsFilePublic(filename: string, content: string) {
+    this.saveContentAsFile(filename, content);
+  }
+
+  // --- Document preview modal ---
+  previewVisible: boolean = false;
+  previewData: { name?: string; content?: string; mime?: string } | null = null;
+
+  openPreview(candidateId: string, docId: string) {
+    const docs = this.archivedDocs[candidateId] || [];
+    const doc = docs.find((d: any) => d.id === docId);
+    if (doc && doc.content) {
+      this.previewData = {
+        name: doc.name,
+        content: doc.content,
+        mime: this.detectMimeType(doc.name)
+      };
+      this.previewVisible = true;
+      return;
+    }
+
+    // fetch from backend if not preloaded
+    this.candidateService.downloadDocument(candidateId, docId).subscribe(resp => {
+      this.previewData = {
+        name: resp.name || doc?.name || 'document',
+        content: resp.content || '',
+        mime: this.detectMimeType(resp.name || doc?.name || '')
+      };
+      this.previewVisible = true;
+    }, err => {
+      console.error('Failed to load document for preview', err);
+      alert('Impossible de charger le document pour prévisualisation.');
+    });
+  }
+
+  closePreview() {
+    this.previewVisible = false;
+    this.previewData = null;
+  }
+
+  private detectMimeType(filename: string): string {
+    const lower = (filename || '').toLowerCase();
+    if (lower.endsWith('.pdf')) return 'application/pdf';
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+    if (lower.endsWith('.gif')) return 'image/gif';
+    if (lower.endsWith('.txt') || lower.endsWith('.csv')) return 'text/plain';
+    return 'application/octet-stream';
+  }
+
+  // Return a data URL suitable for embedding in img/object/src
+  getPreviewDataUrl(): string {
+    if (!this.previewData || !this.previewData.content) return '';
+    const mime = this.previewData.mime || 'application/octet-stream';
+    // If content looks like base64 (no spaces and contains padding), assume base64
+    const isBase64 = /^[A-Za-z0-9+/=\s]+$/.test(this.previewData.content.trim());
+    if (isBase64) {
+      return `data:${mime};base64,${this.previewData.content}`;
+    }
+    // otherwise, URI encode the plain text
+    return `data:${mime};charset=utf-8,${encodeURIComponent(this.previewData.content)}`;
   }
 }

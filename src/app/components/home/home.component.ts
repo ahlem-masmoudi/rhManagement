@@ -8,27 +8,28 @@ import { Router } from '@angular/router';
   imports: [CommonModule],
   template: `
     <div class="home-page">
+      <!-- Animated Background -->
+      <div class="animated-bg">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
+      </div>
       <!-- Navigation Header -->
       <header class="navbar">
         <div class="container">
           <div class="nav-brand">
-            <img src="assets/logo-unilog.png" alt="Unilog" class="logo">
+            <img src="assets/logo-unilog.png" alt="Unilog" class="logo logo-animate">
             <span class="brand-name">Unilog</span>
           </div>
-          
-          <nav class="nav-menu">
-            <a href="#accueil" class="nav-link active">Accueil</a>
-            <a href="#secteurs" class="nav-link">Secteurs</a>
-            <a href="#solutions" class="nav-link">Solutions</a>
-            <a href="#contact" class="nav-link">Contact</a>
-          </nav>
 
           <div class="nav-actions">
-            <button class="btn btn-outline" (click)="showLoginModal()">
-              Connexion
+            <button class="btn btn-outline btn-animated" (click)="showLoginModal()">
+              <span>Connexion</span>
+              <i class="arrow">→</i>
             </button>
-            <button class="btn btn-primary" (click)="goToRegister()">
-              S'inscrire
+            <button class="btn btn-primary btn-animated" (click)="goToRegister()">
+              <span>S'inscrire</span>
+              <i class="arrow">→</i>
             </button>
           </div>
         </div>
@@ -36,178 +37,262 @@ import { Router } from '@angular/router';
 
       <!-- Hero Section -->
       <section class="hero" id="accueil">
-        <div class="container">
-          <div class="hero-content">
-            <h1 class="hero-title">
-              Avec L'ERP Uniges, 
-              <span class="highlight">centralisez</span> vos processus
+        <div class="container hero-container">
+          <div class="hero-content fade-in-up">
+            <h1 class="hero-title gradient-text">
+              Rejoignez l'équipe Unilog — Trouvez le stage qui correspond à votre profil
             </h1>
             <p class="hero-subtitle">
-              Nous vous accompagnons dans vos projets de mise en place d'un ERP pour 
-              structurer et simplifier vos processus de gestion à l'aide de l'ERP Uniges, 
-              connecté à vos outils préférés.
+              Déposez votre candidature en quelques minutes et découvrez les offres adaptées à vos compétences
             </p>
-            <button class="btn btn-large btn-primary" (click)="goToRegister()">
-              Commencez maintenant (sans engagement)
+            <button class="btn btn-large btn-primary btn-pulse" (click)="goToRegister()">
+              <span>Postuler maintenant</span>
+              <i class="sparkle">📝</i>
             </button>
           </div>
-          <div class="hero-image">
-            <div class="video-placeholder">
-              <div class="play-button">▶</div>
+          <div class="hero-image fade-in-up">
+            <img src="assets/hero-image.png" alt="Candidat Unilog" class="hero-img">
+          </div>
+        </div>
+      </section>
+
+      <!-- Pourquoi nous rejoindre Section -->
+      <section class="why-join">
+        <div class="container">
+          <h2 class="section-title slide-in">Pourquoi nous rejoindre ?</h2>
+          <div class="benefits-grid">
+            <div class="benefit-card card-hover">
+              <div class="benefit-icon rotate-on-hover">🎯</div>
+              <h3>Offres adaptées à votre profil</h3>
+              <p>Des opportunités de stage sélectionnées selon vos compétences et aspirations</p>
+            </div>
+            <div class="benefit-card card-hover">
+              <div class="benefit-icon rotate-on-hover">💡</div>
+              <h3>Scoring intelligent</h3>
+              <p>Un algorithme de matching pour vous proposer les meilleures offres</p>
+            </div>
+            <div class="benefit-card card-hover">
+              <div class="benefit-icon rotate-on-hover">📄</div>
+              <h3>Suivi en temps réel</h3>
+              <p>Suivez l'évolution de vos candidatures directement depuis votre espace</p>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Secteurs Section -->
-      <section class="secteurs" id="secteurs">
+      <!-- Comment ça marche Section -->
+      <section class="how-it-works">
         <div class="container">
-          <h2 class="section-title">Nos Secteurs</h2>
-          <div class="secteurs-grid">
-            <div class="secteur-card">
-              <div class="secteur-icon">💊</div>
-              <h3>Pharmaceutique Et Cosmétique</h3>
+          <h2 class="section-title slide-in">Comment ça marche ?</h2>
+          <div class="steps">
+            <div class="step step-animate">
+              <div class="step-number pulse">①</div>
+              <h3>Remplissez le formulaire</h3>
+              <p>Complétez votre profil en quelques minutes</p>
             </div>
-            <div class="secteur-card">
-              <div class="secteur-icon">⚙️</div>
-              <h3>Mécanique</h3>
+            <div class="step-arrow bounce">↓</div>
+            <div class="step step-animate">
+              <div class="step-number pulse">②</div>
+              <h3>Recevez les offres compatibles</h3>
+              <p>Notre système vous propose les meilleures opportunités</p>
             </div>
-            <div class="secteur-card">
-              <div class="secteur-icon">🌾</div>
-              <h3>Agroalimentaire</h3>
+            <div class="step-arrow bounce">↓</div>
+            <div class="step step-animate">
+              <div class="step-number pulse">③</div>
+              <h3>Postulez en un clic</h3>
+              <p>Candidatez directement aux offres qui vous intéressent</p>
             </div>
-            <div class="secteur-card">
-              <div class="secteur-icon">🏪</div>
-              <h3>Distribution Et Commerce</h3>
-            </div>
-            <div class="secteur-card">
-              <div class="secteur-icon">🏗️</div>
-              <h3>Bâtiment Et Travaux Publics</h3>
-            </div>
-            <div class="secteur-card">
-              <div class="secteur-icon">🍰</div>
-              <h3>Pâtisserie</h3>
-            </div>
-            <div class="secteur-card">
-              <div class="secteur-icon">🔧</div>
-              <h3>Services</h3>
-            </div>
-            <div class="secteur-card">
-              <div class="secteur-icon">📊</div>
-              <h3>Expertise Et Comptabilité</h3>
+            <div class="step-arrow bounce">↓</div>
+            <div class="step step-animate">
+              <div class="step-number pulse">④</div>
+              <h3>Suivez votre candidature</h3>
+              <p>Recevez des notifications par email à chaque étape</p>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Solutions Section -->
-      <section class="solutions" id="solutions">
+      <!-- Nos départements Section -->
+      <section class="departments" id="secteurs">
         <div class="container">
-          <h2 class="section-title">Nos Solutions</h2>
-          <div class="solutions-grid">
-            <div class="solution-card">
-              <h3>Gestion de Production</h3>
-              <p>Optimisez vos processus de fabrication</p>
+          <h2 class="section-title">Nos départements qui recrutent</h2>
+          <div class="departments-grid">
+            <div class="department-card">
+              <div class="department-icon">👨🏼‍💻</div>
+              <h3>Consulting ERP</h3>
+              <p>6 offres disponibles</p>
             </div>
-            <div class="solution-card">
-              <h3>Gestion Commerciale</h3>
-              <p>Pilotez vos ventes et achats</p>
+            <div class="department-card">
+              <div class="department-icon">⚙️</div>
+              <h3>Système management Qualité</h3>
+              <p>2 offres disponibles</p>
             </div>
-            <div class="solution-card">
-              <h3>Gestion des Stocks</h3>
-              <p>Maîtrisez votre inventaire</p>
+            <div class="department-card">
+              <div class="department-icon">🤖</div>
+              <h3>Intelligence artificielle</h3>
+              <p>3 offres disponibles</p>
             </div>
-            <div class="solution-card">
-              <h3>Comptabilité</h3>
-              <p>Gérez vos finances efficacement</p>
+            <div class="department-card">
+              <div class="department-icon">📊</div>
+              <h3>Data Analytics / Business Intelligence</h3>
+              <p>3 offres disponibles</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Contact Section -->
-      <section class="contact" id="contact">
-        <div class="container">
-          <h2 class="section-title">Contactez-nous</h2>
-          <div class="contact-info">
-            <p>📧 contact&#64;unilog.tn</p>
-            <p>📞 +216 XX XXX XXX</p>
-            <p>📍 Sfax, Tunisie</p>
+            <div class="department-card">
+              <div class="department-icon">💻</div>
+              <h3>Développement informatique</h3>
+              <p>3 offres disponibles</p>
+            </div>
+            <div class="department-card">
+              <div class="department-icon">📈</div>
+              <h3>Marketing & Commercial</h3>
+              <p>2 offres disponibles</p>
+            </div>
           </div>
         </div>
       </section>
 
       <!-- Footer -->
-      <footer class="footer">
-        <div class="container">
-          <p>&copy; 2026 Unilog - Univers du logiciel. Tous droits réservés.</p>
+      <footer class="footer" id="contact">
+        <div class="container footer-container">
+          <div class="footer-content">
+            <div class="footer-section">
+              <h4>🏢 Unilog</h4>
+              <p>Plateforme de gestion des stages</p>
+            </div>
+            <div class="footer-section">
+              <h4>Contact</h4>
+              <p>📍 Sfax, Tunisie</p>
+              <p>📧 contact&#64;unilog.tn</p>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <p>&copy; 2026 Unilog. Tous droits réservés.</p>
+          </div>
         </div>
       </footer>
     </div>
   `,
   styles: [`
-    .home-page {
-      min-height: 100vh;
-      background: white;
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    /* Navbar */
+    .home-page {
+      min-height: 100vh;
+      background: #f8f9fa;
+      font-family: 'Poppins', sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background */
+    .animated-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 160, 220, 0.1) 0%, transparent 70%);
+      animation: float 20s infinite ease-in-out;
+    }
+
+    .circle-1 {
+      width: 500px;
+      height: 500px;
+      top: -200px;
+      left: -200px;
+      animation-delay: 0s;
+    }
+
+    .circle-2 {
+      width: 400px;
+      height: 400px;
+      top: 50%;
+      right: -150px;
+      animation-delay: 5s;
+    }
+
+    .circle-3 {
+      width: 600px;
+      height: 600px;
+      bottom: -300px;
+      left: 30%;
+      animation-delay: 10s;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+      }
+      33% {
+        transform: translate(50px, -50px) scale(1.1);
+      }
+      66% {
+        transform: translate(-50px, 50px) scale(0.9);
+      }
+    }
+
+    /* Navigation */
     .navbar {
-      background: white;
-      border-bottom: 1px solid #e5e7eb;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 1rem 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
       position: sticky;
       top: 0;
-      z-index: 1000;
-      padding: 1rem 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(0, 160, 220, 0.1);
     }
 
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .navbar .container {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
     }
 
     .nav-brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 1rem;
     }
 
     .logo {
-      height: 40px;
-      width: 40px;
+      height: 90px;
+      width: 90px;
       object-fit: contain;
+      transition: all 0.3s ease;
+    }
+
+    .logo-animate:hover {
+      transform: rotate(360deg) scale(1.1);
     }
 
     .brand-name {
-      font-size: 24px;
+      font-size: 1.75rem;
       font-weight: 700;
-      color: #0ea5e9;
-    }
-
-    .nav-menu {
-      display: flex;
-      gap: 2rem;
-      flex: 1;
-      justify-content: center;
-    }
-
-    .nav-link {
-      color: #1f2937;
-      text-decoration: none;
-      font-weight: 500;
-      padding: 0.5rem 0;
-      border-bottom: 2px solid transparent;
-      transition: all 0.3s;
-    }
-
-    .nav-link:hover,
-    .nav-link.active {
-      color: #0ea5e9;
-      border-bottom-color: #0ea5e9;
+      color: #00A0DC;
+      font-family: 'Poppins', sans-serif;
+      letter-spacing: -0.5px;
     }
 
     .nav-actions {
@@ -215,217 +300,598 @@ import { Router } from '@angular/router';
       gap: 1rem;
     }
 
-    /* Hero Section */
-    .hero {
-      padding: 5rem 0;
-      background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
-      color: white;
-    }
-
-    .hero .container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      align-items: center;
-    }
-
-    .hero-title {
-      font-size: 3rem;
-      font-weight: 800;
-      margin: 0 0 1.5rem 0;
-      line-height: 1.2;
-    }
-
-    .highlight {
-      color: #fbbf24;
-    }
-
-    .hero-subtitle {
-      font-size: 1.125rem;
-      line-height: 1.7;
-      margin-bottom: 2rem;
-      opacity: 0.95;
-    }
-
-    .video-placeholder {
-      background: white;
-      border-radius: 16px;
-      aspect-ratio: 16/9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-    }
-
-    .play-button {
-      width: 80px;
-      height: 80px;
-      background: #0ea5e9;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      color: white;
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
-
-    .play-button:hover {
-      transform: scale(1.1);
-    }
-
-    /* Sections */
-    .secteurs, .solutions, .contact {
-      padding: 5rem 0;
-    }
-
-    .secteurs {
-      background: #f9fafb;
-    }
-
-    .section-title {
-      font-size: 2.5rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 3rem;
-      color: #1f2937;
-    }
-
-    .secteurs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .secteur-card {
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-      transition: transform 0.3s, box-shadow 0.3s;
-      cursor: pointer;
-    }
-
-    .secteur-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-
-    .secteur-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-
-    .secteur-card h3 {
-      font-size: 1.125rem;
-      color: #1f2937;
-      margin: 0;
-    }
-
-    .solutions-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2rem;
-    }
-
-    .solution-card {
-      background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
-      color: white;
-      padding: 2.5rem;
-      border-radius: 12px;
-      transition: transform 0.3s;
-    }
-
-    .solution-card:hover {
-      transform: translateY(-5px);
-    }
-
-    .solution-card h3 {
-      font-size: 1.5rem;
-      margin: 0 0 1rem 0;
-    }
-
-    .solution-card p {
-      margin: 0;
-      opacity: 0.9;
-    }
-
-    /* Contact */
-    .contact-info {
-      text-align: center;
-      font-size: 1.25rem;
-    }
-
-    .contact-info p {
-      margin: 1rem 0;
-    }
-
-    /* Footer */
-    .footer {
-      background: #1f2937;
-      color: white;
-      padding: 2rem 0;
-      text-align: center;
-    }
-
     /* Buttons */
     .btn {
       padding: 0.75rem 1.5rem;
-      border-radius: 8px;
+      border-radius: 12px;
       font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all 0.3s;
       font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      border: none;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-animated {
+      transform-style: preserve-3d;
+    }
+
+    .btn-animated .arrow {
+      transition: transform 0.3s ease;
+      font-style: normal;
+    }
+
+    .btn-animated:hover .arrow {
+      transform: translateX(5px);
     }
 
     .btn-outline {
       background: white;
-      color: #0ea5e9;
-      border: 2px solid #0ea5e9;
+      color: #00A0DC;
+      border: 2px solid #00A0DC;
+      box-shadow: 0 4px 15px rgba(0, 160, 220, 0.2);
     }
 
     .btn-outline:hover {
-      background: #0ea5e9;
+      background: #00A0DC;
       color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 160, 220, 0.4);
     }
 
     .btn-primary {
-      background: #0ea5e9;
+      background: linear-gradient(135deg, #00A0DC 0%, #0074BC 100%);
       color: white;
+      border: 2px solid transparent;
+      box-shadow: 0 4px 15px rgba(0, 160, 220, 0.3);
     }
 
     .btn-primary:hover {
-      background: #0284c7;
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 10px 30px rgba(0, 160, 220, 0.5);
     }
 
     .btn-large {
-      padding: 1rem 2rem;
-      font-size: 1.125rem;
+      padding: 1.2rem 2.5rem;
+      font-size: 1.15rem;
+      border-radius: 50px;
+      font-weight: 700;
     }
 
-    .btn-block {
+    .btn-pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 4px 15px rgba(0, 160, 220, 0.3);
+      }
+      50% {
+        box-shadow: 0 4px 30px rgba(0, 160, 220, 0.6);
+      }
+    }
+
+    .sparkle {
+      font-style: normal;
+      animation: sparkle 1.5s infinite;
+    }
+
+    @keyframes sparkle {
+      0%, 100% {
+        transform: scale(1) rotate(0deg);
+      }
+      50% {
+        transform: scale(1.3) rotate(180deg);
+      }
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #00A0DC 0%, #0074BC 100%);
+      color: white;
+      padding: 4rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%);
+      animation: heroShine 10s infinite ease-in-out;
+    }
+
+    @keyframes heroShine {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .hero-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: left;
+    }
+
+    .hero-image {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      padding: 3rem;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+
+    .hero-img {
       width: 100%;
+      max-width: 500px;
+      height: auto;
+      animation: floatImage 6s ease-in-out infinite;
+    }
+
+    @keyframes floatImage {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    .fade-in-up {
+      animation: fadeInUp 1s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-title {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(to right, #ffffff, #e0f2fe, #ffffff);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 3s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% {
+        background-position: 0% center;
+      }
+      50% {
+        background-position: 100% center;
+      }
+    }
+
+    .hero-subtitle {
+      font-size: 1.2rem;
+      margin-bottom: 2.5rem;
+      opacity: 0.95;
+      font-weight: 400;
+      line-height: 1.6;
+    }
+
+    /* Section Title */
+    .section-title {
+      font-size: 2.8rem;
+      text-align: center;
+      margin-bottom: 3.5rem;
+      color: #1f2937;
+      font-weight: 800;
+      letter-spacing: -1px;
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, #00A0DC, #0074BC);
+      border-radius: 2px;
+    }
+
+    .slide-in {
+      animation: slideIn 0.8s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Why Join Section */
+    .why-join {
+      padding: 6rem 0;
+      background: white;
+      position: relative;
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2.5rem;
+    }
+
+    .benefit-card {
+      text-align: center;
+      padding: 2.5rem;
+      border-radius: 20px;
+      background: linear-gradient(145deg, #ffffff, #f8f9fa);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 1px solid rgba(0, 160, 220, 0.1);
+    }
+
+    .card-hover:hover {
+      transform: translateY(-15px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0, 160, 220, 0.2);
+      border-color: #00A0DC;
+    }
+
+    .benefit-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1.5rem;
+      transition: transform 0.5s ease;
+      display: inline-block;
+    }
+
+    .rotate-on-hover:hover {
+      transform: rotate(360deg) scale(1.2);
+    }
+
+    .benefit-card h3 {
+      font-size: 1.35rem;
+      margin-bottom: 1rem;
+      color: #1f2937;
+      font-weight: 700;
+    }
+
+    .benefit-card p {
+      color: #6b7280;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+
+    /* How it works Section */
+    .how-it-works {
+      padding: 6rem 0;
+      background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .step {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 20px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      border: 2px solid transparent;
+      transition: all 0.4s ease;
+    }
+
+    .step-animate:hover {
+      border-color: #00A0DC;
+      box-shadow: 0 15px 40px rgba(0, 160, 220, 0.15);
+      transform: scale(1.03);
+    }
+
+    .step-number {
+      font-size: 2.5rem;
+      color: #00A0DC;
+      font-weight: 800;
+      margin-bottom: 1.2rem;
+      display: inline-block;
+      width: 70px;
+      height: 70px;
+      line-height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(0, 160, 220, 0.1), rgba(0, 116, 188, 0.1));
+      border: 3px solid #00A0DC;
+    }
+
+    .pulse {
+      animation: pulse-ring 2s ease-out infinite;
+    }
+
+    @keyframes pulse-ring {
+      0% {
+        box-shadow: 0 0 0 0 rgba(0, 160, 220, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 0 15px rgba(0, 160, 220, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(0, 160, 220, 0);
+      }
+    }
+
+    .step h3 {
+      font-size: 1.35rem;
+      margin-bottom: 0.75rem;
+      color: #1f2937;
+      font-weight: 700;
+    }
+
+    .step p {
+      color: #6b7280;
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .step-arrow {
+      font-size: 2.5rem;
+      color: #00A0DC;
+      font-weight: bold;
+    }
+
+    .bounce {
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    /* Departments Section */
+    .departments {
+      padding: 6rem 0;
+      background: white;
+    }
+
+    .departments-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2.5rem;
+    }
+
+    .department-card {
+      background: linear-gradient(135deg, #00A0DC 0%, #0074BC 100%);
+      color: white;
+      padding: 3rem;
+      border-radius: 24px;
+      text-align: center;
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 160, 220, 0.3);
+    }
+
+    .card-3d {
+      transform-style: preserve-3d;
+    }
+
+    .card-3d:hover {
+      transform: translateY(-20px) rotateX(5deg) rotateY(5deg);
+      box-shadow: 0 25px 50px rgba(0, 160, 220, 0.4);
+    }
+
+    .card-shine {
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+      );
+      transform: rotate(45deg);
+      transition: all 0.5s;
+    }
+
+    .department-card:hover .card-shine {
+      left: 100%;
+      top: 100%;
+    }
+
+    .department-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+      animation: float-icon 3s ease-in-out infinite;
+    }
+
+    @keyframes float-icon {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .department-card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .department-card p {
+      opacity: 0.95;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    /* Footer */
+    .footer {
+      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+      color: white;
+      padding: 4rem 0 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #00A0DC, transparent);
+    }
+
+    .footer-container {
+      padding: 0 2rem;
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 3rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .footer-section h4 {
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+      color: #00A0DC;
+      font-weight: 700;
+    }
+
+    .footer-section p {
+      margin-bottom: 0.75rem;
+      opacity: 0.9;
+      font-size: 1.05rem;
+      transition: all 0.3s;
+    }
+
+    .footer-section p:hover {
+      opacity: 1;
+      color: #00A0DC;
+      transform: translateX(5px);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      opacity: 0.8;
+      font-size: 0.95rem;
     }
 
     /* Responsive */
     @media (max-width: 768px) {
-      .nav-menu {
-        display: none;
+      .hero-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
       }
 
-      .hero .container {
-        grid-template-columns: 1fr;
+      .hero-content {
+        text-align: center;
+      }
+
+      .hero-image {
+        order: -1;
+      }
+
+      .hero-img {
+        max-width: 350px;
       }
 
       .hero-title {
-        font-size: 2rem;
+        font-size: 2.2rem;
       }
 
-      .secteurs-grid {
+      .hero-subtitle {
+        font-size: 1.1rem;
+      }
+
+      .section-title {
+        font-size: 2.2rem;
+      }
+
+      .benefits-grid,
+      .departments-grid {
         grid-template-columns: 1fr;
+      }
+
+      .logo {
+        height: 50px;
+        width: 50px;
+      }
+
+      .brand-name {
+        font-size: 1.4rem;
+      }
+
+      .nav-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
       }
     }
   `]
@@ -434,12 +900,10 @@ export class HomeComponent {
   constructor(private router: Router) {}
 
   showLoginModal(): void {
-    // Redirect directly to login page for RH
     this.router.navigate(['/login']);
   }
 
   goToRegister(): void {
-    // Redirect to candidate profile completion page directly
     this.router.navigate(['/candidate/complete-profile']);
   }
 }

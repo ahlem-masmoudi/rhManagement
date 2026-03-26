@@ -2,6 +2,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CandidateService } from '../../services/candidate.service';
+import { MatchingService } from '../../services/matching.service';
+import { take } from 'rxjs';
 import { Candidate, CandidateStatus, BulkStatusChange } from '../../models';
 
 @Component({
@@ -239,7 +241,10 @@ export class BulkStatusUpdateComponent {
   result: { success: number; failed: number } | null = null;
   emailsSent = 0;
 
-  constructor(private candidateService: CandidateService) {}
+  constructor(
+    private candidateService: CandidateService,
+    private matchingService: MatchingService
+  ) {}
 
   updateStatuses(): void {
     if (!this.newStatus || this.selectedCandidates.length === 0) {
@@ -258,14 +263,39 @@ export class BulkStatusUpdateComponent {
 
     this.candidateService.bulkUpdateStatus(bulkChange).subscribe(result => {
       this.result = result;
-      this.emailsSent = this.sendEmail ? result.success : 0;
+      // Use emailsSent returned by backend if available
+      this.emailsSent = typeof result.emailsSent === 'number' ? result.emailsSent : (this.sendEmail ? result.success : 0);
       this.isProcessing = false;
       this.statusUpdated.emit();
 
-      // Auto-fermeture après 5 secondes
-      setTimeout(() => {
-        this.clearSelection();
-      }, 5000);
+      // Refresh applications so the Kanban reflects the updated statuses
+      // getApplications() triggers a load and updates the applications$ observable
+      try {
+        this.matchingService.getApplications();
+
+        // Wait for the applications observable to emit once (reload complete) before auto-closing
+        const autoCloseTimeout = setTimeout(() => {
+          // Fallback: if applications don't arrive in 5s, still clear selection
+          this.clearSelection();
+        }, 5000);
+
+        this.matchingService.applications$.pipe(take(1)).subscribe({
+          next: () => {
+            clearTimeout(autoCloseTimeout);
+            // Close selection immediately after applications loaded
+            this.clearSelection();
+          },
+          error: (err) => {
+            console.warn('Error while waiting for applications reload:', err);
+            clearTimeout(autoCloseTimeout);
+            this.clearSelection();
+          }
+        });
+      } catch (err) {
+        console.warn('Could not trigger applications reload:', err);
+        // Fallback close
+        setTimeout(() => this.clearSelection(), 5000);
+      }
     });
   }
 
