@@ -23,7 +23,7 @@ import { AuthService } from '../../services/auth.service';
           </div>
 
           <!-- Login Form -->
-          <form *ngIf="!showRegister" (ngSubmit)="onLogin()" class="login-form">
+          <form *ngIf="!showRegister && loginStep === 'credentials'" (ngSubmit)="onLogin()" class="login-form">
             <div *ngIf="errorMessage" class="alert alert-error">
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
@@ -33,26 +33,32 @@ import { AuthService } from '../../services/auth.service';
 
             <div class="form-group">
               <label for="email">Email</label>
-              <input 
-                type="email" 
-                id="email" 
-                [(ngModel)]="credentials.email" 
-                name="email"
-                placeholder="exemple@email.com"
-                required
-                autocomplete="email">
+              <div class="field-input-row">
+                <input 
+                  type="email" 
+                  id="email" 
+                  [(ngModel)]="credentials.email" 
+                  name="email"
+                  placeholder="exemple@email.com"
+                  required
+                  autocomplete="email">
+                <span class="field-error-emoji-inline-right" *ngIf="errorField === 'email'">⚠️</span>
+              </div>
             </div>
 
             <div class="form-group">
               <label for="password">Mot de passe</label>
-              <input 
-                type="password" 
-                id="password" 
-                [(ngModel)]="credentials.password" 
-                name="password"
-                placeholder="••••••••"
-                required
-                autocomplete="current-password">
+              <div class="field-input-row">
+                <input 
+                  type="password" 
+                  id="password" 
+                  [(ngModel)]="credentials.password" 
+                  name="password"
+                  placeholder="••••••••"
+                  required
+                  autocomplete="current-password">
+                <span class="field-error-emoji-inline-right" *ngIf="errorField === 'password'">⚠️</span>
+              </div>
             </div>
 
             <button type="submit" class="btn btn-primary btn-block" [disabled]="isLoading">
@@ -63,6 +69,41 @@ import { AuthService } from '../../services/auth.service';
             <div class="login-footer">
               <p>Pas encore de compte ? 
                 <a href="javascript:void(0)" (click)="goToRegister()">Créer un compte candidat</a>
+              </p>
+            </div>
+          </form>
+
+          <!-- Risk Step-up (OTP) -->
+          <form *ngIf="!showRegister && loginStep === 'otp'" (ngSubmit)="onVerifyOtp()" class="login-form">
+            <div *ngIf="errorMessage" class="alert alert-error">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+              </svg>
+              {{ errorMessage }}
+            </div>
+
+            <div class="form-group">
+              <label for="otp">Code de vérification</label>
+              <input
+                type="text"
+                id="otp"
+                [(ngModel)]="otpCode"
+                name="otp"
+                placeholder="123456"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                required>
+              <small class="help-text">Vérification supplémentaire requise. {{ otpHint }}</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" [disabled]="isLoading">
+              <span *ngIf="!isLoading">Vérifier</span>
+              <span *ngIf="isLoading">Vérification...</span>
+            </button>
+
+            <div class="login-footer">
+              <p>
+                <a href="javascript:void(0)" (click)="restartLogin()">Revenir</a>
               </p>
             </div>
           </form>
@@ -198,6 +239,31 @@ import { AuthService } from '../../services/auth.service';
       border: 1px solid #FCA5A5;
     }
 
+    .field-error-emoji-inline-right {
+      margin-left: 8px;
+      font-size: 16px;
+      vertical-align: middle;
+      display: inline-block;
+    }
+
+    .field-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-input-row input {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .help-text {
+      display: block;
+      margin-top: 8px;
+      color: var(--gray-600);
+      font-size: 12px;
+    }
+
     .btn-block {
       width: 100%;
       justify-content: center;
@@ -268,6 +334,12 @@ export class LoginComponent {
   showRegister = false;
   isLoading = false;
   errorMessage = '';
+  errorField: 'email' | 'password' | null = null;
+
+  loginStep: 'credentials' | 'otp' = 'credentials';
+  riskToken = '';
+  otpCode = '';
+  otpHint = 'Saisissez le code reçu pour finaliser la connexion.';
 
   constructor(
     private authService: AuthService,
@@ -287,10 +359,27 @@ export class LoginComponent {
   onLogin(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    this.errorField = null;
 
     this.authService.login(this.credentials).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.isLoading = false;
+
+        // Risk-based step-up required
+        if (response && response.riskToken) {
+          this.loginStep = 'otp';
+          this.riskToken = response.riskToken;
+          this.otpCode = response.devOtp || '';
+          const delivery = response.delivery;
+          if (delivery === 'email') {
+            this.otpHint = 'Un code a été envoyé par email. Saisissez-le pour finaliser la connexion.';
+          } else if (delivery === 'dev') {
+            this.otpHint = 'Mode démo : saisissez le code fourni (dev).';
+          } else {
+            this.otpHint = 'Si aucun email n\'arrive, récupérez le code depuis la console du backend (mode dev) ou configurez le SMTP.';
+          }
+          return;
+        }
         
         // Redirect based on role
         if (response.user.role === 'candidate') {
@@ -306,9 +395,103 @@ export class LoginComponent {
       },
       error: (error) => {
         this.isLoading = false;
-        this.errorMessage = 'Email ou mot de passe incorrect';
+        this.errorField = null;
+        const code = error?.error?.code;
+        const message = error?.error?.message;
+
+        if (code === 'EMAIL_INCORRECT') {
+          this.errorMessage = 'Email incorrect';
+          this.errorField = 'email';
+          return;
+        }
+        if (code === 'PASSWORD_INCORRECT') {
+          this.errorMessage = 'Mot de passe incorrect';
+          this.errorField = 'password';
+          return;
+        }
+        if (code === 'ACCOUNT_LOCKED') {
+          this.errorMessage = message || 'Compte temporairement bloqué. Réessayez plus tard.';
+          return;
+        }
+        if (code === 'RATE_LIMITED') {
+          this.errorMessage = message || 'Trop de tentatives. Réessayez plus tard.';
+          return;
+        }
+
+        if (code === 'RISK_CHALLENGE_REQUIRED') {
+          // Should normally be a 202 success, but keep a safe fallback
+          this.errorMessage = 'Vérification supplémentaire requise.';
+          return;
+        }
+
+        // Fallback
+        this.errorMessage = message || 'Email ou mot de passe incorrect';
       }
     });
+  }
+
+  onVerifyOtp(): void {
+    if (!this.riskToken || !this.otpCode) {
+      this.errorMessage = 'Veuillez saisir le code de vérification.';
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.authService.verifyRisk(this.riskToken, this.otpCode).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+
+        if (response.user.role === 'candidate') {
+          if (!response.user.profileComplete) {
+            this.router.navigate(['/candidate/complete-profile']);
+          } else {
+            this.router.navigate(['/candidate']);
+          }
+        } else {
+          this.router.navigate(['/rh']);
+        }
+      },
+      error: (error) => {
+        this.isLoading = false;
+        const code = error?.error?.code;
+        const message = error?.error?.message;
+
+        if (code === 'RISK_OTP_INVALID') {
+          this.errorMessage = message || 'Code invalide.';
+          return;
+        }
+        if (code === 'RISK_CHALLENGE_EXPIRED') {
+          this.errorMessage = message || 'Code expiré. Veuillez vous reconnecter.';
+          this.restartLogin();
+          return;
+        }
+        if (code === 'RISK_CONTEXT_CHANGED' || code === 'RISK_TOKEN_INVALID' || code === 'RISK_CHALLENGE_INVALID') {
+          this.errorMessage = message || 'Session invalide. Veuillez vous reconnecter.';
+          this.restartLogin();
+          return;
+        }
+        if (code === 'RISK_OTP_TOO_MANY_ATTEMPTS') {
+          this.errorMessage = message || 'Trop de tentatives. Veuillez vous reconnecter.';
+          this.restartLogin();
+          return;
+        }
+        if (code === 'RATE_LIMITED') {
+          this.errorMessage = message || 'Trop de tentatives. Réessayez plus tard.';
+          return;
+        }
+
+        this.errorMessage = message || 'Erreur lors de la vérification.';
+      }
+    });
+  }
+
+  restartLogin(): void {
+    this.loginStep = 'credentials';
+    this.riskToken = '';
+    this.otpCode = '';
+    this.otpHint = 'Saisissez le code reçu pour finaliser la connexion.';
   }
 
   onRegister(): void {
