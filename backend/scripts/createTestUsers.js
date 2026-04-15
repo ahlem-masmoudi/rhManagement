@@ -55,7 +55,7 @@ const Candidate = mongoose.model('Candidate', candidateSchema);
 const testUsers = [
   {
     email: 'admin@rh.com',
-    password: 'admin123',
+    password: 'AdminDemo!2026',
     firstName: 'Admin',
     lastName: 'RH',
     role: 'recruiter',
@@ -63,7 +63,7 @@ const testUsers = [
   },
   {
     email: 'rh@example.com',
-    password: 'password',
+    password: 'RhDemo!2026',
     firstName: 'Marie',
     lastName: 'Dupont',
     role: 'recruiter',
@@ -71,7 +71,7 @@ const testUsers = [
   },
   {
     email: 'candidate@example.com',
-    password: 'candidate123',
+    password: 'CandidateDemo!2026',
     firstName: 'Sophie',
     lastName: 'Martin',
     role: 'candidate',
@@ -91,7 +91,7 @@ const testUsers = [
   },
   {
     email: 'newcandidate@example.com',
-    password: 'new123',
+    password: 'NewCandidateDemo!2026',
     firstName: 'Jean',
     lastName: 'Dubois',
     role: 'candidate',
@@ -155,11 +155,11 @@ const createTestUsers = async () => {
 
     console.log('📋 Test Accounts:\n');
     console.log('👨‍💼 RH/Admin Accounts:');
-    console.log('   • admin@rh.com / admin123');
-    console.log('   • rh@example.com / password\n');
+    console.log('   • admin@rh.com / AdminDemo!2026');
+    console.log('   • rh@example.com / RhDemo!2026\n');
     console.log('👤 Candidate Accounts:');
-    console.log('   • candidate@example.com / candidate123 (complete profile)');
-    console.log('   • newcandidate@example.com / new123 (incomplete profile)\n');
+    console.log('   • candidate@example.com / CandidateDemo!2026 (complete profile)');
+    console.log('   • newcandidate@example.com / NewCandidateDemo!2026 (incomplete profile)\n');
 
     process.exit(0);
   } catch (error) {

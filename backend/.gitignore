@@ -5,3 +5,7 @@ node_modules/
 *.log
 dist/
 build/
+
+# Python (score_service)
+__pycache__/
+*.pyc

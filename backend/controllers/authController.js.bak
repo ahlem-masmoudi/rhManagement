@@ -4,9 +4,7 @@ const { generateToken, generateRiskChallengeToken } = require('../utils/jwt');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { sendRiskOtpEmail, sendPasswordResetEmail, isMailConfigured } = require('../utils/mailer');
-
-// automated-edit-check: write access verified at 2026-04-12
+const { sendRiskOtpEmail, isMailConfigured } = require('../utils/mailer');
 
 const sha256 = (value) => crypto.createHash('sha256').update(String(value || '')).digest('hex');
 
@@ -97,13 +95,6 @@ const computeLoginRisk = ({ user, deviceHash, ip, uaHash }) => {
   return { score, threshold, requiresChallenge: score >= threshold, reasons };
 };
 
-const getFrontendBaseUrl = () => process.env.FRONTEND_URL || 'http://localhost:4200';
-
-const clearResetPasswordState = (user) => {
-  user.resetPasswordTokenHash = undefined;
-  user.resetPasswordExpiresAt = undefined;
-};
-
 // @desc    Register new user
 // @route   POST /api/auth/register
 // @access  Public
@@ -179,6 +170,7 @@ exports.register = async (req, res) => {
 // @route   POST /api/auth/login
 // @access  Public
 exports.login = async (req, res) => {
+    console.log('[authController] login request body:', JSON.stringify(req.body || {}));
   try {
     const { email, password } = req.body;
 
@@ -201,7 +193,7 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email: normalizedEmail }).select('+password +riskChallengeNonceHash +riskOtpHash');
 
     if (!user) {
-    return res.status(401).json({
+      return res.status(401).json({
         success: false,
         code: detailedErrors ? 'EMAIL_INCORRECT' : 'INVALID_CREDENTIALS',
         message: detailedErrors ? 'Email incorrect' : 'Identifiants invalides'
@@ -215,7 +207,7 @@ exports.login = async (req, res) => {
       return res.status(423).json({
         success: false,
         code: 'ACCOUNT_LOCKED',
-        message: `Compte temporairement bloqué. Réessayez dans ${Math.ceil(retryAfterSeconds / 60)} minute(s).`,
+        message: `Compte temporairement bloquÃ©. RÃ©essayez dans ${Math.ceil(retryAfterSeconds / 60)} minute(s).`,
         retryAfterSeconds
       });
     }
@@ -237,28 +229,17 @@ exports.login = async (req, res) => {
       // Increment failed attempts and lock account if threshold reached
       user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
 
-      const maxAttempts = Number(process.env.AUTH_MAX_FAILED_ATTEMPTS || 5);
+      const maxAttempts = Number(process.env.AUTH_MAX_FAILED_ATTEMPTS || 6);
       const lockMinutes = Number(process.env.AUTH_LOCK_MINUTES || 5);
       if (user.failedLoginAttempts >= maxAttempts) {
         user.lockUntil = new Date(Date.now() + lockMinutes * 60 * 1000);
       }
 
-        try {
-          await user.save({ validateBeforeSave: false });
-        } catch (e) {
-          // Do not block response on logging/persistence issues
-          console.warn('Failed to persist failedLoginAttempts:', e?.message);
-        }
-
-      if (user.lockUntil && user.failedLoginAttempts >= maxAttempts) {
-        const retryAfterSeconds = Math.max(1, Math.ceil((user.lockUntil.getTime() - Date.now()) / 1000));
-        res.set('Retry-After', String(retryAfterSeconds));
-        return res.status(423).json({
-          success: false,
-          code: 'ACCOUNT_LOCKED',
-          message: `Compte temporairement bloqué. Réessayez dans ${Math.ceil(retryAfterSeconds / 60)} minute(s).`,
-          retryAfterSeconds
-        });
+      try {
+        await user.save({ validateBeforeSave: false });
+      } catch (e) {
+        // Do not block response on logging/persistence issues
+        console.warn('Failed to persist failedLoginAttempts:', e?.message);
       }
 
       return res.status(401).json({
@@ -313,8 +294,8 @@ exports.login = async (req, res) => {
           // By default: NEVER return OTP to client. Use email delivery.
           const includeDevOtp = process.env.AUTH_RISK_DEV_RETURN_OTP === 'true';
           if (process.env.NODE_ENV === 'development') {
-              // Development-only: OTP generated (not logged in production)
-            }
+            console.log(`[DEV] Risk OTP for ${user.email}: ${otp} (score=${score}, threshold=${threshold})`);
+          }
 
           let delivery = 'unconfigured';
           if (!includeDevOtp) {
@@ -422,24 +403,24 @@ exports.verifyRisk = async (req, res) => {
     try {
       payload = jwt.verify(riskToken, process.env.JWT_SECRET);
     } catch (e) {
-    return res.status(401).json({
+      return res.status(401).json({
         success: false,
         code: 'RISK_TOKEN_INVALID',
-        message: 'Session de vérification invalide ou expirée.'
+        message: 'Session de vÃ©rification invalide ou expirÃ©e.'
       });
     }
 
     if (!payload || payload.type !== 'risk_challenge' || !payload.id || !payload.nonce) {
-    return res.status(401).json({
+      return res.status(401).json({
         success: false,
         code: 'RISK_TOKEN_INVALID',
-        message: 'Session de vérification invalide.'
+        message: 'Session de vÃ©rification invalide.'
       });
     }
 
     const user = await User.findById(payload.id).select('+riskChallengeNonceHash +riskOtpHash');
     if (!user) {
-    return res.status(401).json({
+      return res.status(401).json({
         success: false,
         code: 'RISK_USER_NOT_FOUND',
         message: 'Utilisateur introuvable.'
@@ -448,19 +429,19 @@ exports.verifyRisk = async (req, res) => {
 
     const now = Date.now();
     if (!user.riskOtpHash || !user.riskOtpExpiresAt || user.riskOtpExpiresAt.getTime() <= now) {
-    return res.status(401).json({
+      return res.status(401).json({
         success: false,
         code: 'RISK_CHALLENGE_EXPIRED',
-        message: 'Code expiré. Veuillez vous reconnecter.'
+        message: 'Code expirÃ©. Veuillez vous reconnecter.'
       });
     }
 
     const nonceHash = sha256(payload.nonce);
     if (!user.riskChallengeNonceHash || user.riskChallengeNonceHash !== nonceHash) {
-    return res.status(401).json({
+      return res.status(401).json({
         success: false,
         code: 'RISK_CHALLENGE_INVALID',
-        message: 'Session de vérification invalide. Veuillez vous reconnecter.'
+        message: 'Session de vÃ©rification invalide. Veuillez vous reconnecter.'
       });
     }
 
@@ -470,24 +451,24 @@ exports.verifyRisk = async (req, res) => {
     const uaHash = getUserAgentHash(req);
 
     if (user.riskChallengeContextDeviceHash && user.riskChallengeContextDeviceHash !== (deviceHash || undefined)) {
-    return res.status(401).json({
+      return res.status(401).json({
         success: false,
         code: 'RISK_CONTEXT_CHANGED',
-        message: 'Appareil différent détecté. Veuillez vous reconnecter.'
+        message: 'Appareil diffÃ©rent dÃ©tectÃ©. Veuillez vous reconnecter.'
       });
     }
     if (user.riskChallengeContextIp && user.riskChallengeContextIp !== (ip || undefined)) {
-    return res.status(401).json({
+      return res.status(401).json({
         success: false,
         code: 'RISK_CONTEXT_CHANGED',
-        message: 'Réseau différent détecté. Veuillez vous reconnecter.'
+        message: 'RÃ©seau diffÃ©rent dÃ©tectÃ©. Veuillez vous reconnecter.'
       });
     }
     if (user.riskChallengeContextUaHash && user.riskChallengeContextUaHash !== (uaHash || undefined)) {
-    return res.status(401).json({
+      return res.status(401).json({
         success: false,
         code: 'RISK_CONTEXT_CHANGED',
-        message: 'Navigateur différent détecté. Veuillez vous reconnecter.'
+        message: 'Navigateur diffÃ©rent dÃ©tectÃ©. Veuillez vous reconnecter.'
       });
     }
 
@@ -524,7 +505,7 @@ exports.verifyRisk = async (req, res) => {
       }
 
       const remaining = Math.max(0, maxOtpAttempts - user.riskOtpAttempts);
-    return res.status(401).json({
+      return res.status(401).json({
         success: false,
         code: 'RISK_OTP_INVALID',
         message: `Code invalide. Tentatives restantes: ${remaining}.`
@@ -579,129 +560,6 @@ exports.verifyRisk = async (req, res) => {
   }
 };
 
-// @desc    Request password reset
-// @route   POST /api/auth/forgot-password
-// @access  Public
-exports.forgotPassword = async (req, res) => {
-  try {
-    const email = (req.body?.email || '').toString().trim().toLowerCase();
-
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Veuillez fournir votre email.'
-      });
-    }
-
-    const genericResponse = {
-      success: true,
-      message: 'Si un compte existe avec cet email, un lien de reinitialisation a ete envoye.'
-    };
-
-    const user = await User.findOne({ email }).select('+resetPasswordTokenHash');
-    if (!user) {
-      return res.status(200).json(genericResponse);
-    }
-
-    const expiresInSeconds = Number(process.env.AUTH_RESET_PASSWORD_TTL_SECONDS || 3600);
-    const rawToken = crypto.randomBytes(32).toString('hex');
-    const tokenHash = sha256(rawToken);
-
-    user.resetPasswordTokenHash = tokenHash;
-    user.resetPasswordExpiresAt = new Date(Date.now() + expiresInSeconds * 1000);
-    await user.save({ validateBeforeSave: false });
-
-    const resetUrl = `${getFrontendBaseUrl()}/login?mode=reset&token=${rawToken}`;
-    let delivery = 'unconfigured';
-
-    if (isMailConfigured()) {
-      try {
-        await sendPasswordResetEmail({
-          to: user.email,
-          resetUrl,
-          expiresInSeconds
-        });
-        delivery = 'email';
-      } catch (error) {
-        console.warn('Failed to send reset password email:', error?.message);
-      }
-    }
-
-    const includeDevToken = process.env.AUTH_RESET_DEV_RETURN_TOKEN === 'true' || process.env.NODE_ENV === 'development';
-
-    return res.status(200).json({
-      ...genericResponse,
-      data: {
-        delivery,
-        ...(delivery !== 'email' && includeDevToken ? { resetToken: rawToken, resetUrl } : {})
-      }
-    });
-  } catch (error) {
-    console.error('Forgot password error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la demande de reinitialisation',
-      error: error.message
-    });
-  }
-};
-
-// @desc    Reset password with token
-// @route   POST /api/auth/reset-password
-// @access  Public
-exports.resetPassword = async (req, res) => {
-  try {
-    const token = (req.body?.token || '').toString().trim();
-    const password = (req.body?.password || '').toString();
-
-    if (!token || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Le token et le nouveau mot de passe sont requis.'
-      });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: 'Le mot de passe doit contenir au moins 6 caracteres.'
-      });
-    }
-
-    const tokenHash = sha256(token);
-    const user = await User.findOne({
-      resetPasswordTokenHash: tokenHash,
-      resetPasswordExpiresAt: { $gt: new Date() }
-    }).select('+password +resetPasswordTokenHash');
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        code: 'RESET_TOKEN_INVALID',
-        message: 'Le lien de reinitialisation est invalide ou expire.'
-      });
-    }
-
-    user.password = password;
-    user.failedLoginAttempts = 0;
-    user.lockUntil = undefined;
-    clearResetPasswordState(user);
-    await user.save();
-
-    return res.status(200).json({
-      success: true,
-      message: 'Votre mot de passe a ete reinitialise avec succes.'
-    });
-  } catch (error) {
-    console.error('Reset password error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la reinitialisation du mot de passe',
-      error: error.message
-    });
-  }
-};
-
 // @desc    Get current logged in user
 // @route   GET /api/auth/me
 // @access  Private
@@ -731,4 +589,3 @@ exports.logout = async (req, res) => {
     message: 'Logged out successfully'
   });
 };
-

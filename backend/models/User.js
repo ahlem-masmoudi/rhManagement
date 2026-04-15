@@ -39,10 +39,87 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  updatedAt: {
+    updatedAt: {
     type: Date,
     default: Date.now
+  },
+  loginAttempts: {
+    type: Number,
+    default: 0
+  },
+  lockUntil: {
+    type: Date
+  },
+  failedLoginAttempts: {
+    type: Number,
+    default: 0
+  },
+  lockUntil: {
+    type: Date
+  },
+
+  // Risk-based authentication (step-up) fields
+  knownDevices: {
+    type: [
+      {
+        deviceHash: { type: String, required: true },
+        firstSeen: { type: Date, default: Date.now },
+        lastSeen: { type: Date, default: Date.now }
+      }
+    ],
+    default: []
+  },
+  lastLoginAt: {
+    type: Date
+  },
+  lastLoginIp: {
+    type: String
+  },
+  lastLoginUaHash: {
+    type: String
+  },
+  lastLoginDeviceHash: {
+    type: String
+  },
+  riskChallengeNonceHash: {
+    type: String,
+    select: false
+  },
+  riskOtpHash: {
+    type: String,
+    select: false
+  },
+  riskOtpExpiresAt: {
+    type: Date
+  },
+  riskOtpAttempts: {
+    type: Number,
+    default: 0
+  },
+  riskChallengeIssuedAt: {
+    type: Date
+  },
+  riskChallengeContextDeviceHash: {
+    type: String
+  },
+  riskChallengeContextIp: {
+    type: String
+  },
+  riskChallengeContextUaHash: {
+    type: String
+  },
+  resetPasswordTokenHash: {
+    type: String,
+    select: false
+  },
+  resetPasswordExpiresAt: {
+    type: Date
   }
+});
+
+// Virtual: is account temporarily locked
+userSchema.virtual('isLocked').get(function () {
+  return !!(this.lockUntil && this.lockUntil.getTime() > Date.now());
 });
 
 // Hash password before saving

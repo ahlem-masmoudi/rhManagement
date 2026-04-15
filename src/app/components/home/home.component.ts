@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="home-page">
       <!-- Animated Background -->
@@ -27,10 +27,13 @@ import { Router } from '@angular/router';
               <span>Connexion</span>
               <i class="arrow">→</i>
             </button>
-            <button class="btn btn-primary btn-animated" (click)="goToRegister()">
-              <span>S'inscrire</span>
-              <i class="arrow">→</i>
-            </button>
+            <div class="cta-with-copy">
+              <button type="button" class="btn btn-primary btn-animated" (click)="goToRegister()">
+                <span>Commencez</span>
+                <i class="arrow">→</i>
+              </button>
+              <p class="micro-copy">Complétez votre profil pour recevoir des offres adaptées.</p>
+            </div>
           </div>
         </div>
       </header>
@@ -45,10 +48,10 @@ import { Router } from '@angular/router';
             <p class="hero-subtitle">
               Déposez votre candidature en quelques minutes et découvrez les offres adaptées à vos compétences
             </p>
-            <button class="btn btn-large btn-primary btn-pulse" (click)="goToRegister()">
+            <a class="btn btn-large btn-primary btn-pulse" [routerLink]="['/candidate/complete-profile']">
               <span>Postuler maintenant</span>
               <i class="sparkle">📝</i>
-            </button>
+            </a>
           </div>
           <div class="hero-image fade-in-up">
             <img src="assets/hero-image.png" alt="Candidat Unilog" class="hero-img">
@@ -173,6 +176,54 @@ import { Router } from '@angular/router';
     </div>
   `,
   styles: [`
+    .cta-with-copy {
+      display: inline-block;
+      text-align: center;
+      position: relative;
+    }
+
+    .micro-copy {
+      margin: 0;
+      font-size: 0.875rem;
+      color: #6b7280;
+      opacity: 0;
+      transform: translateY(-4px) translateX(-50%);
+      transition: opacity 160ms ease, transform 160ms ease;
+      visibility: hidden;
+      pointer-events: none;
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 8px);
+      width: max-content;
+      max-width: 320px;
+      text-align: left;
+      white-space: normal;
+      padding: 4px 8px;
+      background: transparent;
+    }
+
+    /* Show micro-copy when hovering or keyboard-focusing the CTA */
+    .cta-with-copy:hover .micro-copy,
+    .cta-with-copy:focus-within .micro-copy {
+      opacity: 1;
+      transform: translateY(0) translateX(-50%);
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* On small screens, keep micro-copy below the button and visible */
+    @media (max-width: 640px) {
+      .micro-copy {
+        position: static;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        margin-top: 8px;
+        max-width: 100%;
+        padding: 0;
+      }
+    }
+
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
     * {

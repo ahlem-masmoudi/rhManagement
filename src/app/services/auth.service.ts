@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
-import { User, UserRole, LoginCredentials, AuthResponse } from '../models/auth.models';
+import { User, UserRole, LoginCredentials, AuthResponse, LoginResult, RiskChallengeData, ForgotPasswordResponse } from '../models/auth.models';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -34,22 +34,96 @@ export class AuthService {
     });
   }
 
-  login(credentials: LoginCredentials): Observable<AuthResponse> {
-    return this.http.post<{ success: boolean; data: AuthResponse }>(
+  private getOrCreateDeviceId(): string {
+    const key = 'deviceId';
+    const existing = localStorage.getItem(key);
+    if (existing && existing.trim().length > 0) return existing;
+
+    const newId = (globalThis.crypto && 'randomUUID' in globalThis.crypto)
+      ? (globalThis.crypto as Crypto).randomUUID()
+      : `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}-${Math.random().toString(16).slice(2)}`;
+
+    localStorage.setItem(key, newId);
+    return newId;
+  }
+
+  private getDeviceHeaders(): HttpHeaders {
+    const deviceId = this.getOrCreateDeviceId();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'X-Device-Id': deviceId
+    });
+  }
+
+  private isAuthResponse(result: AuthResponse | RiskChallengeData): result is AuthResponse {
+    return (result as AuthResponse)?.token !== undefined && (result as AuthResponse)?.user !== undefined;
+  }
+
+  login(credentials: LoginCredentials): Observable<LoginResult> {
+    return this.http.post<{ success: boolean; data: any }>(
       `${this.apiUrl}/auth/login`,
-      credentials
+      credentials,
+      { headers: this.getDeviceHeaders() }
     ).pipe(
-      map(response => response.data),
-      tap(authResponse => {
+      map(response => response.data as LoginResult),
+      tap(result => {
+        if (!this.isAuthResponse(result)) return;
+
         // Save to localStorage
-        localStorage.setItem('currentUser', JSON.stringify(authResponse.user));
-        localStorage.setItem('authToken', authResponse.token);
-        
-        this.currentUserSubject.next(authResponse.user);
+        localStorage.setItem('currentUser', JSON.stringify(result.user));
+        localStorage.setItem('authToken', result.token);
+
+        this.currentUserSubject.next(result.user);
       }),
       catchError(error => {
         console.error('Login error:', error);
-        return throwError(() => new Error(error.error?.message || 'Invalid credentials'));
+        // Preserve backend error payload (code/message) for UI to display precise feedback
+        return throwError(() => error);
+      })
+    );
+  }
+
+  verifyRisk(riskToken: string, otp: string): Observable<AuthResponse> {
+    return this.http.post<{ success: boolean; data: AuthResponse }>(
+      `${this.apiUrl}/auth/risk/verify`,
+      { riskToken, otp },
+      { headers: this.getDeviceHeaders() }
+    ).pipe(
+      map(response => response.data),
+      tap(authResponse => {
+        localStorage.setItem('currentUser', JSON.stringify(authResponse.user));
+        localStorage.setItem('authToken', authResponse.token);
+        this.currentUserSubject.next(authResponse.user);
+      }),
+      catchError(error => {
+        console.error('Risk verify error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  forgotPassword(email: string): Observable<ForgotPasswordResponse> {
+    return this.http.post<{ success: boolean; data?: ForgotPasswordResponse; message: string }>(
+      `${this.apiUrl}/auth/forgot-password`,
+      { email }
+    ).pipe(
+      map(response => response.data || {}),
+      catchError(error => {
+        console.error('Forgot password error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  resetPassword(token: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.apiUrl}/auth/reset-password`,
+      { token, password }
+    ).pipe(
+      map(response => ({ message: response.message })),
+      catchError(error => {
+        console.error('Reset password error:', error);
+        return throwError(() => error);
       })
     );
   }

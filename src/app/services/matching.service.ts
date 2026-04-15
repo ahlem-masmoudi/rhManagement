@@ -66,7 +66,21 @@ export class MatchingService {
 
   // Get all applications
   getApplications(): Observable<Application[]> {
-    this.loadApplications();
+    // Decide which endpoint to call depending on user role.
+    const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+    if (user && user.role === 'recruiter') {
+      // Recruiter: load all applications
+      this.loadApplications();
+    } else {
+      // Candidate (or anonymous): load only their own applications
+      // getMyApplications returns an observable of the flattened data array
+      this.getMyApplications().subscribe({
+        next: (apps) => this.applicationsSubject.next(apps as Application[]),
+        error: () => this.applicationsSubject.next([])
+      });
+    }
+
     return this.applications$;
   }
 

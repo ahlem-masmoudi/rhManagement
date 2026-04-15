@@ -16,7 +16,14 @@ export class CandidateService {
   public candidates$: Observable<Candidate[]> = this.candidatesSubject.asObservable();
 
   constructor(private notificationService: NotificationService) {
-    this.loadCandidates();
+    // Only load candidates if an auth token is present (avoid 401 on public pages)
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      this.loadCandidates();
+    } else {
+      // initialize with empty list to avoid nulls in subscribers
+      this.candidatesSubject.next([]);
+    }
   }
 
   // Get auth headers with token

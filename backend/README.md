@@ -46,6 +46,7 @@ The API will be available at `http://localhost:3000/api`
 ### Authentication
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
+- `POST /api/auth/risk/verify` - Verify risk-based OTP (step-up)
 - `GET /api/auth/me` - Get current user (protected)
 - `POST /api/auth/logout` - Logout user (protected)
 
@@ -130,6 +131,12 @@ curl -X POST http://localhost:3000/api/auth/login \
   }'
 ```
 
+Test accounts (seed):
+- `admin@rh.com` / `AdminDemo!2026`
+- `rh@example.com` / `RhDemo!2026`
+- `candidate@example.com` / `CandidateDemo!2026`
+- `newcandidate@example.com` / `NewCandidateDemo!2026`
+
 ## 📦 Project Structure
 
 ```
@@ -179,6 +186,22 @@ MONGODB_URI=mongodb://localhost:27017/rh-management
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 JWT_EXPIRE=7d
 FRONTEND_URL=http://localhost:4200
+
+# Risk-based auth (step-up)
+AUTH_RISK_ENABLED=true
+AUTH_RISK_THRESHOLD=60
+AUTH_RISK_OTP_TTL_SECONDS=600
+AUTH_RISK_OTP_MAX_ATTEMPTS=5
+
+# Demo-only: return OTP in API response (DO NOT enable in production)
+AUTH_RISK_DEV_RETURN_OTP=false
+
+# SMTP (required to send OTP by email)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-user
+SMTP_PASS=your-pass
+SMTP_FROM="RH Management <no-reply@example.com>"
 ```
 
 ## 📝 Notes

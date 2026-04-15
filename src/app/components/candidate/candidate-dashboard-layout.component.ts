@@ -20,7 +20,7 @@ import { Application, Offer } from '../../models';
               <rect width="32" height="32" rx="8" fill="#4F46E5"/>
               <path d="M12 10h8v2h-8v-2zm0 5h8v2h-8v-2zm0 5h5v2h-5v-2z" fill="white"/>
             </svg>
-            <span>Espace admin RH</span>
+            <span>Espace candidat</span>
           </div>
 
           <nav class="nav-menu">

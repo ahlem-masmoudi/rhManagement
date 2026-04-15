@@ -13,8 +13,21 @@ connectDB();
 const app = express();
 
 // Middleware
+// Configure CORS to accept common local dev origins (localhost and 127.0.0.1)
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:4200',
+  'http://127.0.0.1:4200'
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:4200',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS policy: Origin not allowed'));
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -31,6 +44,8 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/candidates', require('./routes/candidates'));
 app.use('/api/offers', require('./routes/offers'));
 app.use('/api/applications', require('./routes/applications'));
+// Scoring microservice health/config note (optional)
+// You can set SCORING_SERVICE_URL env var to point to the scoring FastAPI service
 
 // Health check route
 app.get('/api/health', (req, res) => {

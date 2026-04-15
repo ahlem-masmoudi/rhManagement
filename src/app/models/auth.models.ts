@@ -20,6 +20,23 @@ export interface AuthResponse {
   token: string;
 }
 
+export type RiskDelivery = 'dev' | 'email' | 'unconfigured';
+
+export interface RiskChallengeData {
+  riskToken: string;
+  delivery: RiskDelivery;
+  expiresInSeconds: number;
+  devOtp?: string;
+}
+
+export type LoginResult = AuthResponse | RiskChallengeData;
+
+export interface ForgotPasswordResponse {
+  delivery?: 'email' | 'unconfigured';
+  resetToken?: string;
+  resetUrl?: string;
+}
+
 export interface CandidateProfile {
   userId: string;
   firstName: string;

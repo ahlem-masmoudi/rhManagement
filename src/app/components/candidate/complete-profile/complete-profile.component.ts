@@ -53,14 +53,13 @@ import { CandidateProfile } from '../../../models/auth.models';
                 </div>
               </div>
 
-              <div class="form-group">
-                <label>Mot de passe (optionnel)</label>
+              <div class="form-group" hidden>
                 <input type="password" [(ngModel)]="password" name="password" placeholder="Minimum 6 caractères">
               </div>
 
               <div class="form-group">
                 <label>Localisation *</label>
-                <input type="text" [(ngModel)]="profile.location" name="location" placeholder="Paris, France" required>
+                <input type="text" [(ngModel)]="profile.location" name="location" placeholder="Tunis, Tunisie" required>
               </div>
             </div>
 
@@ -70,7 +69,7 @@ import { CandidateProfile } from '../../../models/auth.models';
 
               <div class="form-group">
                 <label>École / Université *</label>
-                <input type="text" [(ngModel)]="profile.school" name="school" placeholder="EPITECH Paris" required>
+                <input type="text" [(ngModel)]="profile.school" name="school" placeholder="INSAT Tunis" required>
               </div>
 
               <div class="grid-2">
@@ -96,12 +95,12 @@ import { CandidateProfile } from '../../../models/auth.models';
               <div class="grid-2">
                 <div class="form-group">
                   <label>Date d'obtention prévue *</label>
-                  <input type="text" [(ngModel)]="profile.expectedGraduation" name="expectedGraduation" placeholder="Septembre 2024" required>
+                  <input type="date" [(ngModel)]="profile.expectedGraduation" name="expectedGraduation" required>
                 </div>
 
                 <div class="form-group">
                   <label>Disponibilité *</label>
-                  <input type="text" [(ngModel)]="profile.availability" name="availability" placeholder="Juin 2024 - 6 mois" required>
+                  <input type="date" [(ngModel)]="profile.availability" name="availability" required>
                 </div>
               </div>
             </div>
@@ -440,11 +439,9 @@ export class CompleteProfileComponent implements OnInit {
     // If user is not logged in, create account first
     if (!user) {
       // Register user. Password is optional for first-time candidate; if not provided backend will generate a secure one.
-      const passwordToSend = (this.password && this.password.trim().length >= 6) ? this.password : undefined;
-
       this.authService.register(
         this.profile.email,
-        passwordToSend,
+        undefined,
         this.profile.firstName,
         this.profile.lastName
       ).subscribe({

@@ -43,6 +43,25 @@ const ApplicationSchema = new mongoose.Schema({
   coverLetter: {
     type: String
   }
+  ,
+  // Matching / scoring result (optional)
+  matchingScore: {
+    type: Number
+  },
+  matchingBreakdown: {
+    type: Object
+  },
+  matchingMeta: {
+    type: Object
+  },
+  matchedSkills: {
+    type: [String],
+    default: []
+  },
+  missingSkills: {
+    type: [String],
+    default: []
+  }
 }, {
   timestamps: true
 });

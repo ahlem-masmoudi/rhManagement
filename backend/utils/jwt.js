@@ -9,6 +9,16 @@ const generateToken = (userId) => {
   );
 };
 
+// Generate short-lived token for risk-based step-up challenge
+const generateRiskChallengeToken = (userId, nonce, expiresInSeconds) => {
+  const expiresIn = expiresInSeconds ? `${Number(expiresInSeconds)}s` : '10m';
+  return jwt.sign(
+    { id: userId, type: 'risk_challenge', nonce },
+    process.env.JWT_SECRET,
+    { expiresIn }
+  );
+};
+
 // Verify JWT token
 const verifyToken = (token) => {
   try {
@@ -20,5 +30,6 @@ const verifyToken = (token) => {
 
 module.exports = {
   generateToken,
+  generateRiskChallengeToken,
   verifyToken
 };
