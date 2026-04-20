@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getAllOffers,
+  getRecommendedOffers,
   getOffer,
   createOffer,
   updateOffer,
@@ -12,6 +13,7 @@ const { protect, authorize } = require('../middleware/auth');
 
 // Public routes
 router.get('/', getAllOffers);
+router.get('/recommended', protect, authorize('candidate'), getRecommendedOffers);
 router.get('/:id', getOffer);
 
 // Candidate routes

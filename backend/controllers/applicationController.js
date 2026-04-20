@@ -3,6 +3,174 @@ const Candidate = require('../models/Candidate');
 const Offer = require('../models/Offer');
 const User = require('../models/User');
 
+function normalizeSkill(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9+#.\- ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function ensureArray(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (value === null || value === undefined || value === '') {
+    return [];
+  }
+
+  return [value];
+}
+
+function tokenizeText(values) {
+  return ensureArray(values)
+    .reduce((tokens, value) => tokens.concat(normalizeSkill(value).split(' ')), [])
+    .map(token => token.trim())
+    .filter(token => token.length >= 2);
+}
+
+function computeFallbackMatching(app) {
+  const candidateSkills = ensureArray(app.candidate?.skills).map(normalizeSkill).filter(Boolean);
+  const candidateSkillSet = new Set(candidateSkills);
+
+  let offerSkillSources = [
+    ...ensureArray(app.offer?.skills),
+    ...ensureArray(app.offer?.requirements)
+  ];
+
+  if (offerSkillSources.filter(Boolean).length === 0 && app.offer?.description) {
+    offerSkillSources = tokenizeText([app.offer.description, app.offer.title, app.offer.department]);
+  }
+
+  const offerSkills = offerSkillSources.map(normalizeSkill).filter(Boolean);
+  const uniqueOfferSkills = [...new Set(offerSkills)];
+
+  if (candidateSkillSet.size === 0 || uniqueOfferSkills.length === 0) {
+    return {
+      global: 0,
+      semantic: 0,
+      rules: 0,
+      matchedSkills: [],
+      missingSkills: uniqueOfferSkills,
+      explanations: {
+        strengths: [],
+        weaknesses: uniqueOfferSkills.length ? ['Aucune competence commune detectee pour le moment.'] : [],
+        recommendations: ['Verifier que les competences de l offre sont bien renseignees.']
+      }
+    };
+  }
+
+  const matchedSkills = uniqueOfferSkills.filter(skill => candidateSkillSet.has(skill));
+  const missingSkills = uniqueOfferSkills.filter(skill => !candidateSkillSet.has(skill));
+  const skillCoverage = matchedSkills.length / uniqueOfferSkills.length;
+  const candidateCoverage = matchedSkills.length / candidateSkillSet.size;
+  const offerTokens = new Set(tokenizeText([
+    app.offer?.title,
+    app.offer?.description,
+    app.offer?.department,
+    app.offer?.location
+  ]));
+  const titleBoost = candidateSkills.some(skill => offerTokens.has(skill)) ? 1 : 0;
+  const global = Math.round(Math.min(100, (skillCoverage * 70) + (candidateCoverage * 20) + (titleBoost * 10)));
+  const semantic = Math.round(Math.min(100, (skillCoverage * 60) + (titleBoost * 40)));
+  const rules = Math.round(Math.min(100, (skillCoverage * 80) + (candidateCoverage * 20)));
+
+  return {
+    global,
+    semantic,
+    rules,
+    matchedSkills,
+    missingSkills,
+    explanations: {
+      strengths: matchedSkills.length ? [`Competences alignees: ${matchedSkills.slice(0, 6).join(', ')}`] : [],
+      weaknesses: missingSkills.length ? [`Competences manquantes: ${missingSkills.slice(0, 6).join(', ')}`] : [],
+      recommendations: missingSkills.length ? [`Renforcer en priorite: ${missingSkills.slice(0, 3).join(', ')}`] : []
+    }
+  };
+}
+
+function buildMatchingExplanation(app) {
+  const strengths = [];
+  const weaknesses = [];
+  const recommendations = [];
+
+  if (Array.isArray(app.matchedSkills) && app.matchedSkills.length) {
+    strengths.push(`Competences alignees: ${app.matchedSkills.slice(0, 6).join(', ')}`);
+  }
+
+  if (Array.isArray(app.missingSkills) && app.missingSkills.length) {
+    weaknesses.push(`Competences manquantes: ${app.missingSkills.slice(0, 6).join(', ')}`);
+    recommendations.push(`Renforcer en priorite: ${app.missingSkills.slice(0, 3).join(', ')}`);
+  }
+
+  const breakdown = app.matchingBreakdown || {};
+  if (typeof breakdown.experience_score === 'number') {
+    if (breakdown.experience_score >= 70) {
+      strengths.push(`Experience pertinente (${Math.round(breakdown.experience_score)}%)`);
+    } else if (breakdown.experience_score > 0) {
+      weaknesses.push(`Experience en dessous du besoin (${Math.round(breakdown.experience_score)}%)`);
+    }
+  }
+
+  if (typeof breakdown.education_score === 'number') {
+    if (breakdown.education_score >= 70) {
+      strengths.push(`Diplome coherent (${Math.round(breakdown.education_score)}%)`);
+    } else if (breakdown.education_score > 0) {
+      weaknesses.push(`Diplome partiellement aligne (${Math.round(breakdown.education_score)}%)`);
+    }
+  }
+
+  return { strengths, weaknesses, recommendations };
+}
+
+function formatMatchingScore(app) {
+  if (typeof app.matchingScore !== 'number') {
+    const fallback = computeFallbackMatching(app);
+
+    if (Array.isArray(app.matchedSkills) && app.matchedSkills.length === 0 && fallback.matchedSkills.length) {
+      app.matchedSkills = fallback.matchedSkills;
+    }
+
+    if (Array.isArray(app.missingSkills) && app.missingSkills.length === 0 && fallback.missingSkills.length) {
+      app.missingSkills = fallback.missingSkills;
+    }
+
+    return {
+      global: fallback.global,
+      semantic: fallback.semantic,
+      rules: fallback.rules,
+      explanations: fallback.explanations
+    };
+  }
+
+  const breakdown = app.matchingBreakdown || {};
+  const ruleParts = [
+    breakdown.skills_score,
+    breakdown.experience_score,
+    breakdown.education_score,
+    breakdown.title_score,
+    breakdown.bonus_score
+  ].filter(value => typeof value === 'number');
+
+  const rules = ruleParts.length
+    ? Math.round(ruleParts.reduce((sum, value) => sum + value, 0) / ruleParts.length)
+    : Math.round(app.matchingScore);
+
+  const semantic = typeof breakdown.semantic_score === 'number'
+    ? Math.round(breakdown.semantic_score)
+    : rules;
+
+  return {
+    global: Math.round(app.matchingScore),
+    semantic,
+    rules,
+    explanations: buildMatchingExplanation(app)
+  };
+}
+
 // @desc    Get all applications (for recruiters)
 // @route   GET /api/applications
 // @access  Private (Recruiter only)
@@ -16,7 +184,7 @@ exports.getAllApplications = async (req, res) => {
           select: 'firstName lastName email'
         }
       })
-      .populate('offer', 'title company location type status')
+      .populate('offer', 'title company location type status department description skills requirements')
       .sort('-appliedAt');
 
     const formattedApplications = applications.map(app => {
@@ -45,7 +213,10 @@ exports.getAllApplications = async (req, res) => {
           status: offerObj.status || ''
         },
         status: app.status,
-        appliedAt: app.appliedAt
+        appliedAt: app.appliedAt,
+        matchingScore: formatMatchingScore(app),
+        matchedSkills: app.matchedSkills || [],
+        missingSkills: app.missingSkills || []
       };
     });
 
@@ -79,7 +250,7 @@ exports.getApplicationsByOffer = async (req, res) => {
           select: 'firstName lastName email'
         }
       })
-      .populate('offer', 'title company location type')
+      .populate('offer', 'title company location type department description skills requirements')
       .sort('-appliedAt');
 
     const formattedApplications = applications.map(app => ({
@@ -101,7 +272,10 @@ exports.getApplicationsByOffer = async (req, res) => {
         type: app.offer.type
       },
       status: app.status,
-      appliedAt: app.appliedAt
+      appliedAt: app.appliedAt,
+      matchingScore: formatMatchingScore(app),
+      matchedSkills: app.matchedSkills || [],
+      missingSkills: app.missingSkills || []
     }));
 
     res.status(200).json({
@@ -134,7 +308,7 @@ exports.getMyApplications = async (req, res) => {
     }
 
     const applications = await Application.find({ candidate: candidate._id })
-      .populate('offer', 'title company location type duration status')
+      .populate('offer', 'title company location type duration status department description skills requirements')
       .sort('-appliedAt');
 
     const formattedApplications = applications.map(app => ({
@@ -149,7 +323,10 @@ exports.getMyApplications = async (req, res) => {
         status: app.offer.status
       },
       status: app.status,
-      appliedAt: app.appliedAt
+      appliedAt: app.appliedAt,
+      matchingScore: formatMatchingScore(app),
+      matchedSkills: app.matchedSkills || [],
+      missingSkills: app.missingSkills || []
     }));
 
     res.status(200).json({

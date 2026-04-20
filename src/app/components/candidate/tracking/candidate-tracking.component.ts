@@ -2,14 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { CandidateService } from '../../../services/candidate.service';
-import { DocumentService } from '../../../services/document.service';
 import { Candidate, StatusChange, CandidateDocument } from '../../../models';
-import { CandidateDocumentsComponent } from '../../documents/candidate-documents.component';
 
 @Component({
   selector: 'app-candidate-tracking',
   standalone: true,
-  imports: [CommonModule, CandidateDocumentsComponent],
+  imports: [CommonModule],
   template: `
     <div class="tracking-page">
       <div class="page-header">
@@ -61,12 +59,19 @@ import { CandidateDocumentsComponent } from '../../documents/candidate-documents
         <!-- Documents -->
         <div class="card documents-card">
           <h2>📎 Documents</h2>
-          <app-candidate-documents 
-            [candidateId]="candidate.id"
-            [isRH]="false"
-            [allowUpload]="needsDocuments"
-            [allowDelete]="false">
-          </app-candidate-documents>
+          <div *ngIf="getDocuments().length === 0" class="empty-documents">
+            Aucun document disponible pour le moment.
+          </div>
+
+          <div *ngFor="let doc of getDocuments()" class="tracking-doc-item">
+            <div>
+              <strong>{{ doc.name }}</strong>
+              <div class="tracking-doc-meta">
+                {{ getDocTypeLabel(doc.type) }} • {{ getDocumentStatusLabel(doc.status) }}
+              </div>
+            </div>
+            <button class="btn-download-doc" (click)="downloadDocument(doc)">Telecharger</button>
+          </div>
           
           <div *ngIf="needsDocuments" class="upload-reminder">
             <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
@@ -278,6 +283,41 @@ import { CandidateDocumentsComponent } from '../../documents/candidate-documents
       font-size: 0.875rem;
     }
 
+    .empty-documents {
+      padding: var(--spacing-md);
+      border: 1px dashed #d1d5db;
+      border-radius: 8px;
+      color: #6b7280;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .tracking-doc-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .tracking-doc-meta {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .btn-download-doc {
+      border: none;
+      background: #2563eb;
+      color: white;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
     .contact-card ul {
       list-style: none;
       padding: 0;
@@ -333,14 +373,41 @@ export class CandidateTrackingComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private candidateService: CandidateService,
-    private documentService: DocumentService
+    private candidateService: CandidateService
   ) {}
 
   ngOnInit(): void {
     this.trackingToken = this.route.snapshot.paramMap.get('token') || '';
     if (this.trackingToken) {
-      this.candidate = this.candidateService.getCandidateByTrackingToken(this.trackingToken);
+      this.candidateService.getTrackingCandidate(this.trackingToken).subscribe({
+        next: (candidate) => {
+          this.candidate = {
+            id: candidate._id,
+            firstName: candidate.userId?.firstName || '',
+            lastName: candidate.userId?.lastName || '',
+            email: candidate.userId?.email || '',
+            phone: candidate.phone || '',
+            status: candidate.status || 'nouveau',
+            school: candidate.school || '',
+            level: candidate.educationLevel || '',
+            expectedDegree: candidate.expectedDegree || '',
+            expectedGraduation: candidate.expectedGraduation || '',
+            location: candidate.location || '',
+            availability: candidate.availability || '',
+            skills: (candidate.skills || []).map((skill: string) => ({ name: skill })),
+            experiences: [],
+            projects: [],
+            languages: [],
+            documents: candidate.documents || [],
+            statusHistory: candidate.statusHistory || [],
+            createdAt: candidate.createdAt,
+            updatedAt: candidate.updatedAt
+          };
+        },
+        error: () => {
+          this.candidate = undefined;
+        }
+      });
     }
   }
 
@@ -351,6 +418,50 @@ export class CandidateTrackingComponent implements OnInit {
 
   getStatusHistory(): StatusChange[] {
     return this.candidate?.statusHistory || [];
+  }
+
+  getDocuments(): CandidateDocument[] {
+    return this.candidate?.documents || [];
+  }
+
+  getDocTypeLabel(type: any): string {
+    const labels: Record<string, string> = {
+      cv: 'CV',
+      lettre_motivation: 'Lettre de motivation',
+      demande_stage: 'Demande de stage',
+      convention_stage: 'Convention de stage',
+      convention_signee: 'Convention signee',
+      attestation: 'Lettre d affectation',
+      autre: 'Autre'
+    };
+    return labels[type || 'autre'] || (type || 'Document');
+  }
+
+  getDocumentStatusLabel(status: any): string {
+    const labels: Record<string, string> = {
+      en_attente: 'En attente',
+      soumis: 'Soumis',
+      valide: 'Valide',
+      rejete: 'Rejete',
+      signe: 'Signe'
+    };
+    return labels[status || 'soumis'] || (status || 'soumis');
+  }
+
+  downloadDocument(doc: CandidateDocument): void {
+    if (!this.trackingToken) return;
+
+    this.candidateService.downloadTrackingDocument(this.trackingToken, doc.id).subscribe({
+      next: (response) => {
+        const blob = new Blob([response.content], { type: 'text/html;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const link = window.document.createElement('a');
+        link.href = url;
+        link.download = response.name || doc.name;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      }
+    });
   }
 
   getStatusLabel(status: string): string {

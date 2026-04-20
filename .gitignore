@@ -160,6 +160,8 @@ dist
 /libpeerconnection.log
 testem.log
 /typings
+.claude/
+temp-build-check/
 
 # System files
 .DS_Store

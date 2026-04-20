@@ -1,6 +1,94 @@
 const Offer = require('../models/Offer');
 const Candidate = require('../models/Candidate');
 const Application = require('../models/Application');
+const { scoreResumeAgainstOffer } = require('../utils/scoring');
+
+function normalizeSkill(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9+#.\- ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function ensureArray(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (value === null || value === undefined || value === '') {
+    return [];
+  }
+
+  return [value];
+}
+
+function tokenizeText(values) {
+  return ensureArray(values)
+    .reduce((tokens, value) => tokens.concat(normalizeSkill(value).split(' ')), [])
+    .map(token => token.trim())
+    .filter(token => token.length >= 2);
+}
+
+function scoreOfferForCandidate(candidate, offer) {
+  const candidateSkills = ensureArray(candidate.skills).map(normalizeSkill).filter(Boolean);
+  const candidateSkillSet = new Set(candidateSkills);
+
+  // Combine explicit skills + requirements. If both empty, fall back to tokenizing
+  // the description so offers created without a skills list still get scored.
+  let offerSkillSources = [...ensureArray(offer.skills), ...ensureArray(offer.requirements)];
+  if (offerSkillSources.filter(Boolean).length === 0 && offer.description) {
+    offerSkillSources = tokenizeText([offer.description, offer.title]);
+  }
+  const offerSkills = offerSkillSources.map(normalizeSkill).filter(Boolean);
+  const uniqueOfferSkills = [...new Set(offerSkills)];
+
+  if (candidateSkillSet.size === 0 || uniqueOfferSkills.length === 0) {
+    return {
+      compatibilityScore: 0,
+      matchedSkills: [],
+      missingSkills: uniqueOfferSkills,
+      compatibilityLabel: uniqueOfferSkills.length === 0 ? 'Non spécifiée' : 'Faible'
+    };
+  }
+
+  const matchedSkills = uniqueOfferSkills.filter(skill => candidateSkillSet.has(skill));
+  const missingSkills = uniqueOfferSkills.filter(skill => !candidateSkillSet.has(skill));
+
+  const skillCoverage = matchedSkills.length / uniqueOfferSkills.length;
+  const candidateCoverage = matchedSkills.length / candidateSkillSet.size;
+
+  const offerTokens = new Set(tokenizeText([
+    offer.title,
+    offer.description,
+    offer.department,
+    offer.location
+  ]));
+  const titleBoost = candidateSkills.some(skill => offerTokens.has(skill)) ? 1 : 0;
+
+  const score = Math.round(
+    Math.min(
+      100,
+      (skillCoverage * 70) +
+      (candidateCoverage * 20) +
+      (titleBoost * 10)
+    )
+  );
+
+  let compatibilityLabel = 'Faible';
+  if (score >= 75) compatibilityLabel = 'Excellente';
+  else if (score >= 55) compatibilityLabel = 'Bonne';
+  else if (score >= 35) compatibilityLabel = 'Moyenne';
+
+  return {
+    compatibilityScore: score,
+    matchedSkills,
+    missingSkills,
+    compatibilityLabel
+  };
+}
 
 // @desc    Get all offers
 // @route   GET /api/offers
@@ -24,6 +112,66 @@ exports.getAllOffers = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching offers',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Get recommended offers for the logged-in candidate
+// @route   GET /api/offers/recommended
+// @access  Private (Candidate only)
+exports.getRecommendedOffers = async (req, res) => {
+  try {
+    const candidate = await Candidate.findOne({ userId: req.user.id });
+
+    if (!candidate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Candidate profile not found'
+      });
+    }
+
+    // Include active/draft offers. Also accept frontend status values ('publiee', 'published')
+    // in case some documents were saved before the status mapping was applied.
+    const offers = await Offer.find({
+      status: { $in: ['active', 'draft', 'publiee', 'published'] }
+    })
+      .populate('createdBy', 'firstName lastName email')
+      .sort('-createdAt');
+
+    console.log(`[recommended] candidate skills: ${JSON.stringify(candidate.skills)}`);
+    console.log(`[recommended] offers found: ${offers.length} (active+draft)`);
+    offers.forEach(o => {
+      console.log(`  offer "${o.title}" skills: ${JSON.stringify(o.skills)} requirements: ${JSON.stringify(o.requirements)}`);
+    });
+
+    const scoredOffers = offers
+      .map(offer => {
+        const scoring = scoreOfferForCandidate(candidate, offer);
+        return {
+          ...offer.toObject(),
+          ...scoring
+        };
+      })
+      .filter(offer => offer.compatibilityScore > 0)
+      .sort((a, b) => b.compatibilityScore - a.compatibilityScore);
+
+    console.log(`[recommended] scored offers returned: ${scoredOffers.length}`);
+    scoredOffers.forEach(o => {
+      console.log(`  "${o.title}" score=${o.compatibilityScore} matched=${JSON.stringify(o.matchedSkills)}`);
+    });
+
+    res.status(200).json({
+      success: true,
+      count: scoredOffers.length,
+      candidateSkills: candidate.skills || [],
+      data: scoredOffers
+    });
+  } catch (error) {
+    console.error('Error in getRecommendedOffers:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching recommended offers',
       error: error.message
     });
   }
@@ -101,7 +249,12 @@ exports.updateOffer = async (req, res) => {
       });
     }
 
-    offer = await Offer.findByIdAndUpdate(req.params.id, req.body, {
+    // Normalize status: map frontend values to backend enum values
+    const body = { ...req.body };
+    const statusMap = { publiee: 'active', published: 'active', brouillon: 'draft', archivee: 'closed' };
+    if (body.status && statusMap[body.status]) body.status = statusMap[body.status];
+
+    offer = await Offer.findByIdAndUpdate(req.params.id, body, {
       new: true,
       runValidators: true
     });
@@ -196,8 +349,38 @@ exports.applyToOffer = async (req, res) => {
     const application = await Application.create({
       candidate: candidate._id,
       offer: req.params.id,
-      status: 'nouveau'
+      status: 'nouveau',
+      coverLetter: req.body.coverLetter || '',
+      resumeUrl: req.body.cvBase64 || '',
+      notes: req.body.cvName ? `CV: ${req.body.cvName}` : ''
     });
+
+    // Best-effort auto scoring: the application is still considered submitted
+    // even if the Python scoring service is unavailable.
+    if (application.resumeUrl) {
+      try {
+        const scoringResult = await scoreResumeAgainstOffer({
+          resumeSource: application.resumeUrl,
+          resumeName: req.body.cvName || '',
+          offer
+        });
+
+        application.matchingScore = scoringResult.final_score;
+        application.matchingBreakdown = scoringResult.breakdown || {};
+        application.matchingMeta = {
+          model: scoringResult.meta?.model || 'all-MiniLM-L6-v2',
+          parserError: scoringResult.meta?.parser_error || null,
+          scoredAt: new Date().toISOString(),
+          autoScored: true
+        };
+        application.matchedSkills = scoringResult.matches?.matched_required_skills || [];
+        application.missingSkills = scoringResult.matches?.missing_required_skills || [];
+
+        await application.save();
+      } catch (scoringError) {
+        console.warn('Auto scoring skipped:', scoringError.message);
+      }
+    }
 
     res.status(200).json({
       success: true,

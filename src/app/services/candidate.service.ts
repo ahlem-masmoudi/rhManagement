@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Candidate, CandidateStatus, StatusChange, BulkStatusChange, StatusChangeEmail } from '../models';
 import { NotificationService } from './notification.service';
+import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -15,10 +16,14 @@ export class CandidateService {
   private candidatesSubject = new BehaviorSubject<Candidate[]>([]);
   public candidates$: Observable<Candidate[]> = this.candidatesSubject.asObservable();
 
-  constructor(private notificationService: NotificationService) {
-    // Only load candidates if an auth token is present (avoid 401 on public pages)
+  constructor(
+    private notificationService: NotificationService,
+    private authService: AuthService
+  ) {
+    // Only recruiters/admins should eagerly load the full candidates list.
     const token = localStorage.getItem('authToken');
-    if (token) {
+    const user = this.authService.getCurrentUser();
+    if (token && (user?.role === 'recruiter' || user?.role === 'admin')) {
       this.loadCandidates();
     } else {
       // initialize with empty list to avoid nulls in subscribers
@@ -129,6 +134,18 @@ export class CandidateService {
     );
   }
 
+  getTrackingCandidate(token: string) {
+    return this.http.get<{ success: boolean; data: any }>(
+      `${this.apiUrl}/candidates/tracking/${token}`
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error loading tracking candidate:', error);
+        throw error;
+      })
+    );
+  }
+
   // Download a specific document for a candidate
   downloadDocument(candidateId: string, docId: string) {
     return this.http.get<{ success: boolean; data: any }>(
@@ -138,6 +155,60 @@ export class CandidateService {
       map(response => response.data),
       catchError(error => {
         console.error('Error downloading document:', error);
+        throw error;
+      })
+    );
+  }
+
+  downloadTrackingDocument(token: string, docId: string) {
+    return this.http.get<{ success: boolean; data: any }>(
+      `${this.apiUrl}/candidates/tracking/${token}/documents/${docId}/download`
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error downloading tracking document:', error);
+        throw error;
+      })
+    );
+  }
+
+  uploadCandidateDocument(candidateId: string, payload: any) {
+    return this.http.post<{ success: boolean; data: any }>(
+      `${this.apiUrl}/candidates/${candidateId}/documents`,
+      payload,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error uploading candidate document:', error);
+        throw error;
+      })
+    );
+  }
+
+  generateSignedInternshipRequest(candidateId: string, docId: string, payload: any) {
+    return this.http.post<{ success: boolean; data: any }>(
+      `${this.apiUrl}/candidates/${candidateId}/documents/${docId}/sign-request`,
+      payload,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error generating signed internship request:', error);
+        throw error;
+      })
+    );
+  }
+
+  generateAssignmentLetter(candidateId: string, payload: any) {
+    return this.http.post<{ success: boolean; data: any }>(
+      `${this.apiUrl}/candidates/${candidateId}/documents/generate-assignment-letter`,
+      payload,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error generating assignment letter:', error);
         throw error;
       })
     );

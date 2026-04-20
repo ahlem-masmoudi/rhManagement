@@ -177,7 +177,7 @@ export class AuthService {
       }),
       catchError(error => {
         console.error('Registration error:', error);
-        return throwError(() => new Error(error.error?.message || 'Registration failed'));
+        return throwError(() => error);
       })
     );
   }

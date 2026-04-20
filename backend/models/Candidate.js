@@ -98,11 +98,21 @@ const candidateSchema = new mongoose.Schema({
     {
       id: String,
       name: String,
+      type: String,
       content: String, // base64 or text (for demo)
+      status: {
+        type: String,
+        enum: ['en_attente', 'soumis', 'valide', 'rejete', 'signe'],
+        default: 'soumis'
+      },
       isSigned: { type: Boolean, default: false },
+      signedBy: String,
+      generatedBy: String,
+      relatedDocumentId: String,
       uploadedBy: String,
       uploadedAt: Date,
-      signedAt: Date
+      signedAt: Date,
+      metadata: mongoose.Schema.Types.Mixed
     }
   ],
   createdAt: {

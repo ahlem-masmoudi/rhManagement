@@ -42,51 +42,57 @@ type AuthView = 'login' | 'forgot' | 'reset';
 
             <div class="form-group">
               <label for="email">Email</label>
-              <div class="field-input-row input-with-icon">
-                <input
-                  type="email"
-                  id="email"
-                  [(ngModel)]="credentials.email"
-                  name="email"
-                  placeholder="exemple@email.com"
-                  required
-                  autocomplete="email"
-                  [disabled]="isAccountTemporarilyLocked()">
-                <span class="input-icon svg-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 7h16v10H4z"></path>
-                    <path d="m4 8 8 6 8-6"></path>
-                  </svg>
-                </span>
-                <span class="field-error-emoji-inline-right" *ngIf="errorField === 'email'">!</span>
+              <div class="field-input-row">
+                <div class="input-with-icon">
+                  <input
+                    type="email"
+                    id="email"
+                    [(ngModel)]="credentials.email"
+                    name="email"
+                    placeholder="exemple@email.com"
+                    required
+                    autocomplete="email"
+                    [class.input-invalid]="errorField === 'email'"
+                    [disabled]="isAccountTemporarilyLocked()">
+                  <span class="input-icon svg-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <rect x="4" y="6.5" width="16" height="11" rx="2"></rect>
+                      <path d="M5.5 8 12 13l6.5-5"></path>
+                    </svg>
+                  </span>
+                </div>
+                <span class="field-error-marker" *ngIf="errorField === 'email'" aria-hidden="true">!</span>
               </div>
             </div>
 
             <div class="form-group">
               <label for="password">Mot de passe</label>
-              <div class="field-input-row input-with-icon">
-                <input
-                  [type]="showLoginPassword ? 'text' : 'password'"
-                  id="password"
-                  [(ngModel)]="credentials.password"
-                  name="password"
-                  placeholder="........"
-                  required
-                  autocomplete="current-password"
-                  [disabled]="isAccountTemporarilyLocked()">
-                <button type="button" class="password-toggle inside-input" (click)="showLoginPassword = !showLoginPassword" [attr.aria-label]="showLoginPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [title]="showLoginPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
-                  <svg *ngIf="!showLoginPassword" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path>
-                    <circle cx="12" cy="12" r="3.2"></circle>
-                  </svg>
-                  <svg *ngIf="showLoginPassword" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M3 3l18 18"></path>
-                    <path d="M10.6 10.7a2.9 2.9 0 0 0 4 4"></path>
-                    <path d="M9.9 5.2A12 12 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-4 4.8"></path>
-                    <path d="M6.6 6.7C3.8 8.5 2 12 2 12a17.8 17.8 0 0 0 6.2 5.4"></path>
-                  </svg>
-                </button>
-                <span class="field-error-emoji-inline-right" *ngIf="errorField === 'password'">!</span>
+              <div class="field-input-row">
+                <div class="input-with-icon">
+                  <input
+                    [type]="showLoginPassword ? 'text' : 'password'"
+                    id="password"
+                    [(ngModel)]="credentials.password"
+                    name="password"
+                    placeholder="........"
+                    required
+                    autocomplete="current-password"
+                    [class.input-invalid]="errorField === 'password'"
+                    [disabled]="isAccountTemporarilyLocked()">
+                  <button type="button" class="password-toggle inside-input" (click)="showLoginPassword = !showLoginPassword" [attr.aria-label]="showLoginPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [title]="showLoginPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+                    <svg *ngIf="!showLoginPassword" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path>
+                      <circle cx="12" cy="12" r="3.2"></circle>
+                    </svg>
+                    <svg *ngIf="showLoginPassword" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M3 3l18 18"></path>
+                      <path d="M10.6 10.7a2.9 2.9 0 0 0 4 4"></path>
+                      <path d="M9.9 5.2A12 12 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-4 4.8"></path>
+                      <path d="M6.6 6.7C3.8 8.5 2 12 2 12a17.8 17.8 0 0 0 6.2 5.4"></path>
+                    </svg>
+                  </button>
+                </div>
+                <span class="field-error-marker" *ngIf="errorField === 'password'" aria-hidden="true">!</span>
               </div>
               <small class="help-text lockout-help" *ngIf="lockoutCountdownLabel">
                 Nouveau test possible dans {{ lockoutCountdownLabel }}.
@@ -402,15 +408,6 @@ type AuthView = 'login' | 'forgot' | 'reset';
       border: 1px solid #93C5FD;
     }
 
-    .field-error-emoji-inline-right {
-      margin-left: 8px;
-      font-size: 16px;
-      vertical-align: middle;
-      display: inline-block;
-      font-weight: 700;
-      color: #991B1B;
-    }
-
     .field-input-row {
       display: flex;
       align-items: center;
@@ -418,7 +415,8 @@ type AuthView = 'login' | 'forgot' | 'reset';
       width: 100%;
     }
 
-    .field-input-row input {
+    .field-input-row > .input-with-icon,
+    .field-input-row > input {
       flex: 1 1 auto;
       min-width: 0;
     }
@@ -434,6 +432,11 @@ type AuthView = 'login' | 'forgot' | 'reset';
       padding-right: 52px;
     }
 
+    .input-with-icon input.input-invalid {
+      border-color: #fca5a5;
+      box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.12);
+    }
+
     .input-icon {
       position: absolute;
       right: 16px;
@@ -447,11 +450,21 @@ type AuthView = 'login' | 'forgot' | 'reset';
       width: 20px;
       height: 20px;
       display: block;
-      stroke: #4338CA;
+      stroke: #4F46E5;
       stroke-width: 1.8;
       fill: none;
       stroke-linecap: round;
       stroke-linejoin: round;
+    }
+
+    .field-error-marker {
+      flex: 0 0 auto;
+      width: 18px;
+      text-align: center;
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 800;
+      color: #b91c1c;
     }
 
     .password-toggle {
@@ -640,11 +653,10 @@ export class LoginComponent implements OnInit, OnDestroy {
 
       if (this.authService.isAuthenticated()) {
         const user = this.authService.getCurrentUser();
-        if (user?.role === 'candidate') {
-          this.router.navigate(['/candidate']);
-        } else {
+        if (user?.role !== 'candidate') {
           this.router.navigate(['/rh']);
         }
+        // Candidates don't use this login page — stay here or go home
         return;
       }
 
@@ -713,14 +725,13 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
 
         if (response.user.role === 'candidate') {
-          if (!response.user.profileComplete) {
-            this.router.navigate(['/candidate/complete-profile']);
-          } else {
-            this.router.navigate(['/candidate']);
-          }
-        } else {
-          this.router.navigate(['/rh']);
+          // Candidates don't use this login — block and inform
+          this.authService.logout();
+          this.isLoading = false;
+          this.errorMessage = 'Cette connexion est réservée à l\'équipe RH. Les candidats accèdent via le formulaire de candidature sur la page d\'accueil.';
+          return;
         }
+        this.router.navigate(['/rh']);
       },
       error: (error) => {
         this.isLoading = false;
@@ -729,12 +740,12 @@ export class LoginComponent implements OnInit, OnDestroy {
         const message = error?.error?.message;
 
         if (code === 'EMAIL_INCORRECT') {
-          this.errorMessage = 'Email incorrect';
+          this.errorMessage = 'Email ou mot de passe incorrect';
           this.errorField = 'email';
           return;
         }
         if (code === 'PASSWORD_INCORRECT') {
-          this.errorMessage = 'Mot de passe incorrect';
+          this.errorMessage = 'Email ou mot de passe incorrect';
           this.errorField = 'password';
           return;
         }
@@ -838,14 +849,12 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.isLoading = false;
 
         if (response.user.role === 'candidate') {
-          if (!response.user.profileComplete) {
-            this.router.navigate(['/candidate/complete-profile']);
-          } else {
-            this.router.navigate(['/candidate']);
-          }
-        } else {
-          this.router.navigate(['/rh']);
+          this.authService.logout();
+          this.isLoading = false;
+          this.errorMessage = 'Cette connexion est réservée à l\'équipe RH. Les candidats accèdent via le formulaire de candidature sur la page d\'accueil.';
+          return;
         }
+        this.router.navigate(['/rh']);
       },
       error: (error) => {
         this.isLoading = false;

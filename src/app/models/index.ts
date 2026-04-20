@@ -39,6 +39,10 @@ export interface Offer {
   matchingCriteria: MatchingCriteria;
   applicationsCount: number;
   viewsCount: number;
+  compatibilityScore?: number;
+  matchedSkills?: string[];
+  missingSkills?: string[];
+  compatibilityLabel?: string;
   createdAt: Date;
   updatedAt: Date;
 }

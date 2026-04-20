@@ -122,9 +122,23 @@ exports.register = async (req, res) => {
     // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({
-        success: false,
-        message: 'User with this email already exists'
+      // Always return a fresh token for the existing user.
+      // This allows the complete-profile form to work for both new and returning candidates.
+      const token = generateToken(userExists._id);
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: {
+            id: userExists._id,
+            email: userExists.email,
+            firstName: userExists.firstName,
+            lastName: userExists.lastName,
+            role: userExists.role,
+            profileComplete: userExists.profileComplete,
+            createdAt: userExists.createdAt
+          },
+          token
+        }
       });
     }
 

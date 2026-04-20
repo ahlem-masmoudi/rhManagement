@@ -157,6 +157,26 @@ import { Offer } from '../../models';
               <label>Description *</label>
               <textarea [(ngModel)]="newOffer.description" placeholder="Décrivez le poste..."></textarea>
             </div>
+
+            <div class="form-group">
+              <label>Compétences requises</label>
+              <div class="skills-input">
+                <input
+                  type="text"
+                  [(ngModel)]="newSkill"
+                  name="newSkill"
+                  placeholder="Ex: React, Python, Java..."
+                  (keyup.enter)="addOfferSkill()">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="addOfferSkill()">Ajouter</button>
+              </div>
+              <div class="skills-list" *ngIf="newOffer.matchingCriteria.requiredSkills.length > 0">
+                <span *ngFor="let skill of newOffer.matchingCriteria.requiredSkills; let i = index" class="skill-tag">
+                  {{ skill.name }}
+                  <button type="button" (click)="removeOfferSkill(i)" class="remove-skill">×</button>
+                </span>
+              </div>
+              <p class="text-sm text-muted" style="margin-top:6px;font-size:12px;color:#6b7280;">Ajoutez les compétences demandées pour cette offre</p>
+            </div>
           </div>
 
           <div class="modal-footer">
@@ -330,6 +350,48 @@ import { Offer } from '../../models';
       gap: var(--spacing-md);
     }
 
+    .skills-input {
+      display: flex;
+      gap: 8px;
+    }
+
+    .skills-input input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+    }
+
+    .skills-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .skill-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: #eef2ff;
+      color: #4338ca;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .remove-skill {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #4338ca;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
+    }
+
     @media (max-width: 768px) {
       .filters-grid {
         grid-template-columns: 1fr;
@@ -353,6 +415,8 @@ export class OffresComponent implements OnInit {
   selectedDepartment: string = '';
   selectedStatus: string = '';
   
+  newSkill = '';
+
   newOffer: any = {
     title: '',
     department: '',
@@ -449,6 +513,7 @@ export class OffresComponent implements OnInit {
 
   openEditModal(offer: Offer): void {
     this.editingOffer = offer;
+    this.newSkill = '';
     this.newOffer = {
       title: offer.title,
       department: offer.department,
@@ -537,7 +602,23 @@ export class OffresComponent implements OnInit {
     });
   }
 
+  addOfferSkill(): void {
+    const skills = this.newSkill.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    skills.forEach(name => {
+      const exists = this.newOffer.matchingCriteria.requiredSkills.some((s: any) => s.name === name);
+      if (!exists) {
+        this.newOffer.matchingCriteria.requiredSkills.push({ name, level: 3 });
+      }
+    });
+    this.newSkill = '';
+  }
+
+  removeOfferSkill(index: number): void {
+    this.newOffer.matchingCriteria.requiredSkills.splice(index, 1);
+  }
+
   resetForm(): void {
+    this.newSkill = '';
     this.newOffer = {
       title: '',
       department: '',

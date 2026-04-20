@@ -37,9 +37,6 @@ import { Application, Offer } from '../../models';
           <div class="user-menu">
             <div class="user-avatar">{{ getUserInitials() }}</div>
             <span class="user-name">{{ getUserName() }}</span>
-            <button class="btn btn-secondary btn-sm" (click)="logout()">
-              Déconnexion
-            </button>
           </div>
         </div>
       </header>

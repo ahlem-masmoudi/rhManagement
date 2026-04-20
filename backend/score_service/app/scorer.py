@@ -19,9 +19,37 @@ except Exception:
     def final_score(parsed, raw_resume_text, raw_jd_text, job, model_name, weights):
         return {"final_score": 50.0, "breakdown": {}, "candidate": {}, "job": {}, "matches": {}, "summaries": {}}
 
+DEFAULT_WEIGHTS = {
+    "skills": 0.3,
+    "experience": 0.2,
+    "education": 0.1,
+    "semantic": 0.25,
+    "title": 0.05,
+    "bonus": 0.1,
+}
+
+
+def normalize_weights(weights: Dict[str, float] | None) -> Dict[str, float]:
+    merged = {**DEFAULT_WEIGHTS, **(weights or {})}
+    total = sum(float(value or 0.0) for value in merged.values())
+    if total <= 0:
+        return DEFAULT_WEIGHTS.copy()
+    return {key: float(value or 0.0) / total for key, value in merged.items()}
+
 
 def score_file_with_job(file_path: str, job_text: str, model_name: str, weights: Dict[str, float]) -> Dict[str, Any]:
     parsed_resume, raw_resume_text, parser_error = parse_resume(file_path)
     job = parse_job(job_text)
-    result = final_score(parsed=parsed_resume, raw_resume_text=raw_resume_text, raw_jd_text=job_text, job=job, model_name=model_name, weights=weights)
+    result = final_score(
+        parsed=parsed_resume,
+        raw_resume_text=raw_resume_text,
+        raw_jd_text=job_text,
+        job=job,
+        model_name=model_name,
+        weights=normalize_weights(weights)
+    )
+    result["meta"] = {
+        "model": model_name,
+        "parser_error": parser_error,
+    }
     return result

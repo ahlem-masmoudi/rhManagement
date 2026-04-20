@@ -87,6 +87,22 @@ export class OfferService {
     return this.offers$;
   }
 
+  getRecommendedOffers(): Observable<{ offers: Offer[]; candidateSkillsCount: number }> {
+    return this.http.get<{ success: boolean; data: any[]; candidateSkills: string[] }>(
+      `${this.apiUrl}/offers/recommended`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => ({
+        offers: this.mapOffersFromBackend(response.data),
+        candidateSkillsCount: (response.candidateSkills || []).length
+      })),
+      catchError(error => {
+        console.error('Error loading recommended offers:', error);
+        return throwError(() => new Error(error.error?.message || 'Failed to load recommended offers'));
+      })
+    );
+  }
+
   getOfferById(id: string): Offer | undefined {
     return this.offersSubject.value.find(o => o.id === id);
   }
@@ -96,7 +112,7 @@ export class OfferService {
     const offerData = {
       title: offer.title,
       department: offer.department,  // ✅ CORRIGÉ !
-      company: 'Unilog',  // Entreprise fixe
+      company: 'INET',  // Entreprise fixe
       location: offer.location,
       type: offer.type,
       duration: offer.duration,
@@ -175,10 +191,10 @@ export class OfferService {
     );
   }
 
-  applyToOffer(offerId: string): Observable<any> {
+  applyToOffer(offerId: string, payload: { cvBase64?: string; cvName?: string; coverLetter?: string } = {}): Observable<any> {
     return this.http.post<{ success: boolean; data: any }>(
       `${this.apiUrl}/offers/${offerId}/apply`,
-      {},
+      payload,
       { headers: this.getAuthHeaders() }
     ).pipe(
       map(response => response.data),
