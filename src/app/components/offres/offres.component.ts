@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OfferService } from '../../services/offer.service';
@@ -83,7 +83,10 @@ import { Offer } from '../../models';
             {{ offer.department }}
           </div>
 
-          <p class="offer-description">{{ offer.description }}</p>
+          <p class="offer-description" [class.expanded]="expandedOffers.has(offer.id)" #descEl>{{ offer.description }}</p>
+          <button class="desc-toggle" *ngIf="truncatedOffers.has(offer.id)" (click)="toggleDesc(offer.id)">
+            {{ expandedOffers.has(offer.id) ? 'Voir moins ▲' : 'Voir plus ▼' }}
+          </button>
 
           <div class="offer-stats">
             <div class="stat">
@@ -257,11 +260,27 @@ import { Offer } from '../../models';
       line-height: 1.5;
       margin: 0;
       overflow: hidden;
-      text-overflow: ellipsis;
       display: -webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
     }
+    .offer-description.expanded {
+      display: block;
+      -webkit-line-clamp: unset;
+      overflow: visible;
+    }
+    .desc-toggle {
+      background: none;
+      border: none;
+      color: #4F46E5;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 2px 0;
+      margin-top: 2px;
+      transition: color 0.2s;
+    }
+    .desc-toggle:hover { color: #3730a3; }
 
     .offer-stats {
       display: flex;
@@ -393,20 +412,30 @@ import { Offer } from '../../models';
     }
 
     @media (max-width: 768px) {
-      .filters-grid {
-        grid-template-columns: 1fr;
-      }
+      .filters-grid { grid-template-columns: 1fr; }
+      .page-header { flex-direction: column; gap: var(--spacing-md); }
+      .modal-content { max-height: 95vh; border-radius: var(--radius-md); }
+      .modal-header, .modal-body, .modal-footer { padding: 16px; }
+      .offer-stats { flex-wrap: wrap; gap: var(--spacing-md); }
+      .offer-actions { flex-wrap: wrap; }
+    }
 
-      .page-header {
-        flex-direction: column;
-        gap: var(--spacing-md);
-      }
+    @media (max-width: 480px) {
+      .modal { padding: 8px; }
+      .modal-footer { flex-direction: column; }
+      .modal-footer button { width: 100%; justify-content: center; }
+      .skills-input { flex-direction: column; }
+      .skills-input input { width: 100%; }
+      .offer-meta { flex-wrap: wrap; gap: 8px; }
     }
   `]
 })
 export class OffresComponent implements OnInit {
+  @ViewChildren('descEl') descEls!: QueryList<ElementRef>;
   offers: Offer[] = [];
-  allOffers: Offer[] = []; // Pour stocker toutes les offres
+  allOffers: Offer[] = [];
+  expandedOffers = new Set<string>();
+  truncatedOffers = new Set<string>();
   showModal = false;
   editingOffer: Offer | null = null;
   
@@ -462,6 +491,27 @@ export class OffresComponent implements OnInit {
     });
   }
 
+  toggleDesc(id: string): void {
+    if (this.expandedOffers.has(id)) this.expandedOffers.delete(id);
+    else this.expandedOffers.add(id);
+  }
+
+  private detectTruncation(): void {
+    setTimeout(() => {
+      this.descEls.forEach((el, i) => {
+        const native = el.nativeElement as HTMLElement;
+        const id = this.offers[i]?.id;
+        if (!id) return;
+        // Si déjà étendu, on sait qu'il était tronqué
+        if (this.expandedOffers.has(id)) {
+          this.truncatedOffers.add(id);
+        } else if (native.scrollHeight > native.clientHeight + 1) {
+          this.truncatedOffers.add(id);
+        }
+      });
+    }, 50);
+  }
+
   filterOffers(): void {
     let filtered = [...this.allOffers];
 
@@ -502,6 +552,8 @@ export class OffresComponent implements OnInit {
     }
 
     this.offers = filtered;
+    this.truncatedOffers.clear();
+    this.detectTruncation();
     console.log('✅ Offres affichées:', this.offers.length);
   }
 

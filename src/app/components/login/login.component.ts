@@ -108,6 +108,27 @@ type AuthView = 'login' | 'forgot' | 'reset';
               <span *ngIf="isLoading">Connexion...</span>
             </button>
 
+            <div *ngIf="isFingerprintSupported" class="divider-or">
+              <span>ou</span>
+            </div>
+
+            <button *ngIf="isFingerprintSupported" type="button" class="btn btn-fingerprint btn-block"
+              [disabled]="isLoading || isAccountTemporarilyLocked() || !credentials.email"
+              (click)="onFingerprintLogin()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
+                <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
+                <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
+                <path d="M2 12a10 10 0 0 1 18-6"/>
+                <path d="M2 16h.01"/>
+                <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
+                <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
+                <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
+                <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
+              </svg>
+              <span>Empreinte digitale</span>
+            </button>
+
             <div class="login-footer">
               <p>Pas encore de compte ?
                 <a href="javascript:void(0)" (click)="goToRegister()">Créer un compte candidat</a>
@@ -576,6 +597,52 @@ type AuthView = 'login' | 'forgot' | 'reset';
       cursor: not-allowed;
     }
 
+    .divider-or {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--gray-400);
+      font-size: 13px;
+    }
+
+    .divider-or::before,
+    .divider-or::after {
+      content: '';
+      flex: 1;
+      border-top: 1px solid var(--gray-200);
+    }
+
+    .btn-fingerprint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: white;
+      border: 1.5px solid var(--gray-200);
+      color: var(--gray-700);
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .btn-fingerprint:hover:not(:disabled) {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      background: #EEF2FF;
+    }
+
+    .btn-fingerprint:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-fingerprint svg {
+      flex-shrink: 0;
+    }
+
     @media (max-width: 480px) {
       .login-card {
         padding: 24px;
@@ -630,6 +697,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   riskToken = '';
   otpCode = '';
   otpHint = 'Saisissez le code reçu pour finaliser la connexion.';
+  isFingerprintSupported = typeof PublicKeyCredential !== 'undefined';
 
   constructor(
     private authService: AuthService,
@@ -888,6 +956,39 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.errorMessage = message || 'Erreur lors de la vérification.';
       }
     });
+  }
+
+  onFingerprintLogin(): void {
+    if (!this.credentials.email) {
+      this.errorMessage = 'Veuillez saisir votre email.';
+      return;
+    }
+
+    this.isLoading = true;
+    this.resetMessages();
+
+    this.authService.loginWithFingerprint(this.credentials.email.trim().toLowerCase())
+      .then(() => {
+        this.isLoading = false;
+        const user = this.authService.getCurrentUser();
+        if (user?.role === 'candidate') {
+          this.authService.logout();
+          this.errorMessage = 'Cette connexion est réservée à l\'équipe RH.';
+          return;
+        }
+        this.router.navigate(['/rh']);
+      })
+      .catch(err => {
+        this.isLoading = false;
+        const code = err?.error?.code;
+        if (code === 'NO_CREDENTIAL') {
+          this.errorMessage = 'Aucune empreinte configurée pour ce compte. Connectez-vous avec email/mot de passe.';
+        } else if (err?.name === 'NotAllowedError') {
+          this.errorMessage = 'Authentification par empreinte annulée ou refusée.';
+        } else {
+          this.errorMessage = err?.error?.message || err?.message || 'Authentification par empreinte échouée.';
+        }
+      });
   }
 
   restartLogin(): void {

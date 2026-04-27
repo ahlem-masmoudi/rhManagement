@@ -1,11 +1,41 @@
-const fetch = require('node-fetch');
+const nodeFetch = require('node-fetch');
 const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const SCORING_SERVICE_URL = process.env.SCORING_SERVICE_URL || 'http://127.0.0.1:8000/score';
-const DEFAULT_WEIGHTS = { skills: 0.3, experience: 0.2, education: 0.1, semantic: 0.25, title: 0.05, bonus: 0.1 };
+const fetchImpl = (() => {
+  if (typeof nodeFetch === 'function') {
+    return nodeFetch;
+  }
+  if (nodeFetch && typeof nodeFetch.default === 'function') {
+    return nodeFetch.default;
+  }
+  if (typeof globalThis.fetch === 'function') {
+    return globalThis.fetch.bind(globalThis);
+  }
+  throw new Error('No fetch implementation available');
+})();
+
+function normalizeScoringUrl(raw) {
+  const fallback = 'http://127.0.0.1:8000/score';
+  const value = String(raw || '').trim();
+  if (!value) return fallback;
+
+  try {
+    const url = new URL(value);
+    if (!url.pathname || url.pathname === '/') {
+      url.pathname = '/score';
+    }
+    return url.toString();
+  } catch (error) {
+    return fallback;
+  }
+}
+
+const SCORING_SERVICE_URL = normalizeScoringUrl(process.env.SCORING_SERVICE_URL || 'http://127.0.0.1:8000/score');
+const DEFAULT_WEIGHTS = { skills: 0.25, experience: 0.20, education: 0.10, semantic: 0.20, title: 0.05, bonus: 0.05, completeness: 0.15 };
+const DEFAULT_MODEL = process.env.SCORING_MODEL || 'intfloat/multilingual-e5-large';
 
 function buildJobText(offer) {
   const sections = [
@@ -51,11 +81,11 @@ async function writeResumeToTempFile(resumeSource, fallbackName = 'resume.pdf') 
 
   if (/^https?:\/\//i.test(source)) {
     const tmpPath = path.join(os.tmpdir(), `resume_${Date.now()}${path.extname(source) || path.extname(fallbackName) || '.pdf'}`);
-    const response = await fetch(source);
+    const response = await fetchImpl(source);
     if (!response.ok) {
       throw new Error(`Failed to download resume: ${response.status}`);
     }
-    const buffer = await response.buffer();
+    const buffer = await responseToBuffer(response);
     fs.writeFileSync(tmpPath, buffer);
     return tmpPath;
   }
@@ -63,7 +93,7 @@ async function writeResumeToTempFile(resumeSource, fallbackName = 'resume.pdf') 
   throw new Error('Unsupported resume source. Expected a data URI or http(s) URL.');
 }
 
-async function scoreResumeAgainstOffer({ resumeSource, resumeName, offer, modelName = 'all-MiniLM-L6-v2', weights = {} }) {
+async function scoreResumeAgainstOffer({ resumeSource, resumeName, offer, modelName = DEFAULT_MODEL, weights = {} }) {
   let tmpPath = null;
 
   try {
@@ -75,7 +105,9 @@ async function scoreResumeAgainstOffer({ resumeSource, resumeName, offer, modelN
     form.append('weights', JSON.stringify({ ...DEFAULT_WEIGHTS, ...(weights || {}) }));
     form.append('file', fs.createReadStream(tmpPath), { filename: path.basename(tmpPath) });
 
-    const scoreResp = await fetch(SCORING_SERVICE_URL, { method: 'POST', body: form });
+    console.log(`[scoring-client] POST ${SCORING_SERVICE_URL}`);
+    const scoreResp = await fetchImpl(SCORING_SERVICE_URL, { method: 'POST', body: form });
+    console.log(`[scoring-client] response status=${scoreResp.status}`);
     if (!scoreResp.ok) {
       const text = await scoreResp.text();
       throw new Error(`Scoring service error: ${scoreResp.status} ${text}`);
@@ -87,6 +119,16 @@ async function scoreResumeAgainstOffer({ resumeSource, resumeName, offer, modelN
       try { fs.unlinkSync(tmpPath); } catch (e) {}
     }
   }
+}
+
+async function responseToBuffer(response) {
+  if (typeof response.arrayBuffer === 'function') {
+    return Buffer.from(await response.arrayBuffer());
+  }
+  if (typeof response.buffer === 'function') {
+    return await response.buffer();
+  }
+  throw new Error('Unsupported response body interface');
 }
 
 module.exports = {

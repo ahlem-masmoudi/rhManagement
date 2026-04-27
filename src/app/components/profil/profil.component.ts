@@ -691,17 +691,31 @@ import { Candidate } from '../../models';
     }
 
     @media (max-width: 1024px) {
-      .profil-layout {
-        grid-template-columns: 1fr;
+      .profil-layout { grid-template-columns: 1fr; }
+      .skills-grid { grid-template-columns: 1fr;
       }
 
-      .skills-grid {
-        grid-template-columns: 1fr;
-      }
+      .modal-layout { grid-template-columns: 1fr; }
+    }
 
-      .modal-layout {
-        grid-template-columns: 1fr;
-      }
+    @media (max-width: 768px) {
+      .tab-btn { padding: 10px 12px; font-size: 13px; }
+      .profile-avatar-large { width: 72px; height: 72px; font-size: 24px; }
+      .modal-overlay { padding: 8px; align-items: flex-end; }
+      .modal-card { border-radius: 16px 16px 0 0; max-height: 95vh; }
+      .modal-header h3 { font-size: 18px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .letter-preview { display: none; }
+      .modal-actions { flex-wrap: wrap; }
+      .modal-actions button { flex: 1; justify-content: center; }
+      .actions-bar { flex-wrap: wrap; }
+    }
+
+    @media (max-width: 480px) {
+      .tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+      .tab-btn { white-space: nowrap; flex-shrink: 0; }
+      .skills-grid { grid-template-columns: 1fr; }
+      .profil-layout { gap: var(--spacing-md); }
     }
   `]
 })

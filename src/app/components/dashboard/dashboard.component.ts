@@ -392,6 +392,19 @@ import { Candidate, Offer } from '../../models';
       font-size: 12px;
       color: var(--gray-500);
     }
+
+    @media (max-width: 768px) {
+      .page-header h1 { font-size: 22px; }
+      .kpi-value { font-size: 22px; }
+      .kpi-card { padding: var(--spacing-md); }
+    }
+
+    @media (max-width: 480px) {
+      .kpi-icon { width: 36px; height: 36px; }
+      .kpi-icon svg { width: 18px; height: 18px; }
+      .kpi-value { font-size: 20px; }
+      .kpi-label { font-size: 12px; }
+    }
   `]
 })
 export class DashboardComponent implements OnInit {

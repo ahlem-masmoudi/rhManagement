@@ -166,3 +166,12 @@ temp-build-check/
 # System files
 .DS_Store
 Thumbs.db
+
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Score service venv
+backend/score_service/.venv/

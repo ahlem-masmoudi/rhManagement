@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError, firstValueFrom } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { User, UserRole, LoginCredentials, AuthResponse, LoginResult, RiskChallengeData, ForgotPasswordResponse } from '../models/auth.models';
 import { environment } from '../../environments/environment';
@@ -198,6 +198,162 @@ export class AuthService {
         this.logout();
         return throwError(() => new Error('Session expired'));
       })
+    );
+  }
+
+  // ─── WebAuthn helpers ────────────────────────────────────────────────────────
+
+  private base64urlToBuffer(base64url: string): ArrayBuffer {
+    const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
+    const binary = atob(padded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes.buffer;
+  }
+
+  private bufferToBase64url(buffer: ArrayBuffer | null | undefined): string {
+    if (!buffer) return '';
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  }
+
+  // ─── WebAuthn Authentication (login page — public) ───────────────────────────
+
+  async loginWithFingerprint(email: string): Promise<void> {
+    const optResp = await firstValueFrom(
+      this.http.post<{ success: boolean; data: any }>(
+        `${this.apiUrl}/auth/webauthn/auth/options`,
+        { email }
+      )
+    );
+
+    if (!optResp?.success) throw new Error('Impossible d\'obtenir le défi WebAuthn');
+    const options = optResp.data;
+
+    const publicKey: PublicKeyCredentialRequestOptions = {
+      challenge: this.base64urlToBuffer(options.challenge),
+      allowCredentials: (options.allowCredentials || []).map((c: any) => ({
+        id: this.base64urlToBuffer(c.id),
+        type: 'public-key' as PublicKeyCredentialType,
+        transports: c.transports || []
+      })),
+      userVerification: options.userVerification || 'required',
+      timeout: options.timeout || 60000,
+      rpId: options.rpId
+    };
+
+    const credential = await navigator.credentials.get({ publicKey }) as PublicKeyCredential;
+    if (!credential) throw new Error('Authentification par empreinte annulée');
+
+    const assertionResponse = credential.response as AuthenticatorAssertionResponse;
+    const credentialJSON = {
+      id: credential.id,
+      rawId: this.bufferToBase64url(credential.rawId),
+      type: credential.type,
+      response: {
+        clientDataJSON: this.bufferToBase64url(assertionResponse.clientDataJSON),
+        authenticatorData: this.bufferToBase64url(assertionResponse.authenticatorData),
+        signature: this.bufferToBase64url(assertionResponse.signature),
+        userHandle: assertionResponse.userHandle ? this.bufferToBase64url(assertionResponse.userHandle) : null
+      },
+      clientExtensionResults: credential.getClientExtensionResults()
+    };
+
+    const verifyResp = await firstValueFrom(
+      this.http.post<{ success: boolean; data: AuthResponse }>(
+        `${this.apiUrl}/auth/webauthn/auth/verify`,
+        { email, credential: credentialJSON }
+      )
+    );
+
+    if (!verifyResp?.success || !verifyResp.data) throw new Error('Authentification échouée');
+
+    const authResponse = verifyResp.data;
+    localStorage.setItem('currentUser', JSON.stringify(authResponse.user));
+    localStorage.setItem('authToken', authResponse.token);
+    this.currentUserSubject.next(authResponse.user);
+  }
+
+  // ─── WebAuthn Registration (RH dashboard — protected) ────────────────────────
+
+  async registerFingerprint(): Promise<void> {
+    const optResp = await firstValueFrom(
+      this.http.post<{ success: boolean; data: any }>(
+        `${this.apiUrl}/auth/webauthn/register/options`,
+        {},
+        { headers: this.getAuthHeaders() }
+      )
+    );
+
+    if (!optResp?.success) throw new Error('Impossible d\'obtenir les options d\'enregistrement');
+    const options = optResp.data;
+
+    const publicKey: PublicKeyCredentialCreationOptions = {
+      challenge: this.base64urlToBuffer(options.challenge),
+      rp: options.rp,
+      user: {
+        id: new TextEncoder().encode(options.user.id),
+        name: options.user.name,
+        displayName: options.user.displayName
+      },
+      pubKeyCredParams: options.pubKeyCredParams,
+      excludeCredentials: (options.excludeCredentials || []).map((c: any) => ({
+        id: this.base64urlToBuffer(c.id),
+        type: 'public-key' as PublicKeyCredentialType,
+        transports: c.transports || []
+      })),
+      authenticatorSelection: options.authenticatorSelection,
+      timeout: options.timeout || 60000,
+      attestation: options.attestation || 'none'
+    };
+
+    const credential = await navigator.credentials.create({ publicKey }) as PublicKeyCredential;
+    if (!credential) throw new Error('Enregistrement de l\'empreinte annulé');
+
+    const attestationResponse = credential.response as AuthenticatorAttestationResponse;
+    const credentialJSON = {
+      id: credential.id,
+      rawId: this.bufferToBase64url(credential.rawId),
+      type: credential.type,
+      response: {
+        clientDataJSON: this.bufferToBase64url(attestationResponse.clientDataJSON),
+        attestationObject: this.bufferToBase64url(attestationResponse.attestationObject),
+        transports: (attestationResponse as any).getTransports?.() ?? []
+      },
+      clientExtensionResults: credential.getClientExtensionResults()
+    };
+
+    const verifyResp = await firstValueFrom(
+      this.http.post<{ success: boolean; message: string }>(
+        `${this.apiUrl}/auth/webauthn/register/verify`,
+        { credential: credentialJSON },
+        { headers: this.getAuthHeaders() }
+      )
+    );
+
+    if (!verifyResp?.success) throw new Error(verifyResp?.message || 'Enregistrement échoué');
+  }
+
+  getWebAuthnCredentials(): Observable<any[]> {
+    return this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiUrl}/auth/webauthn/credentials`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data || []),
+      catchError(error => throwError(() => error))
+    );
+  }
+
+  deleteWebAuthnCredentials(): Observable<any> {
+    return this.http.delete<{ success: boolean; message: string }>(
+      `${this.apiUrl}/auth/webauthn/credentials`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response),
+      catchError(error => throwError(() => error))
     );
   }
 }

@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { CandidateDocument, ApplicationDocument, DocumentType, DocumentStatus } from '../models';
+import { CandidateService } from './candidate.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +11,7 @@ export class DocumentService {
   private documentsSubject = new BehaviorSubject<Map<string, CandidateDocument[]>>(new Map());
   public documents$: Observable<Map<string, CandidateDocument[]>> = this.documentsSubject.asObservable();
 
-  constructor() {}
+  constructor(private candidateService: CandidateService) {}
 
   /**
    * Upload un document pour un candidat
@@ -20,30 +22,53 @@ export class DocumentService {
     type: DocumentType, 
     uploadedBy: string
   ): Observable<CandidateDocument> {
-    return new Observable(observer => {
-      // Simulation d'upload - Dans la vraie app, utiliser FormData et API backend
-      const fileUrl = URL.createObjectURL(file);
-      
-      const document: CandidateDocument = {
-        id: this.generateId(),
+    return this.fileToDataUrl(file).pipe(
+      switchMap((content) => this.candidateService.uploadCandidateDocument(candidateId, {
         name: file.name,
+        content,
         type,
-        fileUrl,
-        uploadedBy,
-        uploadedAt: new Date(),
         status: 'soumis',
-        isSigned: false
+        metadata: { uploadedBy }
+      })),
+      map((response) => {
+        const fileUrl = URL.createObjectURL(file);
+        const document: CandidateDocument = {
+          id: response?.docId || this.generateId(),
+          name: file.name,
+          type,
+          fileUrl,
+          uploadedBy,
+          uploadedAt: new Date(),
+          status: 'soumis',
+          isSigned: false
+        };
+
+        const currentDocs = this.documentsSubject.value;
+        const candidateDocs = currentDocs.get(candidateId) || [];
+        candidateDocs.push(document);
+        currentDocs.set(candidateId, candidateDocs);
+        this.documentsSubject.next(new Map(currentDocs));
+
+        return document;
+      }),
+      catchError((error) => {
+        console.error('Error uploading candidate document:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  private fileToDataUrl(file: File): Observable<string> {
+    return new Observable<string>((observer) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        observer.next(String(reader.result || ''));
+        observer.complete();
       };
-
-      // Ajouter le document à la liste
-      const currentDocs = this.documentsSubject.value;
-      const candidateDocs = currentDocs.get(candidateId) || [];
-      candidateDocs.push(document);
-      currentDocs.set(candidateId, candidateDocs);
-      this.documentsSubject.next(new Map(currentDocs));
-
-      observer.next(document);
-      observer.complete();
+      reader.onerror = () => {
+        observer.error(new Error('Impossible de lire le fichier selectionne'));
+      };
+      reader.readAsDataURL(file);
     });
   }
 

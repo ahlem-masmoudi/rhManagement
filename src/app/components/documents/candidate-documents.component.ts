@@ -258,6 +258,39 @@ import { CandidateDocument, DocumentType, DocumentStatus } from '../../models';
     .btn-danger:hover {
       background: #fee2e2;
     }
+
+    @media (max-width: 640px) {
+      .document-item {
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+      }
+
+      .document-icon { display: none; }
+
+      .document-info {
+        flex: 1 1 100%;
+        order: 1;
+      }
+
+      .document-status {
+        flex-direction: row;
+        align-items: center;
+        order: 2;
+        flex: 1 1 auto;
+      }
+
+      .document-actions {
+        order: 3;
+        flex: 0 0 auto;
+      }
+
+      .documents-header h3 { font-size: 1rem; }
+    }
+
+    @media (max-width: 480px) {
+      .form-actions { flex-direction: column; }
+      .form-actions button { width: 100%; }
+    }
   `]
 })
 export class CandidateDocumentsComponent implements OnInit {

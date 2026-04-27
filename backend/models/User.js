@@ -114,6 +114,29 @@ const userSchema = new mongoose.Schema({
   },
   resetPasswordExpiresAt: {
     type: Date
+  },
+
+  // WebAuthn / fingerprint credentials
+  webauthnCredentials: {
+    type: [
+      {
+        credentialID:        { type: String, required: true },
+        credentialPublicKey: { type: String, required: true },
+        counter:             { type: Number, default: 0 },
+        transports:          { type: [String], default: [] },
+        deviceType:          { type: String },
+        backedUp:            { type: Boolean, default: false },
+        createdAt:           { type: Date, default: Date.now }
+      }
+    ],
+    default: []
+  },
+  webauthnChallenge: {
+    type: String,
+    select: false
+  },
+  webauthnChallengeExpiresAt: {
+    type: Date
   }
 });
 

@@ -70,7 +70,7 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
         </div>
 
         <div class="archives-grid" style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
-          <div *ngFor="let app of getArchivedApplications()" class="archive-card card" style="width:320px; padding:12px; position:relative;">
+          <div *ngFor="let app of getArchivedApplications()" class="archive-card card" style="width:min(320px, 100%); padding:12px; position:relative;">
             <div style="display:flex; gap:12px; align-items:center;">
               <div class="candidate-avatar">{{ getInitials(app.candidateId) }}</div>
               <div style="flex:1; min-width:0;">
@@ -447,13 +447,28 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     }
 
     @media (max-width: 768px) {
+      .page-header { flex-direction: column; align-items: flex-start; gap: var(--spacing-md); }
+      .header-actions { width: 100%; justify-content: flex-start; }
+
       .kanban-board {
-        flex-direction: column;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 8px;
       }
 
       .kanban-column {
-        flex: 1 1 auto;
+        flex: 0 0 280px;
+        min-width: 280px;
       }
+
+      .archives-section { padding: var(--spacing-md); }
+    }
+
+    @media (max-width: 480px) {
+      .kanban-column { flex: 0 0 260px; min-width: 260px; }
+      .doc-preview { margin: 8px; max-height: calc(100vh - 16px); border-radius: var(--radius-md); }
+      .doc-preview-header { padding: 12px 16px; }
+      .archive-card { width: 100% !important; }
     }
   `]
 })

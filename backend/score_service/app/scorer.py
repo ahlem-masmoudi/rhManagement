@@ -20,12 +20,13 @@ except Exception:
         return {"final_score": 50.0, "breakdown": {}, "candidate": {}, "job": {}, "matches": {}, "summaries": {}}
 
 DEFAULT_WEIGHTS = {
-    "skills": 0.3,
-    "experience": 0.2,
-    "education": 0.1,
-    "semantic": 0.25,
+    "skills": 0.25,
+    "experience": 0.20,
+    "education": 0.10,
+    "semantic": 0.20,
     "title": 0.05,
-    "bonus": 0.1,
+    "bonus": 0.05,
+    "completeness": 0.15,
 }
 
 

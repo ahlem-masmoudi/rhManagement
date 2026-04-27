@@ -31,7 +31,7 @@ class ScoreResponse(BaseModel):
 @app.post('/score')
 async def score(
     job_text: str = Form(...),
-    model_name: str = Form('all-MiniLM-L6-v2'),
+    model_name: str = Form('intfloat/multilingual-e5-large'),
     weights: str = Form('{}'),
     file: UploadFile = File(...)
 ):

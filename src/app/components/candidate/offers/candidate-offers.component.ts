@@ -794,6 +794,16 @@ import { Offer } from '../../../models';
       max-width: 360px;
       line-height: 1.6;
     }
+
+    @media (max-width: 480px) {
+      .modal-backdrop { padding: 0; align-items: flex-end; }
+      .apply-modal { border-radius: 16px 16px 0 0; max-height: 95vh; }
+      .apply-modal-body { padding: 16px; }
+      .apply-modal-header { padding: 16px; }
+      .apply-modal-footer { padding: 12px 16px; flex-direction: column; }
+      .apply-modal-footer button { width: 100%; justify-content: center; }
+      .score-badge { width: 52px !important; height: 52px; font-size: 16px; }
+    }
   `]
 })
 export class CandidateOffersComponent implements OnInit {

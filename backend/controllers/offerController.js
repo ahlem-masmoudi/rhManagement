@@ -359,6 +359,7 @@ exports.applyToOffer = async (req, res) => {
     // even if the Python scoring service is unavailable.
     if (application.resumeUrl) {
       try {
+        console.log(`[scoring] attempt application=${application._id} offer=${req.params.id}`);
         const scoringResult = await scoreResumeAgainstOffer({
           resumeSource: application.resumeUrl,
           resumeName: req.body.cvName || '',
@@ -377,9 +378,19 @@ exports.applyToOffer = async (req, res) => {
         application.missingSkills = scoringResult.matches?.missing_required_skills || [];
 
         await application.save();
+        console.log(`[scoring] success application=${application._id} final_score=${scoringResult.final_score}`);
       } catch (scoringError) {
-        console.warn('Auto scoring skipped:', scoringError.message);
+        application.matchingMeta = {
+          ...(application.matchingMeta || {}),
+          autoScored: false,
+          scoringError: scoringError.message,
+          scoredAt: new Date().toISOString()
+        };
+        await application.save();
+        console.warn(`[scoring] skipped application=${application._id}: ${scoringError.message}`);
       }
+    } else {
+      console.warn(`[scoring] skipped application=${application._id}: missing resumeUrl`);
     }
 
     res.status(200).json({

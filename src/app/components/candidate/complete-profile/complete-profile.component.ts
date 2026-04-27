@@ -240,7 +240,7 @@ import { CandidateProfile } from '../../../models/auth.models';
         radial-gradient(circle at 82% 12%, rgba(224, 242, 254, 0.24), transparent 24%),
         radial-gradient(circle at 50% 78%, rgba(125, 211, 252, 0.22), transparent 26%),
         linear-gradient(135deg, #00A0DC 0%, #0093d3 30%, #0074BC 100%);
-      padding: 40px 20px;
+      padding: 12px 20px;
       position: relative;
       overflow: hidden;
     }
@@ -282,7 +282,7 @@ import { CandidateProfile } from '../../../models/auth.models';
 
     .profile-container {
       width: 100%;
-      max-width: 820px;
+      max-width: 810px;
       position: relative;
       z-index: 1;
     }
@@ -291,9 +291,9 @@ import { CandidateProfile } from '../../../models/auth.models';
       background:
         linear-gradient(155deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.86)),
         linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.08));
-      border-radius: 32px;
-      padding: 34px;
-      box-shadow: 0 28px 70px rgba(0, 60, 120, 0.22);
+      border-radius: 28px;
+      padding: 20px 24px;
+      box-shadow: 0 20px 50px rgba(0, 60, 120, 0.22);
       border: 1px solid rgba(255, 255, 255, 0.35);
       backdrop-filter: blur(18px);
       position: relative;
@@ -323,7 +323,7 @@ import { CandidateProfile } from '../../../models/auth.models';
 
     .profile-header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 14px;
       position: relative;
       z-index: 1;
     }
@@ -348,18 +348,18 @@ import { CandidateProfile } from '../../../models/auth.models';
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 28px;
+      margin-bottom: 12px;
     }
 
     .progress-step {
-      width: 52px;
-      height: 52px;
-      border-radius: 18px;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
       background: rgba(255, 255, 255, 0.4);
       color: #64748b;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
       align-items: center;
       justify-content: center;
       font-weight: 600;
@@ -370,12 +370,12 @@ import { CandidateProfile } from '../../../models/auth.models';
     }
 
     .step-number {
-      font-size: 1rem;
+      font-size: 0.88rem;
       font-weight: 800;
     }
 
     .step-label {
-      font-size: 0.52rem;
+      font-size: 0.47rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
@@ -400,8 +400,8 @@ import { CandidateProfile } from '../../../models/auth.models';
     }
 
     .progress-line {
-      width: 84px;
-      height: 4px;
+      width: 60px;
+      height: 3px;
       background: linear-gradient(90deg, rgba(191, 219, 254, 0.9), rgba(224, 242, 254, 0.95));
       transition: all 0.35s ease;
       border-radius: 999px;
@@ -416,17 +416,17 @@ import { CandidateProfile } from '../../../models/auth.models';
     }
 
     .profile-header h1 {
-      font-size: clamp(1.95rem, 3vw, 2.6rem);
-      line-height: 1.02;
-      margin: 0 0 10px 0;
-      letter-spacing: -0.04em;
+      font-size: clamp(1.3rem, 2.5vw, 1.7rem);
+      line-height: 1.1;
+      margin: 0 0 4px 0;
+      letter-spacing: -0.03em;
       color: #0f172a;
       text-shadow: none;
     }
 
     .text-muted {
       color: #475569;
-      font-size: 0.98rem;
+      font-size: 0.82rem;
       max-width: 560px;
       margin: 0 auto;
     }
@@ -435,14 +435,14 @@ import { CandidateProfile } from '../../../models/auth.models';
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 18px;
+      gap: 6px;
+      margin-top: 8px;
     }
 
     .caption-chip {
-      padding: 8px 14px;
+      padding: 4px 10px;
       border-radius: 999px;
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: #0f172a;
       background: rgba(255, 255, 255, 0.14);
@@ -461,7 +461,7 @@ import { CandidateProfile } from '../../../models/auth.models';
     .profile-form {
       display: flex;
       flex-direction: column;
-      gap: 32px;
+      gap: 14px;
       position: relative;
       z-index: 1;
     }
@@ -473,27 +473,27 @@ import { CandidateProfile } from '../../../models/auth.models';
     .step-intro {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 8px;
     }
 
     .step-icon {
-      width: 54px;
-      height: 54px;
+      width: 36px;
+      height: 36px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 18px;
+      border-radius: 10px;
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.74), rgba(224, 242, 254, 0.7));
       color: #0074BC;
-      font-size: 1.35rem;
+      font-size: 1rem;
       border: 1px solid rgba(255,255,255,0.4);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 16px 34px rgba(0, 60, 120, 0.14);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 8px 18px rgba(0, 60, 120, 0.1);
     }
 
     .step-kicker {
-      margin: 0 0 4px 0;
-      font-size: 0.78rem;
+      margin: 0;
+      font-size: 0.7rem;
       font-weight: 800;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -501,16 +501,16 @@ import { CandidateProfile } from '../../../models/auth.models';
     }
 
     .form-step h2 {
-      font-size: 1.45rem;
-      margin: 0 0 24px 0;
+      font-size: 1.1rem;
+      margin: 0 0 10px 0;
       color: #0f172a;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.02em;
     }
 
     .grid-2 {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+      gap: 10px;
     }
 
     .skills-input {
@@ -525,30 +525,30 @@ import { CandidateProfile } from '../../../models/auth.models';
     .form-group input,
     .form-group select {
       width: 100%;
-      min-height: 50px;
-      padding: 13px 16px;
+      min-height: 38px;
+      padding: 7px 12px;
       border: 1px solid rgba(148, 163, 184, 0.25);
-      border-radius: 18px;
-      font-size: 16px;
+      border-radius: 12px;
+      font-size: 14px;
       background: rgba(255, 255, 255, 0.92);
       color: #0F172A;
       box-sizing: border-box;
       transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, background 0.25s ease;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 10px 26px rgba(0, 116, 188, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 4px 12px rgba(0, 116, 188, 0.06);
     }
 
     .form-group label {
       display: inline-block;
-      margin-bottom: 10px;
-      font-size: 0.95rem;
+      margin-bottom: 5px;
+      font-size: 0.82rem;
       font-weight: 700;
       color: #1e293b;
       letter-spacing: -0.01em;
     }
 
     .form-group {
-      padding: 14px;
-      border-radius: 22px;
+      padding: 8px 10px;
+      border-radius: 14px;
       background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
       border: 1px solid rgba(255, 255, 255, 0.18);
       transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
@@ -581,22 +581,22 @@ import { CandidateProfile } from '../../../models/auth.models';
     .skills-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 16px;
+      gap: 6px;
+      margin-top: 8px;
     }
 
     .skill-tag {
       background: linear-gradient(135deg, rgba(224, 242, 254, 0.9), rgba(219, 234, 254, 0.92));
       color: #0074BC;
-      padding: 10px 14px;
+      padding: 5px 10px;
       border-radius: 999px;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 700;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       border: 1px solid rgba(125, 211, 252, 0.24);
-      box-shadow: 0 10px 22px rgba(0, 116, 188, 0.08);
+      box-shadow: 0 4px 10px rgba(0, 116, 188, 0.06);
     }
 
     .remove-skill {
@@ -631,19 +631,20 @@ import { CandidateProfile } from '../../../models/auth.models';
     .form-actions {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
-      padding-top: 26px;
+      gap: 10px;
+      padding-top: 12px;
       border-top: 1px solid rgba(255, 255, 255, 0.22);
     }
 
     .form-actions .btn {
-      min-width: 124px;
-      min-height: 48px;
-      border-radius: 18px;
+      min-width: 100px;
+      min-height: 36px;
+      border-radius: 12px;
       border: none;
       font-weight: 800;
+      font-size: 0.88rem;
       letter-spacing: -0.01em;
-      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
       transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
     }
 
@@ -743,9 +744,19 @@ import { CandidateProfile } from '../../../models/auth.models';
         font-size: 0.6rem;
       }
 
-      .step-intro {
-        align-items: flex-start;
-      }
+      .step-intro { align-items: flex-start; }
+    }
+
+    @media (max-width: 480px) {
+      .complete-profile-page { padding: 16px 10px; }
+      .profile-card { padding: 20px 14px; border-radius: 16px; }
+      .profile-header h1 { font-size: 1.5rem; }
+      .progress-indicator { justify-content: center; }
+      .progress-step { width: 44px; height: 44px; border-radius: 14px; font-size: 1rem; }
+      .progress-line { width: 28px; }
+      .step-label { display: none; }
+      .form-actions { flex-direction: column; gap: 8px; }
+      .form-actions button { width: 100%; justify-content: center; }
     }
   `]
 })

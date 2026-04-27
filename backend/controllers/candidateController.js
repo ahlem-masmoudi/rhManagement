@@ -1,6 +1,7 @@
 const Candidate = require('../models/Candidate');
 const User = require('../models/User');
 const Application = require('../models/Application');
+const { scoreResumeAgainstOffer } = require('../utils/scoring');
 
 function sanitize(value) {
   return String(value || '').trim();
@@ -418,7 +419,48 @@ exports.uploadDocument = async (req, res) => {
     candidate.documents.push(doc);
     await candidate.save();
 
-    res.status(201).json({ success: true, data: { docId: doc.id } });
+    let scoringInfo = { attempted: false, applied: false };
+    if (doc.type === 'cv' && doc.content) {
+      scoringInfo.attempted = true;
+      try {
+        const latestApplication = await Application.findOne({ candidate: candidate._id })
+          .sort({ createdAt: -1 })
+          .populate('offer');
+
+        if (latestApplication && latestApplication.offer) {
+          const scoringResult = await scoreResumeAgainstOffer({
+            resumeSource: doc.content,
+            resumeName: doc.name,
+            offer: latestApplication.offer
+          });
+
+          latestApplication.resumeUrl = doc.content;
+          latestApplication.notes = `CV: ${doc.name}`;
+          latestApplication.matchingScore = scoringResult.final_score;
+          latestApplication.matchingBreakdown = scoringResult.breakdown || {};
+          latestApplication.matchingMeta = {
+            model: scoringResult.meta?.model || 'intfloat/multilingual-e5-large',
+            parserError: scoringResult.meta?.parser_error || null,
+            scoredAt: new Date().toISOString(),
+            autoScoredFromDocumentUpload: true
+          };
+          latestApplication.matchedSkills = scoringResult.matches?.matched_required_skills || [];
+          latestApplication.missingSkills = scoringResult.matches?.missing_required_skills || [];
+          await latestApplication.save();
+
+          scoringInfo.applied = true;
+          scoringInfo.applicationId = latestApplication._id;
+          scoringInfo.finalScore = scoringResult.final_score;
+        } else {
+          scoringInfo.reason = 'No related application with offer found';
+        }
+      } catch (scoringError) {
+        scoringInfo.error = scoringError.message;
+        console.warn('CV upload scoring skipped:', scoringError.message);
+      }
+    }
+
+    res.status(201).json({ success: true, data: { docId: doc.id, scoring: scoringInfo } });
   } catch (error) {
     console.error('Error uploading document:', error);
     res.status(500).json({ success: false, message: 'Error uploading document', error: error.message });

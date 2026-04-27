@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -61,7 +61,42 @@ import { AuthService } from '../services/auth.service';
               <div class="user-role">Recruteur</div>
             </div>
           </div>
-          <button class="btn btn-secondary btn-sm" (click)="logout()" style="margin-top: 12px; width: 100%;">
+
+          <div *ngIf="isFingerprintSupported" class="fingerprint-section">
+            <div *ngIf="fingerprintMessage" class="fingerprint-msg" [class.fingerprint-msg-error]="fingerprintError">
+              {{ fingerprintMessage }}
+            </div>
+
+            <div class="fingerprint-actions">
+              <button class="btn-fp" (click)="registerFingerprint()" [disabled]="fpLoading"
+                title="{{ hasCredentials ? 'Ajouter une nouvelle empreinte' : 'Configurer l\'empreinte digitale' }}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
+                  <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
+                  <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
+                  <path d="M2 12a10 10 0 0 1 18-6"/>
+                  <path d="M2 16h.01"/>
+                  <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
+                  <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
+                  <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
+                  <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
+                </svg>
+                <span>{{ hasCredentials ? 'Ajouter empreinte' : 'Configurer empreinte' }}</span>
+                <span *ngIf="fpLoading" class="fp-spinner"></span>
+              </button>
+
+              <button *ngIf="hasCredentials" class="btn-fp btn-fp-danger" (click)="deleteFingerprints()" [disabled]="fpLoading" title="Supprimer les empreintes enregistrées">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary btn-sm" (click)="logout()" style="margin-top: 8px; width: 100%;">
             Déconnexion
           </button>
         </div>
@@ -303,10 +338,94 @@ import { AuthService } from '../services/auth.service';
       padding: 24px;
     }
 
+    /* Fingerprint Section */
+    .fingerprint-section {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .fingerprint-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-fp {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      background: white;
+      color: var(--gray-600);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-fp:hover:not(:disabled) {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      background: #EEF2FF;
+    }
+
+    .btn-fp:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-fp-danger {
+      flex: 0 0 auto;
+      padding: 7px 10px;
+    }
+
+    .btn-fp-danger:hover:not(:disabled) {
+      border-color: var(--danger-color);
+      color: var(--danger-color);
+      background: #FEF2F2;
+    }
+
+    .fingerprint-msg {
+      font-size: 11px;
+      color: #166534;
+      background: #DCFCE7;
+      border: 1px solid #86EFAC;
+      border-radius: var(--radius-sm);
+      padding: 5px 8px;
+      line-height: 1.4;
+    }
+
+    .fingerprint-msg.fingerprint-msg-error {
+      color: #991B1B;
+      background: #FEE2E2;
+      border-color: #FCA5A5;
+    }
+
+    .fp-spinner {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-left: 2px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     /* Mobile Responsive */
     @media (max-width: 768px) {
       .sidebar {
         transform: translateX(-100%);
+        width: 280px;
       }
 
       .sidebar.open {
@@ -328,19 +447,38 @@ import { AuthService } from '../services/auth.service';
         cursor: pointer;
       }
 
-      .search-bar {
-        display: none;
-      }
+      .search-bar { display: none; }
+      .topbar { padding: 0 12px; height: 60px; }
+      .main-content { padding: 16px; }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar { width: 100%; }
+      .topbar-actions .badge-notification { font-size: 10px; }
     }
   `]
 })
-export class RhLayoutComponent {
+export class RhLayoutComponent implements OnInit {
   isSidebarOpen = false;
+  isFingerprintSupported = typeof PublicKeyCredential !== 'undefined';
+  hasCredentials = false;
+  fpLoading = false;
+  fingerprintMessage = '';
+  fingerprintError = false;
 
   constructor(
     private authService: AuthService,
     private router: Router
   ) {}
+
+  ngOnInit(): void {
+    if (this.isFingerprintSupported) {
+      this.authService.getWebAuthnCredentials().subscribe({
+        next: creds => this.hasCredentials = creds.length > 0,
+        error: () => {}
+      });
+    }
+  }
 
   toggleSidebar(): void {
     this.isSidebarOpen = !this.isSidebarOpen;
@@ -354,6 +492,53 @@ export class RhLayoutComponent {
   getUserInitials(): string {
     const user = this.authService.getCurrentUser();
     return user ? `${user.firstName[0]}${user.lastName[0]}` : 'RH';
+  }
+
+  registerFingerprint(): void {
+    this.fpLoading = true;
+    this.fingerprintMessage = '';
+    this.fingerprintError = false;
+
+    this.authService.registerFingerprint()
+      .then(() => {
+        this.fpLoading = false;
+        this.hasCredentials = true;
+        this.fingerprintMessage = 'Empreinte enregistrée avec succès.';
+        this.fingerprintError = false;
+        setTimeout(() => this.fingerprintMessage = '', 4000);
+      })
+      .catch(err => {
+        this.fpLoading = false;
+        this.fingerprintError = true;
+        if (err?.name === 'NotAllowedError') {
+          this.fingerprintMessage = 'Enregistrement annulé ou refusé.';
+        } else {
+          this.fingerprintMessage = err?.error?.message || err?.message || 'Erreur lors de l\'enregistrement.';
+        }
+        setTimeout(() => this.fingerprintMessage = '', 5000);
+      });
+  }
+
+  deleteFingerprints(): void {
+    this.fpLoading = true;
+    this.fingerprintMessage = '';
+    this.fingerprintError = false;
+
+    this.authService.deleteWebAuthnCredentials().subscribe({
+      next: () => {
+        this.fpLoading = false;
+        this.hasCredentials = false;
+        this.fingerprintMessage = 'Empreintes supprimées.';
+        this.fingerprintError = false;
+        setTimeout(() => this.fingerprintMessage = '', 3000);
+      },
+      error: err => {
+        this.fpLoading = false;
+        this.fingerprintError = true;
+        this.fingerprintMessage = err?.error?.message || 'Erreur lors de la suppression.';
+        setTimeout(() => this.fingerprintMessage = '', 5000);
+      }
+    });
   }
 
   logout(): void {

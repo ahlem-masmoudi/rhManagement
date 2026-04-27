@@ -5,14 +5,17 @@ import math
 import os
 import re
 import tempfile
+import time
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
-from functools import lru_cache
+
+import pandas as pd
 
 APP_DIR = Path(__file__).resolve().parent
-DEFAULT_SKILLS_FILE = APP_DIR / "data" / "custom_skills.csv" if (APP_DIR / "data" / "custom_skills.csv").exists() else APP_DIR.parent.parent.parent / "data" / "custom_skills.csv"
-DEFAULT_SYNONYMS_FILE = APP_DIR / "data" / "skill_synonyms.json" if (APP_DIR / "data" / "skill_synonyms.json").exists() else APP_DIR.parent.parent.parent / "data" / "skill_synonyms.json"
+DEFAULT_SKILLS_FILE = APP_DIR / "data" / "custom_skills.csv"
+DEFAULT_SYNONYMS_FILE = APP_DIR / "data" / "skill_synonyms.json"
 
 
 # ---------------------------
@@ -44,7 +47,6 @@ SKILL_SYNONYMS = load_json(
         "restful api": "rest api",
         "scikit learn": "scikit-learn",
         "sklearn": "scikit-learn",
-        # ✅ Ajouts synonymes français/tunisiens
         "gestion de projet": "project management",
         "bi": "business intelligence",
         "vba": "excel",
@@ -79,7 +81,6 @@ DEGREE_PATTERNS = {
         r"\bing\b",
         r"licence",
         r"license",
-        # ✅ Ajouts instituts/diplômes tunisiens
         r"\biset\b",
         r"\bisgi\b",
         r"\bisg\b",
@@ -99,37 +100,25 @@ DEGREE_PATTERNS = {
 DEGREE_RANK = {None: 0, "other": 1, "bachelor": 2, "master": 3, "phd": 4}
 
 KNOWN_SKILLS = {
-    # Langages
     "python", "java", "javascript", "typescript", "c", "c++", "c#", "php",
-    # Frontend
     "angular", "react", "vue", "next.js", "html", "css", "tailwind",
     "bootstrap", "sass",
-    # Backend
     "node", "express", "spring boot", "fastapi", "flask", "django",
     "laravel", "asp.net",
-    # Bases de données
     "sql", "mysql", "postgresql", "mongodb", "redis", "sql server",
     "oracle", "firebase",
-    # DevOps / Cloud
     "docker", "kubernetes", "git", "linux", "aws", "azure", "gcp",
     "github", "gitlab", "ci/cd",
-    # IA / ML
     "tensorflow", "pytorch", "scikit-learn", "machine learning",
     "deep learning", "computer vision", "natural language processing",
     "llm", "rag", "langchain", "opencv", "pandas", "numpy",
-    # BI / Data
     "power bi", "excel", "tableau", "looker", "data analysis",
     "business intelligence", "etl", "datawarehouse",
-    # Gestion / ERP
     "erp", "sap", "odoo", "uniges", "sage", "gestion de projet",
     "merise", "uml", "agile", "scrum",
-    # Mobile
     "flutter", "react native", "swift", "kotlin",
-    # Design
     "figma", "adobe xd", "canva",
-    # Outils bureautiques
     "word", "powerpoint", "access",
-    # ✅ Compétences métier RH / Gestion (spécifique à votre projet)
     "comptabilité", "gestion", "ressources humaines", "recrutement",
     "paie", "finance", "audit", "fiscalité", "marketing",
     "communication", "rédaction", "analyse de données",
@@ -183,7 +172,11 @@ def parse_with_pyresparser(file_path: str, skills_file: str | None = None) -> tu
             parsed = ResumeParser(file_path, skills_file=skills_file).get_extracted_data()
         else:
             parsed = ResumeParser(file_path).get_extracted_data()
-        return parsed or {}, None
+        parsed = parsed or {}
+        parsed["_parser_missing"] = False
+        return parsed, None
+    except ModuleNotFoundError:
+        return {"_parser_missing": True}, None
     except Exception as exc:
         return {}, str(exc)
 
@@ -202,15 +195,23 @@ def enrich_from_raw_text(parsed: dict[str, Any], raw_text: str) -> dict[str, Any
             ]
         except Exception:
             inventory = sorted(KNOWN_SKILLS)
-        found = []
-        for skill in inventory:
-            pattern = rf"(?<!\w){re.escape(skill.lower())}(?!\w)"
-            if re.search(pattern, lower):
-                found.append(skill)
-        parsed["skills"] = sorted(set(found))
+        section_skills = extract_skills_from_section(raw_text, inventory)
+        if section_skills is not None:
+            parsed["skills"] = section_skills
+        else:
+            found = []
+            for skill in inventory:
+                pattern = rf"(?<!\w){re.escape(skill.lower())}(?!\w)"
+                if re.search(pattern, lower):
+                    found.append(skill)
+            parsed["skills"] = sorted(set(found))
 
     if parsed.get("total_experience") in (None, ""):
-        parsed["total_experience"] = extract_years_of_experience(raw_text)
+        date_exp = extract_experience_from_date_ranges(raw_text)
+        if date_exp > 0:
+            parsed["total_experience"] = date_exp
+        else:
+            parsed["total_experience"] = extract_years_of_experience(raw_text)
 
     if not parsed.get("degree"):
         inferred = infer_degree_level_from_text(raw_text)
@@ -232,8 +233,7 @@ def parse_resume(file_path: str, skills_file: str | None = None) -> tuple[dict[s
 
 def normalize_text(text: str) -> str:
     text = text.lower().strip()
-    text = text.replace("\u2019", "'")
-    # ✅ Gestion des accents français
+    text = text.replace("’", "'")
     text = text.replace("é", "e").replace("è", "e").replace("ê", "e")
     text = text.replace("à", "a").replace("â", "a")
     text = text.replace("ô", "o").replace("û", "u")
@@ -257,6 +257,95 @@ def normalize_skills(skills: list[str] | None) -> set[str]:
             continue
         normalized.add(normalize_skill(skill))
     return normalized
+
+
+# ---------------------------
+# Section detection helpers
+# ---------------------------
+
+_SKILL_SECTION_NAMES = ['skills', 'compétences', 'competences', 'technical skills', 'compétences techniques']
+_EXP_SECTION_NAMES  = ['experience', 'expérience', 'work experience', 'professional experience', 'expérience professionnelle']
+_EDU_SECTION_NAMES  = ['education', 'formation', 'études', 'diplôme']
+_PROJ_SECTION_NAMES = ['projects', 'projets', 'réalisations', 'travaux']
+_ALL_SECTION_NAMES  = _SKILL_SECTION_NAMES + _EXP_SECTION_NAMES + _EDU_SECTION_NAMES + _PROJ_SECTION_NAMES + ['profile', 'profil', 'summary', 'contact']
+
+
+def _normalize_line(line: str) -> str:
+    s = line.strip().lower().rstrip(':').strip()
+    s = re.sub(r'^[\d\.\-\*\•\■\▪\◆■●•]+\s*', '', s).strip()
+    return s
+
+
+def has_section(text: str, names: list[str]) -> bool:
+    text_norm = text.replace('\r\n', '\n').replace('\r', '\n')
+    for line in text_norm.split('\n'):
+        clean = _normalize_line(line)
+        for name in names:
+            if clean == name:
+                return True
+            if name in clean and len(clean) <= len(name) + 8:
+                return True
+    lower = text_norm.lower()
+    for name in names:
+        pattern = rf'(?:^|[\n\r\t ])(?:{re.escape(name)})(?:[\n\r\t :]|$)'
+        if re.search(pattern, lower, re.MULTILINE):
+            return True
+    return False
+
+
+def extract_section_text(text: str, section_names: list[str]) -> str | None:
+    text_norm = text.replace('\r\n', '\n').replace('\r', '\n')
+    lines = text_norm.split('\n')
+    start = -1
+    for i, line in enumerate(lines):
+        clean = _normalize_line(line)
+        for name in section_names:
+            if clean == name or (name in clean and len(clean) <= len(name) + 8):
+                start = i
+                break
+        if start != -1:
+            break
+    if start == -1:
+        return None
+
+    end = len(lines)
+    for i in range(start + 1, len(lines)):
+        clean = _normalize_line(lines[i])
+        for name in _ALL_SECTION_NAMES:
+            if clean == name or (name in clean and len(clean) <= len(name) + 8):
+                end = i
+                break
+        if end != len(lines):
+            break
+
+    section = '\n'.join(lines[start:end])
+    if len(section) >= len(text_norm) * 0.75:
+        return None
+    return section
+
+
+def extract_skills_from_section(raw_text: str, inventory: list[str]) -> list[str] | None:
+    section = extract_section_text(raw_text, _SKILL_SECTION_NAMES)
+    if section is None:
+        return None
+    found = [
+        skill for skill in inventory
+        if re.search(rf"(?<!\w){re.escape(skill.lower())}(?!\w)", section.lower())
+    ]
+    return sorted(set(found)) if found else None
+
+
+def score_section_completeness(raw_text: str) -> float:
+    score = 0.0
+    if has_section(raw_text, _SKILL_SECTION_NAMES):
+        score += 35.0
+    if has_section(raw_text, _EXP_SECTION_NAMES):
+        score += 35.0
+    if has_section(raw_text, _EDU_SECTION_NAMES):
+        score += 20.0
+    if has_section(raw_text, _PROJ_SECTION_NAMES):
+        score += 10.0
+    return score
 
 
 # ---------------------------
@@ -286,7 +375,6 @@ def split_required_preferred_skills(job_text: str) -> tuple[list[str], list[str]
 
     req_match = re.search(
         r"(?:required skills|requirements|must have|must-have"
-        # ✅ Ajout patterns français
         r"|compétences requises|exigences|obligatoire"
         r")(.*?)(?:preferred|nice to have|good to have|bonus"
         r"|compétences souhaitées|un plus|atout|$)",
@@ -323,7 +411,6 @@ def extract_required_experience(job_text: str) -> float:
         r"(\d+(?:\.\d+)?)\+?\s+years experience",
         r"experience:?\s*(\d+(?:\.\d+)?)\+?\s+years",
         r"(\d+(?:\.\d+)?)\s*[-to]{1,3}\s*(\d+(?:\.\d+)?)\s+years",
-        # ✅ Patterns français
         r"minimum\s+(\d+(?:\.\d+)?)\+?\s+ans",
         r"au moins\s+(\d+(?:\.\d+)?)\+?\s+ans",
         r"(\d+(?:\.\d+)?)\+?\s+ans d.expérience",
@@ -339,7 +426,6 @@ def extract_required_experience(job_text: str) -> float:
 
     if any(token in lower for token in [
         "internship", "entry level", "junior", "graduate",
-        # ✅ Ajouts français
         "stage", "stagiaire", "débutant", "junior"
     ]):
         return 0.0
@@ -352,7 +438,6 @@ def extract_years_of_experience(text: str) -> float:
         r"(\d+(?:\.\d+)?)\+?\s+years of experience",
         r"(\d+(?:\.\d+)?)\+?\s+years experience",
         r"experience:?\s*(\d+(?:\.\d+)?)\+?\s+years",
-        # ✅ Patterns français
         r"(\d+(?:\.\d+)?)\+?\s+ans d.expérience",
         r"(\d+(?:\.\d+)?)\+?\s+ans d.exp",
         r"expérience:?\s*(\d+(?:\.\d+)?)\+?\s+ans",
@@ -365,6 +450,64 @@ def extract_years_of_experience(text: str) -> float:
             except Exception:
                 pass
     return max(values) if values else 0.0
+
+
+def extract_experience_from_date_ranges(text: str) -> float:
+    """Calculate total years of work experience from date ranges in the Experience section only."""
+    from datetime import date as date_type
+
+    exp_section = extract_section_text(text, _EXP_SECTION_NAMES)
+    search_text = exp_section if exp_section else ""
+    if not search_text:
+        return 0.0
+
+    month_map = {
+        'jan': 1, 'january': 1, 'janvier': 1, 'janv': 1,
+        'feb': 2, 'february': 2, 'fev': 2, 'fevr': 2,
+        'mar': 3, 'march': 3, 'mars': 3,
+        'apr': 4, 'april': 4, 'avr': 4, 'avril': 4,
+        'may': 5, 'mai': 5,
+        'jun': 6, 'june': 6, 'juin': 6,
+        'jul': 7, 'july': 7, 'juil': 7, 'juillet': 7,
+        'aug': 8, 'august': 8, 'aout': 8,
+        'sep': 9, 'sept': 9, 'september': 9, 'septembre': 9,
+        'oct': 10, 'october': 10, 'octobre': 10,
+        'nov': 11, 'november': 11, 'novembre': 11,
+        'dec': 12, 'december': 12, 'decembre': 12,
+    }
+
+    months_alt = '|'.join(sorted(month_map.keys(), key=len, reverse=True))
+    year_pat = r'(?:20|19)\d{2}'
+    present_pat = r"(?:present|now|aujourd'hui|actuel(?:le)?|current|en\s+cours)"
+
+    pattern = (
+        rf'({months_alt})\s*\.?\s*({year_pat})'
+        rf'\s*[-–—]\s*'
+        rf'(?:({months_alt})\s*\.?\s*({year_pat})|({present_pat}))'
+    )
+
+    today = date_type.today()
+    total_days = 0
+
+    for m in re.finditer(pattern, search_text, re.IGNORECASE):
+        try:
+            start_month = month_map.get(m.group(1).lower(), 1)
+            start_year = int(m.group(2))
+            if m.group(5):
+                end_date = today
+            elif m.group(3) and m.group(4):
+                end_month = month_map.get(m.group(3).lower(), 1)
+                end_year = int(m.group(4))
+                end_date = date_type(end_year, end_month, 1)
+            else:
+                continue
+            start_date = date_type(start_year, start_month, 1)
+            if end_date > start_date:
+                total_days += (end_date - start_date).days
+        except Exception:
+            continue
+
+    return round(total_days / 365.25, 1) if total_days > 0 else 0.0
 
 
 def infer_degree_level_from_text(text: str) -> str | None:
@@ -397,16 +540,20 @@ def parse_job(job_text: str) -> ParsedJob:
 # Similarity and summaries
 # ---------------------------
 
-@lru_cache(maxsize=1)
+_model_cache: dict = {}
+
 def get_model(model_name: str):
-    # Allow callers to disable semantic model by passing a sentinel
     if not model_name or str(model_name).lower() in ("none", "no_model", "lexical"):
         return None
+    if model_name in _model_cache:
+        return _model_cache[model_name]
     try:
         from sentence_transformers import SentenceTransformer
-        return SentenceTransformer(model_name)
+        model = SentenceTransformer(model_name)
+        _model_cache[model_name] = model
+        return model
     except Exception:
-        return None
+        return None  # Do not cache failures — retry on next request
 
 
 def lexical_similarity(text_a: str, text_b: str) -> float:
@@ -463,7 +610,6 @@ def extract_project_snippet(text: str, max_len: int = 500) -> str:
     lowered = text.lower()
     markers = [
         "projects", "project", "experience", "work experience", "internship",
-        # ✅ Markers français
         "projets", "expérience professionnelle", "expérience",
         "stage", "réalisations", "travaux",
     ]
@@ -544,18 +690,21 @@ def score_title_alignment(parsed: dict[str, Any], job_title: str | None) -> floa
 
 
 def score_bonus(parsed: dict[str, Any], raw_text: str, job: ParsedJob) -> float:
-    # ✅ Correction : partir de 0 au lieu de 50
     score = 0.0
     if parsed.get("company_names"):
-        score += 25
+        score += 20
     if parsed.get("designation"):
-        score += 20
-    if parsed.get("degree"):
-        score += 20
-    if extract_project_snippet(raw_text):
-        score += 20
-    if job.title and normalize_text(job.title) in normalize_text(raw_text):
         score += 15
+    if parsed.get("degree"):
+        score += 15
+    if extract_project_snippet(raw_text):
+        score += 15
+    if job.title and normalize_text(job.title) in normalize_text(raw_text):
+        score += 10
+    if parsed.get("total_experience") and float(parsed.get("total_experience") or 0) > 0:
+        score += 15
+    if parsed.get("skills") and len(parsed.get("skills") or []) >= 5:
+        score += 10
     return min(score, 100.0)
 
 
@@ -578,6 +727,7 @@ def final_score(
     edu_score = score_education(candidate_degree, job.required_degree)
     title_score = score_title_alignment(parsed, job.title)
     bonus_score = score_bonus(parsed, raw_resume_text, job)
+    completeness_score = score_section_completeness(raw_resume_text)
 
     cv_summary = summarize_resume(parsed, raw_resume_text)
     jd_summary = summarize_job(job, raw_jd_text)
@@ -598,12 +748,13 @@ def final_score(
     semantic_score = 0.5 * overall_sim + 0.3 * skills_sim + 0.2 * projects_sim
 
     total = (
-        weights["skills"] * skills_score
-        + weights["experience"] * exp_score
-        + weights["education"] * edu_score
-        + weights["semantic"] * semantic_score
-        + weights["title"] * title_score
-        + weights["bonus"] * bonus_score
+        weights.get("skills", 0) * skills_score
+        + weights.get("experience", 0) * exp_score
+        + weights.get("education", 0) * edu_score
+        + weights.get("semantic", 0) * semantic_score
+        + weights.get("title", 0) * title_score
+        + weights.get("bonus", 0) * bonus_score
+        + weights.get("completeness", 0) * completeness_score
     )
 
     cv_norm = normalize_skills(parsed.get("skills"))
@@ -629,6 +780,7 @@ def final_score(
             "semantic_projects": round(projects_sim, 2),
             "title_score": round(title_score, 2),
             "bonus_score": round(bonus_score, 2),
+            "completeness_score": round(completeness_score, 2),
         },
         "candidate": {
             "name": parsed.get("name"),
@@ -655,11 +807,17 @@ def final_score(
             "cv_summary": cv_summary,
             "job_summary": jd_summary,
         },
+        "sections": {
+            "has_skills_section": has_section(raw_resume_text, _SKILL_SECTION_NAMES),
+            "has_experience_section": has_section(raw_resume_text, _EXP_SECTION_NAMES),
+            "has_education_section": has_section(raw_resume_text, _EDU_SECTION_NAMES),
+            "has_projects_section": has_section(raw_resume_text, _PROJ_SECTION_NAMES),
+        },
     }
 
 
 # ---------------------------
-# UI helpers (kept for compatibility with the result structure)
+# UI / export helpers
 # ---------------------------
 
 def load_skill_inventory() -> list[str]:
@@ -736,18 +894,59 @@ def save_uploaded_file(uploaded_file) -> str:
         return tmp.name
 
 
-def make_dataframe(result: dict[str, Any]):
-    try:
-        import pandas as pd
-    except Exception:
-        return None
+def make_dataframe(result: dict[str, Any]) -> pd.DataFrame:
     rows = []
     for key, value in result["breakdown"].items():
         rows.append({"component": key, "score": value})
     return pd.DataFrame(rows).sort_values("score", ascending=False)
 
 
+def benchmark_models(
+    parsed_resume: dict[str, Any],
+    raw_resume_text: str,
+    raw_jd_text: str,
+    parsed_job: ParsedJob,
+    weights: dict[str, float],
+    model_names: list[str],
+) -> tuple[pd.DataFrame, list[str]]:
+    rows = []
+    lexical_models: list[str] = []
+
+    for model_name in model_names:
+        start = time.perf_counter()
+        result = final_score(
+            parsed=parsed_resume,
+            raw_resume_text=raw_resume_text,
+            raw_jd_text=raw_jd_text,
+            job=parsed_job,
+            model_name=model_name,
+            weights=weights,
+        )
+        elapsed_ms = (time.perf_counter() - start) * 1000
+
+        backend = "transformer"
+        if get_model(model_name) is None:
+            backend = "lexical-fallback"
+            lexical_models.append(model_name)
+
+        rows.append(
+            {
+                "model": model_name,
+                "backend": backend,
+                "final_score": result["final_score"],
+                "semantic_score": result["breakdown"]["semantic_score"],
+                "skills_score": result["breakdown"]["skills_score"],
+                "runtime_ms": round(elapsed_ms, 1),
+            }
+        )
+
+    df = pd.DataFrame(rows).sort_values(["final_score", "semantic_score"], ascending=False)
+    return df, lexical_models
+
+
 __all__ = [
     'parse_resume', 'parse_job', 'final_score', 'generate_explanation',
-    'load_skill_inventory', 'normalize_skills'
+    'load_skill_inventory', 'normalize_skills', 'score_section_completeness',
+    'has_section', 'extract_experience_from_date_ranges', 'benchmark_models',
+    'make_dataframe', 'save_uploaded_file', 'score_label',
 ]

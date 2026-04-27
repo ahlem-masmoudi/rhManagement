@@ -129,20 +129,17 @@ function buildMatchingExplanation(app) {
 function formatMatchingScore(app) {
   if (typeof app.matchingScore !== 'number') {
     const fallback = computeFallbackMatching(app);
-
-    if (Array.isArray(app.matchedSkills) && app.matchedSkills.length === 0 && fallback.matchedSkills.length) {
-      app.matchedSkills = fallback.matchedSkills;
-    }
-
-    if (Array.isArray(app.missingSkills) && app.missingSkills.length === 0 && fallback.missingSkills.length) {
-      app.missingSkills = fallback.missingSkills;
-    }
-
     return {
-      global: fallback.global,
-      semantic: fallback.semantic,
-      rules: fallback.rules,
-      explanations: fallback.explanations
+      global: null,
+      semantic: null,
+      rules: null,
+      source: 'unscored',
+      explanations: {
+        strengths: [],
+        weaknesses: [],
+        recommendations: ['Ce score est en attente: aucun resultat du service Python n est enregistre.']
+      },
+      fallbackPreview: fallback
     };
   }
 
@@ -167,6 +164,7 @@ function formatMatchingScore(app) {
     global: Math.round(app.matchingScore),
     semantic,
     rules,
+    source: 'python',
     explanations: buildMatchingExplanation(app)
   };
 }

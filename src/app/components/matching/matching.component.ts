@@ -539,6 +539,22 @@ import { Application, Offer, Candidate } from '../../models';
         position: static;
       }
     }
+
+    @media (max-width: 768px) {
+      .page-header { flex-direction: column; gap: var(--spacing-md); }
+      .offer-selector { flex-direction: column; align-items: stretch; }
+      .offer-select { max-width: 100%; }
+      .results-header { flex-direction: column; align-items: flex-start; gap: var(--spacing-sm); }
+      .match-header { flex-direction: column; gap: var(--spacing-md); }
+      .scores-row { flex-wrap: wrap; }
+      .match-actions { flex-wrap: wrap; }
+    }
+
+    @media (max-width: 480px) {
+      .score-badge.global { width: 52px; height: 52px; }
+      .score-value { font-size: 18px; }
+      .candidate-avatar { width: 36px; height: 36px; font-size: 13px; }
+    }
   `]
 })
 export class MatchingComponent implements OnInit {

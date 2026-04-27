@@ -329,10 +329,14 @@ import { Application, Offer } from '../../../models';
     }
 
     @media (max-width: 768px) {
-      .stats-grid,
-      .actions-grid {
-        grid-template-columns: 1fr;
-      }
+      .stats-grid, .actions-grid { grid-template-columns: 1fr; }
+      .welcome-section h1 { font-size: 22px; }
+    }
+
+    @media (max-width: 480px) {
+      .candidate-home { padding: 16px; }
+      .welcome-section h1 { font-size: 18px; }
+      .stat-value { font-size: 22px; }
     }
   `]
 })
