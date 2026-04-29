@@ -130,7 +130,7 @@ function buildMatchingExplanation(app) {
 }
 
 function formatMatchingScore(app) {
-  if (typeof app.matchingScore !== 'number') {
+  if (typeof app.matchingScore !== 'number' || app.matchingScore === 0) {
     const fallback = computeFallbackMatching(app);
     return {
       global: fallback.global,
