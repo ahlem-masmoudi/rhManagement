@@ -180,10 +180,12 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
                   </button>
                   <div class="status-dropdown" *ngIf="activeDropdown === application.id"
                        [style.top.px]="dropdownY" [style.left.px]="dropdownX">
-                    <div class="dropdown-item" *ngFor="let col of kanbanColumns"
-                         [class.active]="application.status === col.status"
-                         (click)="changeStatus(application, col.status)">
-                      {{ col.title }}
+                    <div class="dropdown-item" *ngFor="let opt of statusDropdownOptions"
+                         [class.active]="application.status === opt.status"
+                         [class.item-accept]="opt.status === 'offre_acceptee'"
+                         [class.item-reject]="opt.status === 'rejete'"
+                         (click)="changeStatus(application, opt.status)">
+                      {{ opt.title }}
                     </div>
                   </div>
                 </div>
@@ -443,8 +445,8 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       border-radius: var(--radius-md);
       box-shadow: 0 8px 24px rgba(0,0,0,0.15);
       z-index: 9999;
-      min-width: 190px;
-      max-height: 280px;
+      min-width: 200px;
+      max-height: 340px;
       overflow-y: auto;
     }
 
@@ -458,6 +460,10 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
 
     .dropdown-item:hover { background: var(--gray-50); }
     .dropdown-item.active { background: #EEF2FF; color: var(--primary-color); font-weight: 600; }
+    .dropdown-item.item-accept { color: #16a34a; font-weight: 600; border-top: 1px solid var(--gray-100); margin-top: 4px; padding-top: 10px; }
+    .dropdown-item.item-accept:hover { background: #f0fdf4; }
+    .dropdown-item.item-reject { color: #dc2626; }
+    .dropdown-item.item-reject:hover { background: #fef2f2; }
 
     .icon-btn {
       width: 28px;
@@ -526,6 +532,18 @@ export class CandidaturesComponent implements OnInit {
     { status: 'entretien_programme' as CandidateStatus, title: 'Entretien' },
     { status: 'test_technique' as CandidateStatus, title: 'Test technique' },
     { status: 'offre_envoyee' as CandidateStatus, title: 'Offre envoyée' },
+    { status: 'rejete' as CandidateStatus, title: 'Rejeté' }
+  ];
+
+  statusDropdownOptions = [
+    { status: 'nouveau' as CandidateStatus, title: 'Nouveau' },
+    { status: 'preselectionne' as CandidateStatus, title: 'Présélection' },
+    { status: 'en_attente_documents' as CandidateStatus, title: 'En attente de documents' },
+    { status: 'documents_recus' as CandidateStatus, title: 'Documents reçus' },
+    { status: 'entretien_programme' as CandidateStatus, title: 'Entretien' },
+    { status: 'test_technique' as CandidateStatus, title: 'Test technique' },
+    { status: 'offre_envoyee' as CandidateStatus, title: 'Offre envoyée' },
+    { status: 'offre_acceptee' as CandidateStatus, title: 'Accepté ✓' },
     { status: 'rejete' as CandidateStatus, title: 'Rejeté' }
   ];
 
@@ -613,8 +631,12 @@ export class CandidaturesComponent implements OnInit {
     this.activeDropdown = appId;
     const btn = event.currentTarget as HTMLElement;
     const rect = btn.getBoundingClientRect();
-    this.dropdownX = rect.right - 190;
-    this.dropdownY = rect.bottom + 4;
+    const dropdownH = 310; // approx max-height
+    const spaceBelow = window.innerHeight - rect.bottom;
+    this.dropdownX = Math.max(4, rect.right - 200);
+    this.dropdownY = spaceBelow >= dropdownH
+      ? rect.bottom + 4
+      : rect.top - dropdownH - 4;
   }
 
   changeStatus(application: any, newStatus: string): void {
