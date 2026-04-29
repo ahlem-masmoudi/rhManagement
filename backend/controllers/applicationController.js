@@ -49,16 +49,19 @@ function computeFallbackMatching(app) {
   const uniqueOfferSkills = [...new Set(offerSkills)];
 
   if (candidateSkillSet.size === 0 || uniqueOfferSkills.length === 0) {
+    // Base score of 30 when candidate has a CV but no parsed skills yet
+    const hasResume = !!(app.resumeUrl || app.resumeFile || app.candidate?.resumeUrl);
+    const baseScore = hasResume ? 30 : 10;
     return {
-      global: 0,
-      semantic: 0,
-      rules: 0,
+      global: baseScore,
+      semantic: baseScore,
+      rules: baseScore,
       matchedSkills: [],
       missingSkills: uniqueOfferSkills,
       explanations: {
-        strengths: [],
-        weaknesses: uniqueOfferSkills.length ? ['Aucune competence commune detectee pour le moment.'] : [],
-        recommendations: ['Verifier que les competences de l offre sont bien renseignees.']
+        strengths: hasResume ? ['CV soumis avec la candidature'] : [],
+        weaknesses: ['Competences du profil non encore renseignees'],
+        recommendations: ['Completer le profil avec les competences pour un meilleur score']
       }
     };
   }
@@ -130,16 +133,13 @@ function formatMatchingScore(app) {
   if (typeof app.matchingScore !== 'number') {
     const fallback = computeFallbackMatching(app);
     return {
-      global: null,
-      semantic: null,
-      rules: null,
-      source: 'unscored',
-      explanations: {
-        strengths: [],
-        weaknesses: [],
-        recommendations: ['Ce score est en attente: aucun resultat du service Python n est enregistre.']
-      },
-      fallbackPreview: fallback
+      global: fallback.global,
+      semantic: fallback.semantic,
+      rules: fallback.rules,
+      source: 'fallback',
+      matchedSkills: fallback.matchedSkills,
+      missingSkills: fallback.missingSkills,
+      explanations: fallback.explanations
     };
   }
 
