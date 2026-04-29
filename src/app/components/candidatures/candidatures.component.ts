@@ -172,12 +172,19 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
                   </svg>
                   {{ formatDate(application.appliedAt) }}
                 </div>
-                <div class="card-actions">
-                  <button class="icon-btn" (click)="$event.stopPropagation()">
+                <div class="card-actions" (click)="$event.stopPropagation()">
+                  <button class="icon-btn" (click)="toggleDropdown(application.id)">
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
                     </svg>
                   </button>
+                  <div class="status-dropdown" *ngIf="activeDropdown === application.id">
+                    <div class="dropdown-item" *ngFor="let col of kanbanColumns"
+                         [class.active]="application.status === col.status"
+                         (click)="changeStatus(application, col.status)">
+                      {{ col.title }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -425,7 +432,32 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     .card-actions {
       display: flex;
       gap: 4px;
+      position: relative;
     }
+
+    .status-dropdown {
+      position: absolute;
+      bottom: 32px;
+      right: 0;
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      z-index: 100;
+      min-width: 180px;
+      overflow: hidden;
+    }
+
+    .dropdown-item {
+      padding: 9px 14px;
+      font-size: 13px;
+      color: var(--gray-700);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .dropdown-item:hover { background: var(--gray-50); }
+    .dropdown-item.active { background: #EEF2FF; color: var(--primary-color); font-weight: 600; }
 
     .icon-btn {
       width: 28px;
@@ -566,8 +598,22 @@ export class CandidaturesComponent implements OnInit {
   }
 
   onStatusUpdated(): void {
-    // Recharger les données après mise à jour
     this.ngOnInit();
+  }
+
+  activeDropdown: string | null = null;
+
+  toggleDropdown(appId: string): void {
+    this.activeDropdown = this.activeDropdown === appId ? null : appId;
+  }
+
+  changeStatus(application: any, newStatus: string): void {
+    this.activeDropdown = null;
+    this.candidateService.bulkUpdateStatus({
+      candidateIds: [application.candidateId],
+      newStatus: newStatus as any,
+      sendEmail: false
+    }).subscribe(() => this.onStatusUpdated());
   }
 
   getApplicationsByStatus(status: CandidateStatus): Application[] {
