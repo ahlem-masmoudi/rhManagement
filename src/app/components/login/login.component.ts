@@ -508,7 +508,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
     }
     .inside-input { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); z-index: 1; }
     .password-toggle svg { width: 18px; height: 18px; display: block; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; margin: 0 auto; }
-    .password-toggle:hover { color: white; }
+    .password-toggle:hover { color: #4338CA; }
     .password-toggle:disabled { cursor: not-allowed; opacity: 0.4; }
 
     /* ── Help / lockout ── */
