@@ -500,7 +500,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
     input.input-invalid { border-color: rgba(239,68,68,0.7) !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important; }
 
     .input-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
-    .svg-icon svg { width: 18px; height: 18px; display: block; stroke: rgba(255,255,255,0.4); stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .svg-icon svg { width: 18px; height: 18px; display: block; stroke: #4F46E5; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
     .field-error-marker { flex: 0 0 auto; width: 18px; text-align: center; font-size: 20px; font-weight: 800; color: #f87171; }
 
