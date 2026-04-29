@@ -230,7 +230,7 @@ interface Department {
   `,
   styles: [`
     .cta-with-copy { display: inline-block; text-align: center; position: relative; }
-    .micro-copy { margin: 0; font-size: 0.875rem; color: #6b7280; opacity: 0; transform: translateY(-4px) translateX(-50%); transition: opacity 160ms ease, transform 160ms ease; visibility: hidden; pointer-events: none; position: absolute; left: 50%; top: calc(100% + 8px); width: max-content; max-width: 320px; white-space: normal; padding: 4px 8px; background: transparent; }
+    .micro-copy { margin: 0; font-size: 0.875rem; color: #6b7280; opacity: 0; transform: translateY(-4px) translateX(-50%); transition: opacity 160ms ease, transform 160ms ease; visibility: hidden; pointer-events: none; position: absolute; left: 50%; top: calc(100% + 8px); width: max-content; max-width: 320px; white-space: nowrap; padding: 4px 8px; background: transparent; }
     .cta-with-copy:hover .micro-copy, .cta-with-copy:focus-within .micro-copy { opacity: 1; transform: translateY(0) translateX(-50%); visibility: visible; pointer-events: auto; }
     @media (max-width: 640px) { .micro-copy { position: static; opacity: 1; visibility: visible; transform: none; margin-top: 8px; max-width: 100%; padding: 0; } }
 
