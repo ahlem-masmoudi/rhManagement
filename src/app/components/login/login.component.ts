@@ -139,7 +139,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
 
             <div class="login-footer">
               <p>Pas encore de compte ?
-                <a href="javascript:void(0)" (click)="goToRegister()">Créer un compte candidat</a>
+                <a href="javascript:void(0)" (click)="goToRegister()">Créer un compte Admin RH</a>
               </p>
             </div>
           </form>
@@ -360,6 +360,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
                 <a href="javascript:void(0)" (click)="showRegister = false; resetMessages(); setView('login')">Se connecter</a>
               </p>
             </div>
+
           </form>
         </div>
       </div>
@@ -679,7 +680,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   getTitle(): string {
-    if (this.showRegister) return 'Créer un compte candidat';
+    if (this.showRegister) return 'Créer un compte Admin RH';
     if (this.currentView === 'forgot') return 'Mot de passe oublié';
     if (this.currentView === 'reset') return 'Choisir un nouveau mot de passe';
     if (this.loginStep === 'otp') return 'Vérification';
@@ -951,11 +952,12 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.registerData.email,
       this.registerData.password,
       this.registerData.firstName,
-      this.registerData.lastName
+      this.registerData.lastName,
+      'rh'
     ).subscribe({
       next: () => {
         this.isLoading = false;
-        this.router.navigate(['/candidate/complete-profile']);
+        this.router.navigate(['/rh']);
       },
       error: () => {
         this.isLoading = false;
@@ -981,7 +983,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   goToRegister(): void {
-    this.router.navigate(['/candidate/complete-profile']);
+    this.showRegister = true;
+    this.resetMessages();
   }
 
   isAccountTemporarilyLocked(): boolean {

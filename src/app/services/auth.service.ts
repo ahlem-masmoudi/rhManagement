@@ -157,8 +157,8 @@ export class AuthService {
   }
 
   // Register new candidate. Password is optional for first-time candidate.
-  register(email: string, password: string | undefined, firstName: string, lastName: string): Observable<AuthResponse> {
-    const payload: any = { email, firstName, lastName, role: 'candidate' };
+  register(email: string, password: string | undefined, firstName: string, lastName: string, role: string = 'candidate'): Observable<AuthResponse> {
+    const payload: any = { email, firstName, lastName, role };
     if (password && password.trim().length > 0) {
       payload.password = password;
     }
