@@ -506,7 +506,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
 
     /* ── Password toggle ── */
     .password-toggle {
-      border: none; background: transparent; color: rgba(255,255,255,0.5);
+      border: none; background: transparent; color: #4F46E5;
       border-radius: 999px; min-width: 34px; height: 34px;
       padding: 0; cursor: pointer; white-space: nowrap; transition: color 0.2s;
     }
