@@ -582,9 +582,17 @@ type AuthView = 'login' | 'forgot' | 'reset';
 
     /* ── Mobile ── */
     @media (max-width: 480px) {
-      .login-card { padding: 28px 24px; border-radius: 20px; }
+      .login-card { padding: 28px 20px; border-radius: 20px; max-width: 100%; }
       .login-header h1 { font-size: 22px; }
       .logo-ring { width: 60px; height: 60px; }
+      .login-page { padding: 16px; align-items: flex-start; padding-top: 48px; }
+    }
+
+    @media (max-width: 360px) {
+      .login-card { padding: 24px 16px; }
+      .login-header h1 { font-size: 19px; }
+      .logo-ring { width: 52px; height: 52px; }
+      .login-page { padding: 12px; padding-top: 32px; }
     }
   `]
 })

@@ -488,23 +488,43 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       .page-header { flex-direction: column; align-items: flex-start; gap: var(--spacing-md); }
       .header-actions { width: 100%; justify-content: flex-start; }
 
+      .filters-bar {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .filters-bar select,
+      .filters-bar .search-input {
+        width: 100%;
+      }
+
       .kanban-board {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
         padding-bottom: 8px;
+        gap: var(--spacing-md);
       }
 
       .kanban-column {
-        flex: 0 0 280px;
-        min-width: 280px;
+        flex: 0 0 calc(100vw - 80px);
+        min-width: calc(100vw - 80px);
+        scroll-snap-align: start;
       }
 
       .archives-section { padding: var(--spacing-md); }
     }
 
     @media (max-width: 480px) {
-      .kanban-column { flex: 0 0 260px; min-width: 260px; }
-      .doc-preview { margin: 8px; max-height: calc(100vh - 16px); border-radius: var(--radius-md); }
+      .kanban-column {
+        flex: 0 0 calc(100vw - 48px);
+        min-width: calc(100vw - 48px);
+      }
+
+      .candidate-card { padding: 12px; }
+      .candidate-name { font-size: 14px; }
+
+      .doc-preview { margin: 0; max-height: 100vh; border-radius: 16px 16px 0 0; }
       .doc-preview-header { padding: 12px 16px; }
       .archive-card { width: 100% !important; }
     }

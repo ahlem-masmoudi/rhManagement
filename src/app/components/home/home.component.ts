@@ -402,6 +402,16 @@ interface Department {
       .modal-box { margin: 0; border-radius: 16px 16px 0 0; max-height: 95vh; }
       .footer-container { padding: 0 1rem; }
       .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; }
+      .container { padding: 0 1rem; }
+      .nav-actions { gap: 0.4rem; }
+      .btn { padding: 0.5rem 0.9rem; font-size: 0.82rem; }
+    }
+
+    @media (max-width: 360px) {
+      .brand-name { display: none; }
+      .hero-title { font-size: 1.4rem; }
+      .btn { padding: 0.45rem 0.75rem; font-size: 0.8rem; }
+      .container { padding: 0 0.75rem; }
     }
   `]
 })

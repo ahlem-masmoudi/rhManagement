@@ -45,6 +45,23 @@ import { Application, Offer } from '../../models';
       <main class="candidate-main">
         <router-outlet></router-outlet>
       </main>
+
+      <!-- Bottom Nav (mobile only) -->
+      <nav class="bottom-nav">
+        <a routerLink="/candidate" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="bottom-nav-item">
+          <svg width="22" height="22" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+          </svg>
+          <span>Accueil</span>
+        </a>
+        <a routerLink="/candidate/offers" routerLinkActive="active" class="bottom-nav-item">
+          <svg width="22" height="22" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5z" clip-rule="evenodd"/>
+            <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/>
+          </svg>
+          <span>Offres</span>
+        </a>
+      </nav>
     </div>
   `,
   styles: [`
@@ -133,9 +150,27 @@ import { Application, Offer } from '../../models';
       padding: 32px 24px;
     }
 
+    /* Bottom navigation bar (mobile only) */
+    .bottom-nav {
+      display: none;
+    }
+
     @media (max-width: 768px) {
+      .candidate-layout {
+        padding-bottom: 64px;
+      }
+
+      .candidate-topbar {
+        padding: 0 16px;
+        height: 60px;
+      }
+
       .topbar-left {
-        gap: 20px;
+        gap: 16px;
+      }
+
+      .logo span {
+        display: none;
       }
 
       .nav-menu {
@@ -145,6 +180,50 @@ import { Application, Offer } from '../../models';
       .user-name {
         display: none;
       }
+
+      .candidate-main {
+        padding: 16px;
+      }
+
+      .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: white;
+        border-top: 1px solid var(--gray-200);
+        z-index: 100;
+        box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+      }
+
+      .bottom-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        color: var(--gray-500);
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+
+      .bottom-nav-item.active {
+        color: var(--primary-color);
+      }
+
+      .bottom-nav-item svg {
+        width: 22px;
+        height: 22px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .candidate-main { padding: 12px; }
     }
   `]
 })

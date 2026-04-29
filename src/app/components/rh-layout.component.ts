@@ -9,6 +9,9 @@ import { AuthService } from '../services/auth.service';
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   template: `
     <div class="app-layout">
+      <!-- Sidebar overlay (mobile) -->
+      <div class="sidebar-overlay" *ngIf="isSidebarOpen" (click)="closeSidebar()"></div>
+
       <!-- Sidebar -->
       <aside class="sidebar" [class.open]="isSidebarOpen">
         <div class="sidebar-header">
@@ -22,14 +25,14 @@ import { AuthService } from '../services/auth.service';
         </div>
 
         <nav class="sidebar-nav">
-          <a routerLink="/rh" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+          <a routerLink="/rh" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item" (click)="closeSidebar()">
             <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
             </svg>
             <span>Tableau de bord</span>
           </a>
 
-          <a routerLink="/rh/offres" routerLinkActive="active" class="nav-item">
+          <a routerLink="/rh/offres" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
             <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
               <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/>
@@ -37,7 +40,7 @@ import { AuthService } from '../services/auth.service';
             <span>Offres de stage</span>
           </a>
 
-          <a routerLink="/rh/candidatures" routerLinkActive="active" class="nav-item">
+          <a routerLink="/rh/candidatures" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
             <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
               <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
@@ -45,7 +48,7 @@ import { AuthService } from '../services/auth.service';
             <span>Candidatures</span>
           </a>
 
-          <a routerLink="/rh/matching" routerLinkActive="active" class="nav-item">
+          <a routerLink="/rh/matching" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
             <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
             </svg>
@@ -107,10 +110,12 @@ import { AuthService } from '../services/auth.service';
         <!-- Topbar -->
         <header class="topbar">
           <button class="menu-toggle" (click)="toggleSidebar()">
-            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
               <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </button>
+
+          <span class="topbar-title">Espace admin RH</span>
 
           <div class="search-bar">
             <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
@@ -421,15 +426,40 @@ import { AuthService } from '../services/auth.service';
       to { transform: rotate(360deg); }
     }
 
+    /* Topbar title (hidden on desktop, shown on mobile) */
+    .topbar-title {
+      display: none;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--gray-900);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Sidebar overlay backdrop */
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 99;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
     /* Mobile Responsive */
     @media (max-width: 768px) {
       .sidebar {
         transform: translateX(-100%);
         width: 280px;
+        z-index: 200;
       }
 
       .sidebar.open {
         transform: translateX(0);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.18);
       }
 
       .main-wrapper {
@@ -445,16 +475,19 @@ import { AuthService } from '../services/auth.service';
         background: none;
         border: none;
         cursor: pointer;
+        flex-shrink: 0;
       }
 
+      .topbar-title { display: block; }
       .search-bar { display: none; }
-      .topbar { padding: 0 12px; height: 60px; }
+      .topbar { padding: 0 12px; height: 60px; gap: 10px; }
       .main-content { padding: 16px; }
     }
 
     @media (max-width: 480px) {
-      .sidebar { width: 100%; }
-      .topbar-actions .badge-notification { font-size: 10px; }
+      .sidebar { width: 85vw; max-width: 300px; }
+      .main-content { padding: 12px; }
+      .topbar { padding: 0 10px; }
     }
   `]
 })
@@ -482,6 +515,10 @@ export class RhLayoutComponent implements OnInit {
 
   toggleSidebar(): void {
     this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  closeSidebar(): void {
+    this.isSidebarOpen = false;
   }
 
   getUserName(): string {
