@@ -16,15 +16,16 @@ const app = express();
 // Configure CORS to accept common local dev origins (localhost and 127.0.0.1)
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:4200',
-  'http://127.0.0.1:4200'
+  'http://127.0.0.1:4200',
+  'https://rhmanagement.netlify.app'
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
-    // Allow any Vercel deployment URL
-    if (origin && origin.endsWith('.vercel.app')) return callback(null, true);
+    // Allow any Vercel or Netlify deployment URL
+    if (origin && (origin.endsWith('.vercel.app') || origin.endsWith('.netlify.app'))) return callback(null, true);
     return callback(new Error('CORS policy: Origin not allowed'));
   },
   credentials: true
