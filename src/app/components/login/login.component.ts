@@ -137,11 +137,6 @@ type AuthView = 'login' | 'forgot' | 'reset';
               <span>Empreinte digitale</span>
             </button>
 
-            <div class="login-footer">
-              <p>Pas encore de compte ?
-                <a href="javascript:void(0)" (click)="goToRegister()">Créer un compte Admin RH</a>
-              </p>
-            </div>
           </form>
 
           <form *ngIf="!showRegister && currentView === 'forgot'" (ngSubmit)="onForgotPassword()" class="login-form">
