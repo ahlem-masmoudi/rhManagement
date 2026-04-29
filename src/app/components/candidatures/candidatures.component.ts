@@ -173,12 +173,13 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
                   {{ formatDate(application.appliedAt) }}
                 </div>
                 <div class="card-actions" (click)="$event.stopPropagation()">
-                  <button class="icon-btn" (click)="toggleDropdown(application.id)">
+                  <button class="icon-btn" (click)="toggleDropdown(application.id, $event)">
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
                     </svg>
                   </button>
-                  <div class="status-dropdown" *ngIf="activeDropdown === application.id">
+                  <div class="status-dropdown" *ngIf="activeDropdown === application.id"
+                       [style.top.px]="dropdownY" [style.left.px]="dropdownX">
                     <div class="dropdown-item" *ngFor="let col of kanbanColumns"
                          [class.active]="application.status === col.status"
                          (click)="changeStatus(application, col.status)">
@@ -436,16 +437,15 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     }
 
     .status-dropdown {
-      position: absolute;
-      bottom: 32px;
-      right: 0;
+      position: fixed;
       background: white;
       border: 1px solid var(--gray-200);
       border-radius: var(--radius-md);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-      z-index: 100;
-      min-width: 180px;
-      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      z-index: 9999;
+      min-width: 190px;
+      max-height: 280px;
+      overflow-y: auto;
     }
 
     .dropdown-item {
@@ -602,9 +602,19 @@ export class CandidaturesComponent implements OnInit {
   }
 
   activeDropdown: string | null = null;
+  dropdownX = 0;
+  dropdownY = 0;
 
-  toggleDropdown(appId: string): void {
-    this.activeDropdown = this.activeDropdown === appId ? null : appId;
+  toggleDropdown(appId: string, event: MouseEvent): void {
+    if (this.activeDropdown === appId) {
+      this.activeDropdown = null;
+      return;
+    }
+    this.activeDropdown = appId;
+    const btn = event.currentTarget as HTMLElement;
+    const rect = btn.getBoundingClientRect();
+    this.dropdownX = rect.right - 190;
+    this.dropdownY = rect.bottom + 4;
   }
 
   changeStatus(application: any, newStatus: string): void {
