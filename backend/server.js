@@ -189,6 +189,37 @@ app.post('/api/seed-candidates', async (req, res) => {
   }
 });
 
+// Cleanup seeded test data
+app.post('/api/unseed-candidates', async (req, res) => {
+  const secret = process.env.SEED_SECRET;
+  if (!secret || req.headers['x-seed-secret'] !== secret) {
+    return res.status(403).json({ success: false, message: 'Forbidden' });
+  }
+  try {
+    const User = require('./models/User');
+    const Candidate = require('./models/Candidate');
+    const Application = require('./models/Application');
+
+    const testUsers = await User.find({ email: /@test\.inet\.tn$/ });
+    const testUserIds = testUsers.map(u => u._id);
+    const testCandidates = await Candidate.find({ userId: { $in: testUserIds } });
+    const testCandidateIds = testCandidates.map(c => c._id);
+
+    const appsDeleted = await Application.deleteMany({ candidate: { $in: testCandidateIds } });
+    const candidatesDeleted = await Candidate.deleteMany({ _id: { $in: testCandidateIds } });
+    const usersDeleted = await User.deleteMany({ _id: { $in: testUserIds } });
+
+    res.json({
+      success: true,
+      usersDeleted: usersDeleted.deletedCount,
+      candidatesDeleted: candidatesDeleted.deletedCount,
+      appsDeleted: appsDeleted.deletedCount
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
