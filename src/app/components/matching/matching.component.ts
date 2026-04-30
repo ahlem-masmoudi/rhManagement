@@ -554,6 +554,18 @@ import { Application, Offer, Candidate } from '../../models';
       .score-badge.global { width: 52px; height: 52px; }
       .score-value { font-size: 18px; }
       .candidate-avatar { width: 36px; height: 36px; font-size: 13px; }
+      .page-header h1 { font-size: 18px; }
+      .scores-row { gap: var(--spacing-sm); }
+      .score-badge { width: 44px; height: 44px; }
+      .match-card { padding: var(--spacing-md); }
+      .explanation-section { padding: 10px 12px; }
+      .match-actions { gap: 6px; }
+      .match-actions button { font-size: 12px; padding: 6px 10px; }
+    }
+
+    @media (max-width: 360px) {
+      .scores-row { flex-direction: column; align-items: flex-start; }
+      .candidate-name { font-size: 14px; }
     }
   `]
 })

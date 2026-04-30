@@ -421,12 +421,22 @@ import { Offer } from '../../models';
     }
 
     @media (max-width: 480px) {
-      .modal { padding: 8px; }
+      .modal { padding: 4px; align-items: flex-end; }
+      .modal-content { border-radius: 16px 16px 0 0; max-height: 96vh; margin: 0; width: 100%; }
       .modal-footer { flex-direction: column; }
       .modal-footer button { width: 100%; justify-content: center; }
       .skills-input { flex-direction: column; }
       .skills-input input { width: 100%; }
       .offer-meta { flex-wrap: wrap; gap: 8px; }
+      .offer-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .page-header h1 { font-size: 18px; }
+      .header-actions { width: 100%; }
+      .header-actions button { flex: 1; justify-content: center; }
+    }
+
+    @media (max-width: 360px) {
+      .modal-header, .modal-body, .modal-footer { padding: 12px; }
+      .stat-value { font-size: 20px; }
     }
   `]
 })

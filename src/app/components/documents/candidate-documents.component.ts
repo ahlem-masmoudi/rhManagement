@@ -290,6 +290,13 @@ import { CandidateDocument, DocumentType, DocumentStatus } from '../../models';
     @media (max-width: 480px) {
       .form-actions { flex-direction: column; }
       .form-actions button { width: 100%; }
+      .document-item { padding: 10px 12px; }
+      .document-actions { gap: 4px; }
+      .document-actions button { font-size: 11px; padding: 5px 8px; }
+    }
+
+    @media (max-width: 360px) {
+      .document-status { flex-direction: column; align-items: flex-start; }
     }
   `]
 })

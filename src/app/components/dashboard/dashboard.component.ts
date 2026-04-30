@@ -404,6 +404,13 @@ import { Candidate, Offer } from '../../models';
       .kpi-icon svg { width: 18px; height: 18px; }
       .kpi-value { font-size: 20px; }
       .kpi-label { font-size: 12px; }
+      .page-header { flex-direction: column; gap: 8px; }
+      .page-header h1 { font-size: 18px; }
+    }
+
+    @media (max-width: 360px) {
+      .kpi-card { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .kpi-content { width: 100%; }
     }
   `]
 })

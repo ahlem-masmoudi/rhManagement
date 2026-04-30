@@ -350,20 +350,23 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
     }
 
     @media (max-width: 768px) {
-      .tracking-page {
-        padding: var(--spacing-md);
-      }
+      .tracking-page { padding: var(--spacing-md); }
+      .timeline { padding-left: 32px; }
+      .timeline-marker { left: -32px; width: 24px; height: 24px; font-size: 0.75rem; }
+    }
 
-      .timeline {
-        padding-left: 32px;
-      }
+    @media (max-width: 480px) {
+      .tracking-page { padding: 12px; }
+      .timeline { padding-left: 24px; }
+      .timeline-marker { left: -24px; width: 20px; height: 20px; font-size: 0.65rem; }
+      .timeline-card { padding: 12px; }
+      .status-badge { font-size: 11px; padding: 3px 8px; }
+      .tracking-header h1 { font-size: 18px; }
+    }
 
-      .timeline-marker {
-        left: -32px;
-        width: 24px;
-        height: 24px;
-        font-size: 0.75rem;
-      }
+    @media (max-width: 360px) {
+      .tracking-page { padding: 8px; }
+      .timeline-item { margin-bottom: 12px; }
     }
   `]
 })

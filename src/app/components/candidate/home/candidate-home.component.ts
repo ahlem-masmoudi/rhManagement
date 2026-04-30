@@ -334,9 +334,20 @@ import { Application, Offer } from '../../../models';
     }
 
     @media (max-width: 480px) {
-      .candidate-home { padding: 16px; }
+      .candidate-home { padding: 12px; }
       .welcome-section h1 { font-size: 18px; }
       .stat-value { font-size: 22px; }
+      .stat-icon { width: 44px; height: 44px; }
+      .stat-icon svg { width: 20px; height: 20px; }
+      .stat-card { padding: 14px; gap: 12px; }
+      .application-card { padding: var(--spacing-md); }
+      .app-actions { flex-wrap: wrap; gap: 6px; }
+    }
+
+    @media (max-width: 360px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .stat-card { padding: 12px; }
+      .stat-value { font-size: 20px; }
     }
   `]
 })

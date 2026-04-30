@@ -713,9 +713,20 @@ import { Candidate } from '../../models';
 
     @media (max-width: 480px) {
       .tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
-      .tab-btn { white-space: nowrap; flex-shrink: 0; }
+      .tab-btn { white-space: nowrap; flex-shrink: 0; padding: 8px 10px; font-size: 12px; }
       .skills-grid { grid-template-columns: 1fr; }
       .profil-layout { gap: var(--spacing-md); }
+      .profile-card { padding: var(--spacing-md); }
+      .profile-avatar-large { width: 60px; height: 60px; font-size: 20px; }
+      .modal-overlay { padding: 0; }
+      .modal-card { border-radius: 16px 16px 0 0; max-height: 98vh; width: 100%; }
+      .modal-header, .modal-body, .modal-actions { padding: 12px 16px; }
+      .actions-bar button { font-size: 12px; padding: 7px 10px; }
+    }
+
+    @media (max-width: 360px) {
+      .tab-btn { padding: 7px 8px; font-size: 11px; }
+      .profile-name { font-size: 16px; }
     }
   `]
 })

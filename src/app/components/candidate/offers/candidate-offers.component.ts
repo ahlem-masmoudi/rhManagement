@@ -797,12 +797,20 @@ import { Offer } from '../../../models';
 
     @media (max-width: 480px) {
       .modal-backdrop { padding: 0; align-items: flex-end; }
-      .apply-modal { border-radius: 16px 16px 0 0; max-height: 95vh; }
-      .apply-modal-body { padding: 16px; }
-      .apply-modal-header { padding: 16px; }
-      .apply-modal-footer { padding: 12px 16px; flex-direction: column; }
+      .apply-modal { border-radius: 16px 16px 0 0; max-height: 95vh; width: 100%; }
+      .apply-modal-body { padding: 14px; }
+      .apply-modal-header { padding: 14px 16px; }
+      .apply-modal-footer { padding: 10px 14px; flex-direction: column; }
       .apply-modal-footer button { width: 100%; justify-content: center; }
       .score-badge { width: 52px !important; height: 52px; font-size: 16px; }
+      .offer-card { padding: 14px; }
+      .offer-title { font-size: 14px; }
+      .drop-zone { padding: 20px 12px; }
+    }
+
+    @media (max-width: 360px) {
+      .filters-row { gap: 6px; }
+      .offer-card { padding: 12px; }
     }
   `]
 })
