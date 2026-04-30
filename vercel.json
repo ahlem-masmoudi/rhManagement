@@ -3,10 +3,10 @@
     "frontend": {
       "routePrefix": "/",
       "framework": "angular",
-      "buildCommand": "npm run build -- --configuration production",
-      "rewrites": [
-        { "source": "/(.*)", "destination": "/index.html" }
-      ]
+      "buildCommand": "npm run build -- --configuration production"
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
