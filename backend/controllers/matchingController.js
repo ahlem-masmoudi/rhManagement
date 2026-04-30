@@ -50,9 +50,9 @@ Réponds UNIQUEMENT avec un tableau JSON valide. Pas de markdown, pas d'explicat
 [{"index":1,"score":85,"matchedSkills":["React","Node.js"],"missingSkills":["Docker"],"reason":"Profil aligné sur les technos principales."},...]`;
 
     // Try models in order until one succeeds
-    const models = ['gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-pro'];
+    const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-001', 'gemini-2.0-flash-lite'];
     let raw = '';
-    let lastError = null;
+    let lastErrorMsg = '';
     for (const modelName of models) {
       try {
         const geminiRes = await axios.post(
@@ -61,14 +61,20 @@ Réponds UNIQUEMENT avec un tableau JSON valide. Pas de markdown, pas d'explicat
           { headers: { 'Content-Type': 'application/json' }, timeout: 60000 }
         );
         raw = geminiRes.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
-        console.log(`AI matching: used model ${modelName}`);
-        break;
+        if (raw) {
+          console.log(`AI matching: success with model ${modelName}`);
+          break;
+        }
+        console.warn(`Model ${modelName} returned empty response`);
       } catch (e) {
-        console.warn(`Model ${modelName} failed:`, e.response?.data?.error?.message || e.message);
-        lastError = e;
+        const detail = e.response?.data?.error?.message || e.message;
+        lastErrorMsg = `${modelName}: ${detail}`;
+        console.warn(`Model ${modelName} failed (${e.response?.status}):`, detail);
       }
     }
-    if (!raw) throw lastError || new Error('All Gemini models failed');
+    if (!raw) {
+      return res.status(500).json({ success: false, message: `Gemini inaccessible. Détail: ${lastErrorMsg}` });
+    }
 
     let scores;
     try {
