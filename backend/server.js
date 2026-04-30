@@ -12,6 +12,10 @@ connectDB();
 // Initialize Express app
 const app = express();
 
+// Trust Render/Vercel/Netlify reverse proxy so req.ip is the real client IP
+// (without this, all users share the load balancer IP and rate limiting breaks)
+app.set('trust proxy', 1);
+
 // Middleware
 // Configure CORS to accept common local dev origins (localhost and 127.0.0.1)
 const allowedOrigins = [
