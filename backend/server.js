@@ -133,8 +133,8 @@ app.post('/api/seed-candidates', async (req, res) => {
       { firstName: 'Hamza',      lastName: 'Nasri',      school: 'ENET\'Com Sousse',      skills: ['Cloud', 'AWS', 'Terraform', 'Jenkins'],            status: 'nouveau' },
     ];
 
-    const offers = await Offer.find({ status: 'publiee' });
-    let created = 0, skipped = 0;
+    const offers = await Offer.find({});
+    let created = 0, skipped = 0, appsCreated = 0;
 
     for (let i = 0; i < candidates.length; i++) {
       const c = candidates[i];
@@ -163,19 +163,23 @@ app.post('/api/seed-candidates', async (req, res) => {
 
       if (offers.length > 0) {
         const offer = offers[i % offers.length];
-        await Application.create({
-          candidate: candidate._id,
-          offer: offer._id,
-          status: c.status,
-          appliedAt: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000),
-          matchingScore: Math.floor(40 + Math.random() * 55),
-          matchedSkills: c.skills.slice(0, 2)
-        });
+        const existing = await Application.findOne({ candidate: candidate._id, offer: offer._id });
+        if (!existing) {
+          await Application.create({
+            candidate: candidate._id,
+            offer: offer._id,
+            status: c.status,
+            appliedAt: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000),
+            matchingScore: Math.floor(40 + Math.random() * 55),
+            matchedSkills: c.skills.slice(0, 2)
+          });
+          appsCreated++;
+        }
       }
       created++;
     }
 
-    res.json({ success: true, created, skipped });
+    res.json({ success: true, created, skipped, appsCreated, offersFound: offers.length });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
