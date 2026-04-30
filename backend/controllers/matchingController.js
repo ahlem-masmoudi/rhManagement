@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const axios = require('axios');
 const Candidate = require('../models/Candidate');
 const Offer = require('../models/Offer');
 
@@ -49,10 +49,12 @@ Pour chaque candidat retourne:
 Réponds UNIQUEMENT avec un tableau JSON valide. Pas de markdown, pas d'explication, juste le JSON:
 [{"index":1,"score":85,"matchedSkills":["React","Node.js"],"missingSkills":["Docker"],"reason":"Profil aligné sur les technos principales."},...]`;
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const result = await model.generateContent(prompt);
-    const raw = result.response.text().trim();
+    const geminiRes = await axios.post(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      { contents: [{ parts: [{ text: prompt }] }] },
+      { headers: { 'Content-Type': 'application/json' }, timeout: 60000 }
+    );
+    const raw = geminiRes.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
 
     let scores;
     try {
