@@ -49,12 +49,26 @@ Pour chaque candidat retourne:
 Réponds UNIQUEMENT avec un tableau JSON valide. Pas de markdown, pas d'explication, juste le JSON:
 [{"index":1,"score":85,"matchedSkills":["React","Node.js"],"missingSkills":["Docker"],"reason":"Profil aligné sur les technos principales."},...]`;
 
-    const geminiRes = await axios.post(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      { contents: [{ parts: [{ text: prompt }] }] },
-      { headers: { 'Content-Type': 'application/json' }, timeout: 60000 }
-    );
-    const raw = geminiRes.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+    // Try models in order until one succeeds
+    const models = ['gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-pro'];
+    let raw = '';
+    let lastError = null;
+    for (const modelName of models) {
+      try {
+        const geminiRes = await axios.post(
+          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+          { contents: [{ parts: [{ text: prompt }] }] },
+          { headers: { 'Content-Type': 'application/json' }, timeout: 60000 }
+        );
+        raw = geminiRes.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+        console.log(`AI matching: used model ${modelName}`);
+        break;
+      } catch (e) {
+        console.warn(`Model ${modelName} failed:`, e.response?.data?.error?.message || e.message);
+        lastError = e;
+      }
+    }
+    if (!raw) throw lastError || new Error('All Gemini models failed');
 
     let scores;
     try {
