@@ -139,32 +139,37 @@ app.post('/api/seed-candidates', async (req, res) => {
     for (let i = 0; i < candidates.length; i++) {
       const c = candidates[i];
       const email = `${c.firstName.toLowerCase()}.${c.lastName.toLowerCase()}@test.inet.tn`;
-      const existing = await User.findOne({ email });
-      if (existing) { skipped++; continue; }
+      let existingUser = await User.findOne({ email });
+      let candidate;
 
-      const hash = await bcrypt.hash('Test1234!', 10);
-      const user = await User.create({
-        email, password: hash,
-        firstName: c.firstName, lastName: c.lastName,
-        role: 'candidate', profileComplete: true
-      });
+      if (existingUser) {
+        skipped++;
+        candidate = await Candidate.findOne({ userId: existingUser._id });
+      } else {
+        const hash = await bcrypt.hash('Test1234!', 10);
+        existingUser = await User.create({
+          email, password: hash,
+          firstName: c.firstName, lastName: c.lastName,
+          role: 'candidate', profileComplete: true
+        });
+        candidate = await Candidate.create({
+          userId: existingUser._id,
+          phone: `+216 ${Math.floor(20000000 + Math.random() * 79999999)}`,
+          location: ['Tunis', 'Sfax', 'Sousse', 'Ariana', 'Manouba'][i % 5] + ', Tunisie',
+          school: c.school,
+          educationLevel: 'Licence',
+          expectedDegree: 'Licence en Informatique',
+          expectedGraduation: new Date('2026-06-30'),
+          availability: new Date('2026-07-01'),
+          skills: c.skills
+        });
+        created++;
+      }
 
-      const candidate = await Candidate.create({
-        userId: user._id,
-        phone: `+216 ${Math.floor(20000000 + Math.random() * 79999999)}`,
-        location: ['Tunis', 'Sfax', 'Sousse', 'Ariana', 'Manouba'][i % 5] + ', Tunisie',
-        school: c.school,
-        educationLevel: 'Licence',
-        expectedDegree: 'Licence en Informatique',
-        expectedGraduation: new Date('2026-06-30'),
-        availability: new Date('2026-07-01'),
-        skills: c.skills
-      });
-
-      if (offers.length > 0) {
+      if (candidate && offers.length > 0) {
         const offer = offers[i % offers.length];
-        const existing = await Application.findOne({ candidate: candidate._id, offer: offer._id });
-        if (!existing) {
+        const dupApp = await Application.findOne({ candidate: candidate._id, offer: offer._id });
+        if (!dupApp) {
           await Application.create({
             candidate: candidate._id,
             offer: offer._id,
@@ -176,7 +181,6 @@ app.post('/api/seed-candidates', async (req, res) => {
           appsCreated++;
         }
       }
-      created++;
     }
 
     res.json({ success: true, created, skipped, appsCreated, offersFound: offers.length });
