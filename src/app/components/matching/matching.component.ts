@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatchingService } from '../../services/matching.service';
 import { OfferService } from '../../services/offer.service';
@@ -20,6 +19,8 @@ interface AiCandidate {
   matchedSkills: string[];
   missingSkills: string[];
   reason: string;
+  cvBased: boolean;
+  hasCv: boolean;
   hasApplied: boolean;
   application: Application | null;
 }
@@ -27,7 +28,7 @@ interface AiCandidate {
 @Component({
   selector: 'app-matching',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="matching-page">
       <div class="page-header">
@@ -135,6 +136,8 @@ interface AiCandidate {
               <div class="candidate-info">
                 <div class="name-row">
                   <h3>{{ m.firstName }} {{ m.lastName }}</h3>
+                  <span *ngIf="m.hasCv" class="badge-cv">CV analysé</span>
+                  <span *ngIf="!m.hasCv" class="badge-no-cv">Sans CV</span>
                   <span *ngIf="m.hasApplied" class="badge-applied">A postulé</span>
                   <span *ngIf="m.application" class="badge-status status-{{ m.application.status }}">
                     {{ getStatusLabel(m.application.status) }}
@@ -276,6 +279,8 @@ interface AiCandidate {
     .name-row h3 { margin: 0; font-size: 15px; font-weight: 600; }
     .candidate-meta { margin: 0; font-size: 13px; color: var(--gray-500); }
 
+    .badge-cv    { padding: 2px 8px; border-radius: 10px; background: #EEF2FF; color: #4338CA; font-size: 11px; font-weight: 600; }
+    .badge-no-cv { padding: 2px 8px; border-radius: 10px; background: #F3F4F6; color: #9CA3AF; font-size: 11px; font-weight: 500; }
     .badge-applied { padding: 2px 8px; border-radius: 10px; background: #D1FAE5; color: #065F46; font-size: 11px; font-weight: 600; }
     .badge-status { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
     .status-nouveau             { background: #DBEAFE; color: #1E40AF; }
