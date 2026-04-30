@@ -283,7 +283,7 @@ exports.login = async (req, res) => {
     }
 
     // Risk-based authentication (step-up) â€” only after correct password
-    const riskEnabled = process.env.AUTH_RISK_ENABLED !== 'false' && user.role !== 'rh';
+    const riskEnabled = process.env.AUTH_RISK_ENABLED !== 'false' && user.role !== 'rh' && user.role !== 'recruiter';
     const ip = getClientIp(req);
     const deviceHash = getDeviceHash(req);
     const uaHash = getUserAgentHash(req);
