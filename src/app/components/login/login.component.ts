@@ -17,6 +17,14 @@ type AuthView = 'login' | 'forgot' | 'reset';
       <div class="bg-blob blob-2"></div>
       <div class="bg-blob blob-3"></div>
 
+      <!-- Back to home -->
+      <a class="back-home" (click)="goHome()" href="javascript:void(0)">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Accueil
+      </a>
+
       <div class="login-container">
         <div class="login-card">
           <div class="login-header">
@@ -362,6 +370,14 @@ type AuthView = 'login' | 'forgot' | 'reset';
     </div>
   `,
   styles: [`
+    .back-home {
+      position: fixed; top: 24px; left: 28px; z-index: 10;
+      display: flex; align-items: center; gap: 8px;
+      color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 500;
+      text-decoration: none; transition: color 0.2s;
+    }
+    .back-home:hover { color: white; }
+
     /* ── Page & background ── */
     .login-page {
       min-height: 100vh;
@@ -973,6 +989,10 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.showRegister = false;
     this.forgotPasswordData.email = this.credentials.email || '';
     this.setView('forgot');
+  }
+
+  goHome(): void {
+    this.router.navigate(['/']);
   }
 
   backToLogin(): void {
