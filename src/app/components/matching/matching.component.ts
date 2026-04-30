@@ -39,7 +39,7 @@ interface MatchedCandidate {
             Offre :
           </div>
           <select [(ngModel)]="selectedOfferId" (change)="onOfferChange()" class="offer-select">
-            <option value="">Choisir une offre...</option>
+            <option value="">{{ loading ? 'Chargement...' : offers.length === 0 ? 'Aucune offre disponible' : 'Choisir une offre...' }}</option>
             <option *ngFor="let offer of offers" [value]="offer.id">{{ offer.title }}</option>
           </select>
         </div>
@@ -341,6 +341,7 @@ export class MatchingComponent implements OnInit {
   minScore = 0;
   sortBy = 'score';
   showFilter = 'all';
+  loading = true;
 
   constructor(
     private offerService: OfferService,
@@ -350,7 +351,8 @@ export class MatchingComponent implements OnInit {
 
   ngOnInit(): void {
     this.offerService.getOffers().subscribe(offers => {
-      this.offers = offers.filter(o => o.status === 'publiee');
+      this.offers = offers;
+      this.loading = false;
     });
     this.candidateService.getCandidates().subscribe(c => this.candidates = c);
     this.matchingService.getApplications().subscribe(a => this.applications = a);
