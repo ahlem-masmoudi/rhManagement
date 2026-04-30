@@ -56,6 +56,30 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Scoring service diagnostic — returns URL and pings the service
+app.get('/api/scoring-status', async (req, res) => {
+  const url = process.env.SCORING_SERVICE_URL || '(not set — default: http://127.0.0.1:8000/score)';
+  let pingResult = null;
+  try {
+    const fetch = (() => {
+      try { const f = require('node-fetch'); return typeof f === 'function' ? f : f.default; } catch {}
+      if (typeof globalThis.fetch === 'function') return globalThis.fetch.bind(globalThis);
+      return null;
+    })();
+    if (fetch) {
+      const base = url.replace(/\/score$/, '');
+      const r = await Promise.race([
+        fetch(`${base}/docs`),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout after 8s')), 8000))
+      ]);
+      pingResult = { status: r.status, ok: r.ok };
+    }
+  } catch (e) {
+    pingResult = { error: e.message };
+  }
+  res.json({ scoringServiceUrl: url, ping: pingResult });
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({

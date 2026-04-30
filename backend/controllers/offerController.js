@@ -387,10 +387,10 @@ exports.applyToOffer = async (req, res) => {
           scoredAt: new Date().toISOString()
         };
         await application.save();
-        console.warn(`[scoring] skipped application=${application._id}: ${scoringError.message}`);
+        console.error(`[scoring] FAILED application=${application._id} url=${process.env.SCORING_SERVICE_URL || 'NOT SET'} error="${scoringError.message}"`);
       }
     } else {
-      console.warn(`[scoring] skipped application=${application._id}: missing resumeUrl`);
+      console.error(`[scoring] SKIPPED application=${application._id}: resumeUrl is empty — CV was not sent in request body`);
     }
 
     res.status(200).json({
