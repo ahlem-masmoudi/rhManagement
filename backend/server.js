@@ -59,25 +59,32 @@ app.get('/api/health', (req, res) => {
 // Scoring service diagnostic — returns URL and pings the service
 app.get('/api/scoring-status', async (req, res) => {
   const url = process.env.SCORING_SERVICE_URL || '(not set — default: http://127.0.0.1:8000/score)';
-  let pingResult = null;
-  try {
-    const fetch = (() => {
-      try { const f = require('node-fetch'); return typeof f === 'function' ? f : f.default; } catch {}
-      if (typeof globalThis.fetch === 'function') return globalThis.fetch.bind(globalThis);
-      return null;
-    })();
-    if (fetch) {
-      const base = url.replace(/\/score$/, '');
+  const fetch = (() => {
+    try { const f = require('node-fetch'); return typeof f === 'function' ? f : f.default; } catch {}
+    if (typeof globalThis.fetch === 'function') return globalThis.fetch.bind(globalThis);
+    return null;
+  })();
+
+  async function tryFetch(targetUrl) {
+    try {
       const r = await Promise.race([
-        fetch(`${base}/docs`),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout after 8s')), 8000))
+        fetch(targetUrl),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout 10s')), 10000))
       ]);
-      pingResult = { status: r.status, ok: r.ok };
+      const text = await r.text().catch(() => '');
+      return { status: r.status, ok: r.ok, body: text.slice(0, 200) };
+    } catch (e) {
+      return { error: e.message };
     }
-  } catch (e) {
-    pingResult = { error: e.message };
   }
-  res.json({ scoringServiceUrl: url, ping: pingResult });
+
+  const base = url.replace(/\/score$/, '');
+  const [health, scoreGet] = await Promise.all([
+    fetch ? tryFetch(`${base}/health`) : Promise.resolve({ error: 'no fetch' }),
+    fetch ? tryFetch(`${base}/score`) : Promise.resolve({ error: 'no fetch' })
+  ]);
+
+  res.json({ scoringServiceUrl: url, health, scoreGet });
 });
 
 // 404 handler

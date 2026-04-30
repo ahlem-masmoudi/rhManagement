@@ -25,6 +25,11 @@ except Exception:
 
 app = FastAPI(title="Scoring Service")
 
+@app.get('/')
+@app.get('/health')
+def health():
+    return {"status": "ok", "service": "rh-scoring"}
+
 class ScoreResponse(BaseModel):
     final_score: float
 
