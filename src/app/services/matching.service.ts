@@ -104,6 +104,19 @@ export class MatchingService {
     );
   }
 
+  updateApplicationStatus(applicationId: string, status: string): Observable<any> {
+    return this.http.put<{ success: boolean; data: any }>(
+      `${this.apiUrl}/applications/${applicationId}/status`,
+      { status },
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      catchError(error => {
+        console.error('Error updating application status:', error);
+        return throwError(() => new Error(error.error?.message || 'Failed to update status'));
+      })
+    );
+  }
+
   calculateMatchingScore(candidateId: string, offerId: string): MatchingScore {
     const candidate = this.candidateService.getCandidateById(candidateId);
     const offer = this.offerService.getOfferById(offerId);
