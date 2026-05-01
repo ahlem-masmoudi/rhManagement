@@ -115,6 +115,10 @@ const candidateSchema = new mongoose.Schema({
       metadata: mongoose.Schema.Types.Mixed
     }
   ],
+  recruiterNotes: {
+    type: String,
+    default: ''
+  },
   createdAt: {
     type: Date,
     default: Date.now

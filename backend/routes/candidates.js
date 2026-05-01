@@ -5,16 +5,15 @@ const {
   updateProfile,
   getAllCandidates,
   getCandidate,
-  getCandidateByTrackingToken
-} = require('../controllers/candidateController');
-const {
+  getCandidateByTrackingToken,
   bulkUpdateStatus,
   generateTrackingToken,
   uploadDocument,
   downloadDocument,
   downloadDocumentByTrackingToken,
   generateSignedInternshipRequest,
-  generateAssignmentLetter
+  generateAssignmentLetter,
+  updateCandidateNotes
 } = require('../controllers/candidateController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -40,6 +39,9 @@ router.post('/:id/generate-tracking', protect, authorize('recruiter'), generateT
 router.post('/:id/documents', protect, uploadDocument);
 router.post('/:id/documents/:docId/sign-request', protect, authorize('recruiter'), generateSignedInternshipRequest);
 router.post('/:id/documents/generate-assignment-letter', protect, authorize('recruiter'), generateAssignmentLetter);
+
+// Update recruiter notes for a candidate
+router.put('/:id/notes', protect, authorize('recruiter'), updateCandidateNotes);
 
 // Download document
 router.get('/:id/documents/:docId/download', protect, downloadDocument);

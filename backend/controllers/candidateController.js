@@ -610,6 +610,24 @@ exports.generateAssignmentLetter = async (req, res) => {
   }
 };
 
+// @desc    Save recruiter notes for a candidate
+// @route   PUT /api/candidates/:id/notes
+// @access  Private (Recruiter only)
+exports.updateCandidateNotes = async (req, res) => {
+  try {
+    const { notes } = req.body;
+    const candidate = await Candidate.findByIdAndUpdate(
+      req.params.id,
+      { recruiterNotes: notes || '' },
+      { new: true }
+    );
+    if (!candidate) return res.status(404).json({ success: false, message: 'Candidate not found' });
+    res.json({ success: true, data: { recruiterNotes: candidate.recruiterNotes } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Download document by id (candidate or recruiter)
 // @route   GET /api/candidates/:id/documents/:docId/download
 // @access  Private (Candidate or Recruiter)

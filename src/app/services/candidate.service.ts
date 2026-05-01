@@ -379,6 +379,28 @@ export class CandidateService {
     });
   }
 
+  updateSingleStatus(candidateId: string, newStatus: CandidateStatus, comment?: string): Observable<any> {
+    return this.http.post<{ success: boolean; data: any }>(
+      `${this.apiUrl}/candidates/bulk-status`,
+      { candidateIds: [candidateId], newStatus, comment, sendEmail: false },
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => { throw error; })
+    );
+  }
+
+  saveRecruiterNotes(candidateId: string, notes: string): Observable<any> {
+    return this.http.put<{ success: boolean; data: any }>(
+      `${this.apiUrl}/candidates/${candidateId}/notes`,
+      { notes },
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => { throw error; })
+    );
+  }
+
   addNote(candidateId: string, note: any): void {
     const candidates = this.candidatesSubject.value;
     const index = candidates.findIndex(c => c.id === candidateId);
