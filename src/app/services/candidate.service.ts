@@ -160,6 +160,15 @@ export class CandidateService {
     );
   }
 
+  uploadTrackingDocument(token: string, payload: { name: string; content: string; type: string }) {
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.apiUrl}/candidates/tracking/${token}/documents`,
+      payload
+    ).pipe(
+      catchError(error => { throw error.error?.message || 'Erreur lors du dépôt'; })
+    );
+  }
+
   downloadTrackingDocument(token: string, docId: string) {
     return this.http.get<{ success: boolean; data: any }>(
       `${this.apiUrl}/candidates/tracking/${token}/documents/${docId}/download`

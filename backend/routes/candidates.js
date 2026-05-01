@@ -11,6 +11,7 @@ const {
   uploadDocument,
   downloadDocument,
   downloadDocumentByTrackingToken,
+  uploadDocumentByTrackingToken,
   generateSignedInternshipRequest,
   generateAssignmentLetter,
   updateCandidateNotes
@@ -21,8 +22,9 @@ const { protect, authorize } = require('../middleware/auth');
 router.get('/profile', protect, authorize('candidate'), getProfile);
 router.put('/profile', protect, authorize('candidate'), updateProfile);
 
-// Public tracking route
+// Public tracking routes (no auth — token-based)
 router.get('/tracking/:token', getCandidateByTrackingToken);
+router.post('/tracking/:token/documents', uploadDocumentByTrackingToken);
 router.get('/tracking/:token/documents/:docId/download', downloadDocumentByTrackingToken);
 
 // Recruiter routes (for viewing candidates)

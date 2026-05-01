@@ -647,6 +647,46 @@ exports.downloadDocument = async (req, res) => {
   }
 };
 
+// @desc    Upload document via tracking token (no auth — candidate uses their link)
+// @route   POST /api/candidates/tracking/:token/documents
+// @access  Public
+exports.uploadDocumentByTrackingToken = async (req, res) => {
+  try {
+    const candidate = await Candidate.findOne({ trackingToken: req.params.token });
+    if (!candidate) return res.status(404).json({ success: false, message: 'Lien invalide ou expiré' });
+
+    const { name, content, type } = req.body;
+    if (!name || !content) return res.status(400).json({ success: false, message: 'name et content requis' });
+
+    // Prevent re-upload if an unsigned demande_stage already exists
+    const existing = (candidate.documents || []).find(d => d.type === (type || 'demande_stage') && !d.isSigned);
+    if (existing) {
+      // Replace the old unsigned document instead of duplicating
+      existing.name = name;
+      existing.content = content;
+      existing.uploadedAt = new Date();
+      existing.status = 'soumis';
+    } else {
+      candidate.documents = candidate.documents || [];
+      candidate.documents.push({
+        id: `${Date.now()}_${Math.random().toString(36).substr(2, 8)}`,
+        name,
+        type: type || 'demande_stage',
+        content,
+        status: 'soumis',
+        isSigned: false,
+        uploadedAt: new Date()
+      });
+    }
+
+    await candidate.save();
+    res.json({ success: true, message: 'Document déposé avec succès' });
+  } catch (error) {
+    console.error('uploadDocumentByTrackingToken error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Download document by tracking token (public)
 // @route   GET /api/candidates/tracking/:token/documents/:docId/download
 // @access  Public

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CandidateService } from '../../../services/candidate.service';
 import { Candidate, StatusChange, CandidateDocument } from '../../../models';
@@ -7,7 +8,7 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
 @Component({
   selector: 'app-candidate-tracking',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="tracking-page">
       <div class="page-header">
@@ -56,28 +57,66 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
           </div>
         </div>
 
-        <!-- Documents -->
-        <div class="card documents-card">
-          <h2>📎 Documents</h2>
-          <div *ngIf="getDocuments().length === 0" class="empty-documents">
-            Aucun document disponible pour le moment.
+        <!-- Upload demande de stage -->
+        <div class="card upload-card" *ngIf="canUploadDemandeStage()">
+          <h2>📤 Déposer votre demande de stage</h2>
+          <p class="upload-intro">
+            Félicitations ! Votre candidature avance. Veuillez déposer votre <strong>demande de stage</strong> (PDF) afin que l'équipe RH puisse la signer et vous la retourner.
+          </p>
+
+          <!-- Already uploaded + unsigned -->
+          <div *ngIf="getUnsignedDemandeStage()" class="doc-pending-banner">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+            <div>
+              <strong>{{ getUnsignedDemandeStage()?.name }}</strong> — en attente de signature RH
+              <div style="font-size:12px; color:#92400e; margin-top:2px;">Vous pouvez remplacer le fichier si nécessaire.</div>
+            </div>
           </div>
 
-          <div *ngFor="let doc of getDocuments()" class="tracking-doc-item">
+          <!-- Signed doc ready to download -->
+          <div *ngIf="getSignedDemandeStage()" class="doc-signed-banner">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <div style="flex:1">
+              <strong>Demande signée disponible !</strong>
+              <div style="font-size:12px; margin-top:2px;">{{ getSignedDemandeStage()?.name }}</div>
+            </div>
+            <button class="btn-download-doc" (click)="downloadDocument(getSignedDemandeStage()!)">
+              Télécharger
+            </button>
+          </div>
+
+          <!-- File picker -->
+          <div class="file-drop" (click)="fileInput.click()" [class.has-file]="selectedFile">
+            <svg width="32" height="32" fill="currentColor" opacity="0.4" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+            <p *ngIf="!selectedFile">Cliquez pour sélectionner un fichier PDF</p>
+            <p *ngIf="selectedFile"><strong>{{ selectedFile.name }}</strong> ({{ formatFileSize(selectedFile.size) }})</p>
+            <input #fileInput type="file" accept=".pdf,application/pdf" style="display:none" (change)="onFileSelected($event)">
+          </div>
+
+          <div *ngIf="uploadError" class="upload-error">{{ uploadError }}</div>
+
+          <button class="btn-upload" [disabled]="!selectedFile || uploadLoading" (click)="uploadDemandeStage()">
+            <span *ngIf="!uploadLoading">Déposer ma demande de stage</span>
+            <span *ngIf="uploadLoading">Dépôt en cours...</span>
+          </button>
+
+          <div *ngIf="uploadSuccess" class="upload-success">
+            ✓ Document déposé avec succès. L'équipe RH va le traiter prochainement.
+          </div>
+        </div>
+
+        <!-- Other documents (signed letters, etc.) -->
+        <div class="card documents-card" *ngIf="getOtherDocuments().length > 0">
+          <h2>📎 Mes documents</h2>
+          <div *ngFor="let doc of getOtherDocuments()" class="tracking-doc-item">
             <div>
               <strong>{{ doc.name }}</strong>
               <div class="tracking-doc-meta">
-                {{ getDocTypeLabel(doc.type) }} • {{ getDocumentStatusLabel(doc.status) }}
+                {{ getDocTypeLabel(doc.type) }}
+                <span *ngIf="doc.isSigned" class="signed-chip">Signé ✓</span>
               </div>
             </div>
-            <button class="btn-download-doc" (click)="downloadDocument(doc)">Telecharger</button>
-          </div>
-          
-          <div *ngIf="needsDocuments" class="upload-reminder">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-            </svg>
-            <p>Merci de déposer les documents requis pour poursuivre le traitement de votre candidature.</p>
+            <button class="btn-download-doc" (click)="downloadDocument(doc)">Télécharger</button>
           </div>
         </div>
 
@@ -318,6 +357,65 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       font-weight: 600;
     }
 
+    .upload-card h2 { margin: 0 0 8px; }
+    .upload-intro { color: #4b5563; font-size: 14px; margin: 0 0 16px; line-height: 1.6; }
+
+    .doc-pending-banner {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: #fef3c7; border: 1px solid #f59e0b;
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 14px;
+      font-size: 13px; color: #78350f;
+    }
+    .doc-pending-banner svg { flex-shrink: 0; color: #d97706; margin-top: 1px; }
+
+    .doc-signed-banner {
+      display: flex; align-items: center; gap: 10px;
+      background: #dcfce7; border: 1px solid #86efac;
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 14px;
+      font-size: 13px; color: #14532d;
+    }
+    .doc-signed-banner svg { flex-shrink: 0; color: #16a34a; }
+
+    .file-drop {
+      border: 2px dashed #d1d5db; border-radius: 10px;
+      padding: 28px 16px; text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 12px;
+    }
+    .file-drop:hover, .file-drop.has-file {
+      border-color: #6366f1; background: #eef2ff;
+    }
+    .file-drop p { margin: 8px 0 0; color: #6b7280; font-size: 14px; }
+    .file-drop.has-file p { color: #4338ca; font-weight: 600; }
+
+    .upload-error {
+      color: #dc2626; font-size: 13px;
+      background: #fef2f2; border: 1px solid #fca5a5;
+      border-radius: 8px; padding: 8px 12px; margin-bottom: 10px;
+    }
+
+    .upload-success {
+      color: #065f46; font-size: 13px;
+      background: #d1fae5; border: 1px solid #6ee7b7;
+      border-radius: 8px; padding: 10px 14px; margin-top: 10px;
+    }
+
+    .btn-upload {
+      width: 100%; padding: 12px;
+      background: #6366f1; color: white;
+      border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-upload:hover:not(:disabled) { background: #4f46e5; }
+    .btn-upload:disabled { opacity: 0.5; cursor: default; }
+
+    .signed-chip {
+      display: inline-block; background: #dcfce7; color: #166534;
+      padding: 2px 8px; border-radius: 999px; font-size: 11px;
+      font-weight: 600; margin-left: 6px;
+    }
+
     .contact-card ul {
       list-style: none;
       padding: 0;
@@ -414,9 +512,88 @@ export class CandidateTrackingComponent implements OnInit {
     }
   }
 
+  // Upload state
+  selectedFile: File | null = null;
+  uploadLoading = false;
+  uploadError = '';
+  uploadSuccess = false;
+
   get needsDocuments(): boolean {
-    return this.candidate?.status === 'en_attente_documents' || 
+    return this.candidate?.status === 'en_attente_documents' ||
            this.candidate?.status === 'preselectionne';
+  }
+
+  canUploadDemandeStage(): boolean {
+    const active = ['preselectionne','en_attente_documents','documents_recus',
+      'entretien_programme','entretien_realise','test_technique',
+      'validation_finale','offre_envoyee','offre_acceptee'];
+    return active.includes(this.candidate?.status || '');
+  }
+
+  getUnsignedDemandeStage(): CandidateDocument | null {
+    return (this.candidate?.documents || [])
+      .find((d: any) => d.type === 'demande_stage' && !d.isSigned) || null;
+  }
+
+  getSignedDemandeStage(): CandidateDocument | null {
+    return (this.candidate?.documents || [])
+      .find((d: any) => d.type === 'demande_stage' && d.isSigned) || null;
+  }
+
+  getOtherDocuments(): CandidateDocument[] {
+    return (this.candidate?.documents || [])
+      .filter((d: any) => d.type !== 'demande_stage');
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.selectedFile = input.files?.[0] || null;
+    this.uploadError = '';
+    this.uploadSuccess = false;
+  }
+
+  uploadDemandeStage(): void {
+    if (!this.selectedFile || !this.trackingToken) return;
+    if (this.selectedFile.size > 10 * 1024 * 1024) {
+      this.uploadError = 'Le fichier ne doit pas dépasser 10 Mo.';
+      return;
+    }
+    this.uploadLoading = true;
+    this.uploadError = '';
+    this.uploadSuccess = false;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      this.candidateService.uploadTrackingDocument(this.trackingToken, {
+        name: this.selectedFile!.name,
+        content: base64,
+        type: 'demande_stage'
+      }).subscribe({
+        next: () => {
+          this.uploadLoading = false;
+          this.uploadSuccess = true;
+          this.selectedFile = null;
+          // Reload candidate to reflect the new document
+          this.candidateService.getTrackingCandidate(this.trackingToken).subscribe({
+            next: (c) => {
+              if (this.candidate) this.candidate.documents = c.documents || [];
+            }
+          });
+        },
+        error: (msg: string) => {
+          this.uploadLoading = false;
+          this.uploadError = msg || 'Erreur lors du dépôt.';
+        }
+      });
+    };
+    reader.readAsDataURL(this.selectedFile);
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' o';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' Ko';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' Mo';
   }
 
   getStatusHistory(): StatusChange[] {
