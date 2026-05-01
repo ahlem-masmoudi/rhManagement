@@ -131,7 +131,7 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
           </div>
 
           <div class="column-body">
-      <div *ngFor="let application of getApplicationsByStatus(column.status)" 
+      <div *ngFor="let application of getPagedApplications(column.status)"
         class="candidate-card"
         [class.selected]="isCandidateSelected(application.candidateId)"
         [class.accepted]="application.status === 'offre_acceptee'"
@@ -191,6 +191,13 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Pagination controls -->
+          <div class="column-pagination" *ngIf="getColumnCount(column.status) > pageSize">
+            <button class="pag-btn" [disabled]="getPage(column.status) === 0" (click)="prevPage(column.status)">‹</button>
+            <span class="pag-info">{{ getPage(column.status) + 1 }} / {{ getTotalPages(column.status) }}</span>
+            <button class="pag-btn" [disabled]="getPage(column.status) >= getTotalPages(column.status) - 1" (click)="nextPage(column.status)">›</button>
           </div>
         </div>
       </div>
@@ -484,6 +491,41 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       color: var(--gray-600);
     }
 
+    .column-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px var(--spacing-md);
+      border-top: 1px solid var(--gray-200);
+    }
+
+    .pag-btn {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      background: white;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      color: var(--gray-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .pag-btn:hover:not(:disabled) { background: var(--gray-100); color: var(--gray-900); }
+    .pag-btn:disabled { opacity: 0.35; cursor: default; }
+
+    .pag-info {
+      font-size: 12px;
+      color: var(--gray-500);
+      min-width: 40px;
+      text-align: center;
+    }
+
     @media (max-width: 768px) {
       .page-header { flex-direction: column; align-items: flex-start; gap: var(--spacing-md); }
       .header-actions { width: 100%; justify-content: flex-start; }
@@ -538,9 +580,18 @@ export class CandidaturesComponent implements OnInit {
   archivedDocs: { [candidateId: string]: any[] } = {};
   // loading state per candidate when fetching documents on demand
   archivedDocsLoading: { [candidateId: string]: boolean } = {};
-  selectedOffer: string = '';
-  searchTerm: string = '';
-  selectedScoreRange: string = '';
+  private _selectedOffer: string = '';
+  private _searchTerm: string = '';
+  private _selectedScoreRange: string = '';
+
+  get selectedOffer() { return this._selectedOffer; }
+  set selectedOffer(v: string) { this._selectedOffer = v; this.columnPages = {}; }
+
+  get searchTerm() { return this._searchTerm; }
+  set searchTerm(v: string) { this._searchTerm = v; this.columnPages = {}; }
+
+  get selectedScoreRange() { return this._selectedScoreRange; }
+  set selectedScoreRange(v: string) { this._selectedScoreRange = v; this.columnPages = {}; }
   selectMode = false;
   selectedCandidates: Set<string> = new Set();
   
@@ -637,6 +688,33 @@ export class CandidaturesComponent implements OnInit {
 
   onStatusUpdated(): void {
     this.ngOnInit();
+  }
+
+  // --- Pagination ---
+  readonly pageSize = 5;
+  private columnPages: Record<string, number> = {};
+
+  getPage(status: string): number {
+    return this.columnPages[status] ?? 0;
+  }
+
+  getTotalPages(status: CandidateStatus): number {
+    return Math.ceil(this.getColumnCount(status) / this.pageSize) || 1;
+  }
+
+  getPagedApplications(status: CandidateStatus): Application[] {
+    const all = this.getApplicationsByStatus(status);
+    const page = this.getPage(status);
+    return all.slice(page * this.pageSize, (page + 1) * this.pageSize);
+  }
+
+  prevPage(status: string): void {
+    this.columnPages[status] = Math.max(0, this.getPage(status) - 1);
+  }
+
+  nextPage(status: string): void {
+    const max = this.getTotalPages(status as CandidateStatus) - 1;
+    this.columnPages[status] = Math.min(max, this.getPage(status) + 1);
   }
 
   activeDropdown: string | null = null;
