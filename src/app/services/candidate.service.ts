@@ -388,6 +388,17 @@ export class CandidateService {
     });
   }
 
+  generateTrackingLink(candidateId: string): Observable<string> {
+    return this.http.post<{ success: boolean; data: { trackingToken: string } }>(
+      `${this.apiUrl}/candidates/${candidateId}/generate-tracking`,
+      {},
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(r => r.data.trackingToken),
+      catchError(error => { throw error; })
+    );
+  }
+
   updateSingleStatus(candidateId: string, newStatus: CandidateStatus, comment?: string): Observable<any> {
     return this.http.post<{ success: boolean; data: any }>(
       `${this.apiUrl}/candidates/bulk-status`,
