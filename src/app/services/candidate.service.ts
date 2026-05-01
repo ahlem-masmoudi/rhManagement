@@ -389,12 +389,12 @@ export class CandidateService {
   }
 
   generateTrackingLink(candidateId: string): Observable<string> {
-    return this.http.post<{ success: boolean; data: { trackingToken: string } }>(
+    return this.http.post<{ success: boolean; data: { token: string } }>(
       `${this.apiUrl}/candidates/${candidateId}/generate-tracking`,
       {},
       { headers: this.getAuthHeaders() }
     ).pipe(
-      map(r => r.data.trackingToken),
+      map(r => r.data.token),
       catchError(error => { throw error; })
     );
   }
