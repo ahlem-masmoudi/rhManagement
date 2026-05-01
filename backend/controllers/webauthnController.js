@@ -8,10 +8,24 @@ try {
   console.warn('[WebAuthn] @simplewebauthn/server not installed. Run: npm install @simplewebauthn/server');
 }
 
-const RP_NAME   = process.env.WEBAUTHN_RP_NAME   || 'INET RH Management';
-const RP_ID     = process.env.WEBAUTHN_RP_ID     || 'localhost';
-const RP_ORIGIN = process.env.WEBAUTHN_ORIGIN    || 'http://localhost:4200';
+const RP_NAME = process.env.WEBAUTHN_RP_NAME || 'INET RH Management';
 const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function getRpConfig(req) {
+  if (process.env.WEBAUTHN_RP_ID) {
+    return {
+      rpId: process.env.WEBAUTHN_RP_ID,
+      rpOrigin: process.env.WEBAUTHN_ORIGIN || `https://${process.env.WEBAUTHN_RP_ID}`
+    };
+  }
+  const origin = req.headers.origin || req.headers.referer || '';
+  try {
+    const url = new URL(origin);
+    return { rpId: url.hostname, rpOrigin: url.origin };
+  } catch {
+    return { rpId: 'localhost', rpOrigin: 'http://localhost:4200' };
+  }
+}
 
 function requireLib(res) {
   if (!simplewebauthn) {
@@ -42,9 +56,10 @@ exports.getRegistrationOptions = async (req, res) => {
       transports: c.transports || []
     }));
 
+    const { rpId, rpOrigin } = getRpConfig(req);
     const options = await simplewebauthn.generateRegistrationOptions({
       rpName: RP_NAME,
-      rpID: RP_ID,
+      rpID: rpId,
       userID: Buffer.from(user._id.toString()),
       userName: user.email,
       userDisplayName: `${user.firstName} ${user.lastName}`,
@@ -86,11 +101,12 @@ exports.verifyRegistration = async (req, res) => {
     const { credential } = req.body;
     if (!credential) return res.status(400).json({ success: false, message: 'Données manquantes.' });
 
+    const { rpId, rpOrigin } = getRpConfig(req);
     const verification = await simplewebauthn.verifyRegistrationResponse({
       response: credential,
       expectedChallenge: user.webauthnChallenge,
-      expectedOrigin: RP_ORIGIN,
-      expectedRPID: RP_ID,
+      expectedOrigin: rpOrigin,
+      expectedRPID: rpId,
       requireUserVerification: true
     });
 
@@ -151,8 +167,9 @@ exports.getAuthenticationOptions = async (req, res) => {
       transports: c.transports || []
     }));
 
+    const { rpId } = getRpConfig(req);
     const options = await simplewebauthn.generateAuthenticationOptions({
-      rpID: RP_ID,
+      rpID: rpId,
       allowCredentials,
       userVerification: 'required'
     });
@@ -200,11 +217,12 @@ exports.verifyAuthentication = async (req, res) => {
       return res.status(401).json({ success: false, code: 'CREDENTIAL_NOT_FOUND', message: 'Empreinte non reconnue.' });
     }
 
+    const { rpId, rpOrigin } = getRpConfig(req);
     const verification = await simplewebauthn.verifyAuthenticationResponse({
       response: credential,
       expectedChallenge: user.webauthnChallenge,
-      expectedOrigin: RP_ORIGIN,
-      expectedRPID: RP_ID,
+      expectedOrigin: rpOrigin,
+      expectedRPID: rpId,
       credential: {
         id:        storedCred.credentialID,
         publicKey: Buffer.from(storedCred.credentialPublicKey, 'base64url'),
