@@ -97,7 +97,7 @@ import { Candidate, CandidateStatus } from '../../models';
                 <h4>Formation</h4>
                 <p><strong>{{ candidate.school }}</strong></p>
                 <p *ngIf="candidate.level || candidate.expectedDegree">{{ candidate.level }}<span *ngIf="candidate.level && candidate.expectedDegree"> — </span>{{ candidate.expectedDegree }}</p>
-                <p class="text-muted" *ngIf="candidate.expectedGraduation">Diplôme prévu : {{ candidate.expectedGraduation | date:'MMMM yyyy':'':'fr' }}</p>
+                <p class="text-muted" *ngIf="candidate.expectedGraduation">Diplôme prévu : {{ candidate.expectedGraduation | date:'MM/yyyy' }}</p>
               </div>
 
               <div class="resume-section" *ngIf="candidate.skills?.length">
