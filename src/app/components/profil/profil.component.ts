@@ -277,6 +277,10 @@ import { Candidate, CandidateStatus } from '../../models';
                   <input [(ngModel)]="assignmentForm.instituteNameAr" />
                 </label>
                 <label class="field">
+                  <span>Logo (sigle)</span>
+                  <input [(ngModel)]="assignmentForm.logoText" maxlength="10" />
+                </label>
+                <label class="field">
                   <span>Date de lettre</span>
                   <input [(ngModel)]="assignmentForm.letterDate" placeholder="17/04/2026" />
                 </label>
@@ -323,7 +327,7 @@ import { Candidate, CandidateStatus } from '../../models';
                     Ministère de l'Enseignement Supérieur<br>
                     {{ assignmentForm.instituteNameFr }}
                   </div>
-                  <div class="letter-logo">ISGI</div>
+                  <div class="letter-logo">{{ assignmentForm.logoText }}</div>
                   <div class="letter-ar">{{ assignmentForm.instituteNameAr }}</div>
                 </div>
 
@@ -1012,6 +1016,7 @@ export class ProfilComponent implements OnInit {
   assignmentForm = {
     instituteNameFr: '',
     instituteNameAr: '',
+    logoText: 'ISGI',
     letterDate: '',
     companyName: '',
     directorName: '',
@@ -1276,6 +1281,7 @@ export class ProfilComponent implements OnInit {
     this.assignmentForm = {
       instituteNameFr: 'Institut Supérieur de Gestion Industrielle de Sfax',
       instituteNameAr: 'المعهد العالي للتصرف الصناعي بصفاقس',
+      logoText: 'ISGI',
       letterDate: this.todayLabel,
       companyName: 'Informatique net',
       directorName: 'Directeur société',
