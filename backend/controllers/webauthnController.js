@@ -13,12 +13,11 @@ const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 function getRpConfig(req) {
   if (process.env.WEBAUTHN_RP_ID) {
-    return {
-      rpId: process.env.WEBAUTHN_RP_ID,
-      rpOrigin: process.env.WEBAUTHN_ORIGIN || `https://${process.env.WEBAUTHN_RP_ID}`
-    };
+    const rpId = process.env.WEBAUTHN_RP_ID.trim();
+    const rpOrigin = (process.env.WEBAUTHN_ORIGIN || `https://${rpId}`).trim();
+    return { rpId, rpOrigin };
   }
-  const origin = req.headers.origin || req.headers.referer || '';
+  const origin = (req.headers.origin || req.headers.referer || '').trim();
   try {
     const url = new URL(origin);
     return { rpId: url.hostname, rpOrigin: url.origin };
