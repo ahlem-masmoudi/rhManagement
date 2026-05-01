@@ -80,7 +80,7 @@ import { Candidate, CandidateStatus } from '../../models';
         <main class="profil-main">
           <div class="tabs">
             <button
-              *ngFor="let tab of tabs"
+              *ngFor="let tab of visibleTabs()"
               class="tab-btn"
               [class.active]="activeTab === tab.id"
               (click)="activeTab = tab.id">
@@ -1080,6 +1080,10 @@ export class ProfilComponent implements OnInit {
     const f = this.candidate.firstName?.[0] || '';
     const l = this.candidate.lastName?.[0] || '';
     return (f + l).toUpperCase();
+  }
+
+  visibleTabs() {
+    return this.tabs.filter(t => t.id !== 'documents' || !this.shouldHideRhDocuments());
   }
 
   getReversedHistory(): any[] {
