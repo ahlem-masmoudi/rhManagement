@@ -382,11 +382,16 @@ export class MatchingComponent implements OnInit {
       { headers }
     ).subscribe({
       next: (res) => {
-        this.results = res.data.map(r => ({
-          ...r,
-          hasApplied: this.applications.some(a => a.candidateId?.toString() === r.candidateId?.toString() && a.offerId?.toString() === this.selectedOfferId?.toString()),
-          application: this.applications.find(a => a.candidateId?.toString() === r.candidateId?.toString() && a.offerId?.toString() === this.selectedOfferId?.toString()) || null
-        }));
+        this.results = res.data.map(r => {
+          const hasApplied = this.applications.some(a => a.candidateId?.toString() === r.candidateId?.toString() && a.offerId?.toString() === this.selectedOfferId?.toString());
+          const application = this.applications.find(a => a.candidateId?.toString() === r.candidateId?.toString() && a.offerId?.toString() === this.selectedOfferId?.toString()) || null;
+          return {
+            ...r,
+            hasCv: r.hasCv || hasApplied,
+            hasApplied,
+            application
+          };
+        });
         this.aiLoading = false;
       },
       error: (err) => {
