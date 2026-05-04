@@ -1229,7 +1229,8 @@ export class ProfilComponent implements OnInit {
   envoyerEmail(): void {
     if (!this.candidate?.email) return;
     const subject = encodeURIComponent(`Votre candidature — ${this.getStatusLabel(this.candidate.status)}`);
-    window.open(`mailto:${this.candidate.email}?subject=${subject}`);
+    const to = encodeURIComponent(this.candidate.email);
+    window.open(`https://mail.google.com/mail/?view=cm&to=${to}&su=${subject}`, '_blank');
   }
 
   saveNotes(): void {
