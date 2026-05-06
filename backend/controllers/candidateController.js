@@ -483,10 +483,11 @@ exports.uploadDocument = async (req, res) => {
 // @access  Private (Recruiter only)
 exports.generateSignedInternshipRequest = async (req, res) => {
   try {
-    const candidate = await Candidate.findById(req.params.id).populate('userId', '-password');
+    // Use .lean() so doc.id returns the raw stored 'id' field, not Mongoose's _id virtual
+    const candidate = await Candidate.findById(req.params.id).populate('userId', '-password').lean();
     if (!candidate) return res.status(404).json({ success: false, message: 'Candidate not found' });
 
-    const sourceDoc = (candidate.documents || []).find(doc => doc.id === req.params.docId);
+    const sourceDoc = (candidate.documents || []).find(doc => String(doc.id) === req.params.docId);
     if (!sourceDoc) return res.status(404).json({ success: false, message: 'Source document not found' });
 
     const html = buildSignedRequestHtml({
@@ -496,6 +497,7 @@ exports.generateSignedInternshipRequest = async (req, res) => {
       originalName: sourceDoc.name
     });
 
+    const now = new Date();
     const signedDoc = {
       id: `${Date.now()}_${Math.random().toString(36).substr(2,8)}`,
       name: `Demande_de_stage_signee_${sanitize(candidate.userId?.lastName || 'candidat')}.html`,
@@ -507,8 +509,8 @@ exports.generateSignedInternshipRequest = async (req, res) => {
       generatedBy: req.user.id,
       relatedDocumentId: sourceDoc.id,
       uploadedBy: req.user.id,
-      uploadedAt: new Date(),
-      signedAt: new Date(),
+      uploadedAt: now,
+      signedAt: now,
       metadata: {
         kind: 'signed_request',
         originalDocumentName: sourceDoc.name,
@@ -516,21 +518,21 @@ exports.generateSignedInternshipRequest = async (req, res) => {
       }
     };
 
-    const previousStatus = candidate.status;
-    candidate.documents = candidate.documents || [];
-    candidate.documents.push(signedDoc);
-    candidate.status = 'documents_recus';
-    candidate.statusHistory = candidate.statusHistory || [];
-    candidate.statusHistory.push({
+    const statusHistoryEntry = {
       id: `${Date.now()}_${Math.random().toString(36).substr(2,8)}`,
-      previousStatus,
+      previousStatus: candidate.status,
       newStatus: 'documents_recus',
       changedBy: req.user.id,
-      changedAt: new Date(),
+      changedAt: now,
       comment: 'Demande de stage signee et renvoyee au candidat.',
       emailSent: false
+    };
+
+    // Use findOneAndUpdate + $push to avoid .save() CastError on large content fields
+    await Candidate.findByIdAndUpdate(req.params.id, {
+      $push: { documents: signedDoc, statusHistory: statusHistoryEntry },
+      $set: { status: 'documents_recus' }
     });
-    await candidate.save();
 
     res.status(201).json({ success: true, data: signedDoc });
   } catch (error) {
