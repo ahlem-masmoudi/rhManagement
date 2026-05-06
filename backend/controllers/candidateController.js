@@ -644,13 +644,13 @@ exports.updateCandidateNotes = async (req, res) => {
 // @access  Private (Candidate or Recruiter)
 exports.downloadDocument = async (req, res) => {
   try {
-    const candidate = await Candidate.findById(req.params.id);
+    // Use .lean() so d.id returns the raw stored 'id' field, not Mongoose's _id virtual
+    const candidate = await Candidate.findById(req.params.id).lean();
     if (!candidate) return res.status(404).json({ success: false, message: 'Candidate not found' });
 
-    const doc = (candidate.documents || []).find(d => d.id === req.params.docId);
+    const doc = (candidate.documents || []).find(d => String(d.id) === req.params.docId);
     if (!doc) return res.status(404).json({ success: false, message: 'Document not found' });
 
-    // Return raw content (in real app set appropriate headers and stream file)
     res.status(200).json({ success: true, data: { name: doc.name, content: doc.content, isSigned: doc.isSigned } });
   } catch (error) {
     console.error('Error downloading document:', error);
