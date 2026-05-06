@@ -659,25 +659,18 @@ exports.uploadDocumentByTrackingToken = async (req, res) => {
     if (!name || !content) return res.status(400).json({ success: false, message: 'name et content requis' });
 
     const docType = type || 'demande_stage';
+    candidate.documents = candidate.documents || [];
 
-    // Use the raw MongoDB collection to bypass ALL Mongoose casting/validation
-    const col = Candidate.collection;
-
-    const existing = (candidate.documents || []).find(d => d.type === docType && !d.isSigned);
-    if (existing) {
-      await col.updateOne(
-        { trackingToken: req.params.token, 'documents.id': existing.id },
-        {
-          $set: {
-            'documents.$.name': name,
-            'documents.$.content': content,
-            'documents.$.uploadedAt': new Date(),
-            'documents.$.status': 'soumis'
-          }
-        }
-      );
+    // Replace existing unsigned doc of the same type, or push a new one
+    const existingIdx = candidate.documents.findIndex(d => d.type === docType && !d.isSigned);
+    if (existingIdx !== -1) {
+      candidate.documents[existingIdx].name = name;
+      candidate.documents[existingIdx].content = content;
+      candidate.documents[existingIdx].uploadedAt = new Date();
+      candidate.documents[existingIdx].status = 'soumis';
+      candidate.markModified('documents');
     } else {
-      const newDoc = {
+      candidate.documents.push({
         id: `${Date.now()}_${Math.random().toString(36).substr(2, 8)}`,
         name,
         type: docType,
@@ -685,13 +678,10 @@ exports.uploadDocumentByTrackingToken = async (req, res) => {
         status: 'soumis',
         isSigned: false,
         uploadedAt: new Date()
-      };
-      await col.updateOne(
-        { trackingToken: req.params.token },
-        { $push: { documents: newDoc } }
-      );
+      });
     }
 
+    await candidate.save();
     res.json({ success: true, message: 'Document déposé avec succès' });
   } catch (error) {
     console.error('uploadDocumentByTrackingToken error:', error);

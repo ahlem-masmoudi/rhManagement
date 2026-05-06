@@ -1271,14 +1271,34 @@ export class ProfilComponent implements OnInit {
     this.candidateService.generateTrackingLink(this.candidate.id).subscribe({
       next: (token) => {
         const url = `${window.location.origin}/candidat/suivi/${token}`;
-        navigator.clipboard.writeText(url).then(() => {
-          this.trackingLoading = false;
+        this.trackingLoading = false;
+        const markCopied = () => {
           this.trackingCopied = true;
           setTimeout(() => { this.trackingCopied = false; }, 3000);
-        });
+        };
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(markCopied).catch(() => {
+            this.legacyCopy(url);
+            markCopied();
+          });
+        } else {
+          this.legacyCopy(url);
+          markCopied();
+        }
       },
       error: () => { this.trackingLoading = false; }
     });
+  }
+
+  private legacyCopy(text: string): void {
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+    document.body.appendChild(el);
+    el.focus();
+    el.select();
+    try { document.execCommand('copy'); } catch (_) {}
+    document.body.removeChild(el);
   }
 
   envoyerEmail(): void {
