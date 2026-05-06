@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -261,13 +261,16 @@ import { Candidate, CandidateStatus, Application } from '../../models';
               </button>
             </div>
 
-            <!-- Tracking URL box (shown when clipboard is unavailable) -->
-            <div *ngIf="trackingUrl && !trackingCopied" class="tracking-url-row">
-              <input #urlInput type="text" class="tracking-url-input" [value]="trackingUrl" readonly (click)="urlInput.select()">
-              <button class="btn-copy-url" (click)="copyFromInput(urlInput)">
-                <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>
-                Copier
-              </button>
+            <!-- Tracking URL box (shown on HTTP / when clipboard unavailable) -->
+            <div *ngIf="trackingUrl" class="tracking-url-row">
+              <div class="tracking-url-label">Lien généré — cliquez sur Copier :</div>
+              <div class="tracking-url-inner">
+                <input #urlInput type="text" class="tracking-url-input" [value]="trackingUrl" readonly (click)="urlInput.select()">
+                <button class="btn-copy-url" (click)="copyFromInput(urlInput)">
+                  <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>
+                  Copier
+                </button>
+              </div>
             </div>
           </div>
         </main>
@@ -850,14 +853,25 @@ import { Candidate, CandidateStatus, Application } from '../../models';
 
     .tracking-url-row {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      flex-direction: column;
+      gap: 6px;
       width: 100%;
       margin-top: 10px;
       padding: 10px 12px;
       background: #f0fdf4;
       border: 1px solid #86efac;
       border-radius: 10px;
+    }
+    .tracking-url-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #065f46;
+      letter-spacing: 0.3px;
+    }
+    .tracking-url-inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .tracking-url-input {
       flex: 1;
@@ -1149,7 +1163,8 @@ export class ProfilComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private candidateService: CandidateService,
-    private matchingService: MatchingService
+    private matchingService: MatchingService,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -1315,32 +1330,43 @@ export class ProfilComponent implements OnInit {
     this.candidateService.generateTrackingLink(this.candidate.id).subscribe({
       next: (token) => {
         const url = `${window.location.origin}/candidat/suivi/${token}`;
-        this.trackingLoading = false;
-        this.trackingUrl = url;
-        // Try clipboard — may fail on HTTP localhost (async context loses user gesture)
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(url).then(() => {
-            this.trackingUrl = '';
-            this.trackingCopied = true;
-            setTimeout(() => { this.trackingCopied = false; }, 3000);
-          }).catch(() => {
-            // URL box is already shown — user can select+copy manually
-          });
-        }
-        // No legacyCopy here: execCommand also fails in async context on localhost
+        this.ngZone.run(() => {
+          this.trackingLoading = false;
+          // On HTTPS: clipboard API works even from async context
+          if (location.protocol === 'https:' && navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+              this.trackingCopied = true;
+              setTimeout(() => { this.trackingCopied = false; }, 3000);
+            }).catch(() => {
+              this.trackingUrl = url;
+            });
+          } else {
+            // HTTP / localhost: show URL box, let user copy from it
+            this.trackingUrl = url;
+          }
+        });
       },
-      error: () => { this.trackingLoading = false; }
+      error: () => { this.ngZone.run(() => { this.trackingLoading = false; }); }
     });
   }
 
   copyFromInput(input: HTMLInputElement): void {
-    // Fully synchronous — execCommand works in direct click handlers everywhere
-    input.focus();
-    input.select();
-    try { document.execCommand('copy'); } catch (_) {}
-    this.trackingUrl = '';
-    this.trackingCopied = true;
-    setTimeout(() => { this.trackingCopied = false; }, 3000);
+    const url = input.value;
+    // Try navigator.clipboard (synchronous user gesture — works on localhost too)
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        this.ngZone.run(() => {
+          this.trackingUrl = '';
+          this.trackingCopied = true;
+          setTimeout(() => { this.trackingCopied = false; }, 3000);
+        });
+      }).catch(() => {
+        // Last resort: prompt() always works everywhere
+        window.prompt('Copiez ce lien de suivi :', url);
+      });
+    } else {
+      window.prompt('Copiez ce lien de suivi :', url);
+    }
   }
 
   envoyerEmail(): void {
