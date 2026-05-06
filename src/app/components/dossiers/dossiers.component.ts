@@ -12,6 +12,7 @@ interface DossierEntry {
   application: Application;
   documents: any[];
   docsLoaded: boolean;
+  docsError: boolean;
   signing: boolean;
   signSuccess: string;
   signError: string;
@@ -32,6 +33,12 @@ interface DossierEntry {
           <p class="text-muted">Candidats dont l'offre a été acceptée — signez et renvoyez les demandes de stage</p>
         </div>
         <div class="header-right">
+          <button class="btn-refresh-all" (click)="refreshAll()" [disabled]="loading">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Rafraîchir
+          </button>
           <span class="count-badge">{{ dossiers.length }} dossier(s)</span>
         </div>
       </div>
@@ -90,6 +97,11 @@ interface DossierEntry {
                 <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
               </svg>
               <span>Documents</span>
+              <button class="btn-refresh-card" (click)="refreshEntry(entry)" title="Rafraîchir les documents">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+              </button>
             </div>
 
             <!-- Loading documents -->
@@ -97,9 +109,16 @@ interface DossierEntry {
               <div class="spinner spinner-sm"></div> Chargement...
             </div>
 
+            <!-- Error loading documents -->
+            <div *ngIf="entry.docsLoaded && entry.docsError" class="docs-error">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+              Impossible de charger les documents. <button class="link-btn" (click)="refreshEntry(entry)">Réessayer</button>
+            </div>
+
             <!-- No documents -->
-            <div *ngIf="entry.docsLoaded && entry.documents.length === 0" class="no-docs">
-              Aucun document déposé par le candidat.
+            <div *ngIf="entry.docsLoaded && !entry.docsError && entry.documents.length === 0" class="no-docs">
+              Aucun document déposé pour le moment.
+              <button class="link-btn" (click)="refreshEntry(entry)">Vérifier</button>
             </div>
 
             <!-- Document list -->
@@ -211,6 +230,22 @@ interface DossierEntry {
     .page-header h1 { color: white; font-size: 22px; font-weight: 700; margin: 0 0 4px; }
     .page-header .text-muted { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
     .header-right { position: relative; z-index: 1; }
+
+    .header-right { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+
+    .btn-refresh-all {
+      display: flex; align-items: center; gap: 7px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 10px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: all 0.2s;
+    }
+    .btn-refresh-all:hover:not(:disabled) { background: rgba(255,255,255,0.25); }
+    .btn-refresh-all:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .count-badge {
       background: rgba(255,255,255,0.15);
@@ -346,6 +381,19 @@ interface DossierEntry {
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
+    .btn-refresh-card {
+      margin-left: auto;
+      width: 26px; height: 26px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 7px;
+      background: white;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #9CA3AF;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-refresh-card:hover { background: #f0fdf4; color: #059669; border-color: #059669; }
+
     .doc-loading, .no-docs {
       font-size: 13px;
       color: #9CA3AF;
@@ -353,6 +401,19 @@ interface DossierEntry {
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+    .docs-error {
+      font-size: 13px;
+      color: #dc2626;
+      padding: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .link-btn {
+      background: none; border: none; padding: 0;
+      color: #059669; font-size: 13px; font-weight: 600;
+      cursor: pointer; text-decoration: underline;
     }
     .doc-row {
       display: flex;
@@ -558,6 +619,7 @@ export class DossiersComponent implements OnInit {
         application: app,
         documents: [],
         docsLoaded: false,
+        docsError: false,
         signing: false,
         signSuccess: '',
         signError: '',
@@ -570,16 +632,69 @@ export class DossiersComponent implements OnInit {
     });
   }
 
+  refreshAll(): void {
+    this.loading = true;
+    this.dossiers = [];
+    this.matchingService.getApplications().subscribe(apps => {
+      const accepted = apps.filter(a => a.status === 'offre_acceptee');
+      this.dossiers = accepted.map(app => ({
+        application: app,
+        documents: [],
+        docsLoaded: false,
+        docsError: false,
+        signing: false,
+        signSuccess: '',
+        signError: '',
+        showSignForm: false,
+        signatoryName: '',
+        signatoryTitle: 'Responsable RH'
+      }));
+      this.loading = false;
+      this.loadAllDocuments();
+    });
+  }
+
+  refreshEntry(entry: DossierEntry): void {
+    const candidateId = entry.application.candidateId;
+    entry.docsLoaded = false;
+    entry.docsError = false;
+    entry.documents = [];
+    if (!candidateId) {
+      entry.docsLoaded = true;
+      entry.docsError = true;
+      return;
+    }
+    this.candidateService.getCandidateFull(candidateId).subscribe({
+      next: candidate => {
+        entry.documents = candidate.documents || [];
+        entry.docsLoaded = true;
+        entry.docsError = false;
+      },
+      error: () => {
+        entry.docsLoaded = true;
+        entry.docsError = true;
+      }
+    });
+  }
+
   private loadAllDocuments(): void {
     this.dossiers.forEach(entry => {
       const candidateId = entry.application.candidateId;
-      if (!candidateId) { entry.docsLoaded = true; return; }
+      if (!candidateId) {
+        entry.docsLoaded = true;
+        entry.docsError = true;
+        return;
+      }
       this.candidateService.getCandidateFull(candidateId).subscribe({
         next: candidate => {
-          entry.documents = (candidate.documents || []);
+          entry.documents = candidate.documents || [];
           entry.docsLoaded = true;
+          entry.docsError = false;
         },
-        error: () => { entry.docsLoaded = true; }
+        error: () => {
+          entry.docsLoaded = true;
+          entry.docsError = true;
+        }
       });
     });
   }
