@@ -572,6 +572,14 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     }
     .btn-sm:hover { background: rgba(255,255,255,0.22); }
 
+    /* Reset button inside white weights panel — override dark-header btn styles */
+    .weights-panel .btn-sm {
+      border: 1.5px solid #e5e7eb;
+      background: white;
+      color: #374151;
+    }
+    .weights-panel .btn-sm:hover { background: #f5f3ff; border-color: #6366f1; color: #6366f1; }
+
     /* Preview modal */
     .doc-preview-overlay {
       position: fixed; inset: 0;

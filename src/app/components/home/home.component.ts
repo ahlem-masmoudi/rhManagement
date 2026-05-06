@@ -379,39 +379,59 @@ interface Department {
       .hero-container { grid-template-columns:1fr; gap:2rem; }
       .hero-content { text-align:center; }
       .hero-image { order:-1; }
-      .hero-img { max-width:300px; }
-      .hero-title { font-size:2rem; }
+      .hero-img { max-width:260px; }
+      .hero-title { font-size:1.8rem; }
+      .hero-subtitle { font-size:1rem; }
       .logo { height:50px; width:50px; }
       .brand-name { font-size:1.4rem; }
       .nav-actions { gap:0.5rem; }
-      .btn { padding:0.6rem 1.2rem; font-size:0.9rem; }
+      .btn { padding:0.6rem 1.1rem; font-size:0.88rem; }
       .snav-link { padding: 0 0.75rem; font-size: 0.82rem; }
+      /* secondary-nav sits just below the main navbar (~80px on tablet) */
       .secondary-nav { top: 80px; overflow-x: auto; }
       .modal-box { max-height:92vh; padding:0; border-radius: 16px; }
       .modal-offers-grid { grid-template-columns:1fr; }
       .dept-dropdown { min-width:240px; }
       .moc-grid { grid-template-columns: 1fr !important; }
+      .why-join { padding: 2rem 0; }
+      .how-it-works { padding: 2rem 0; }
+    }
+
+    @media (max-width: 540px) {
+      /* Hide "Commencez" button from navbar on small phones — hero has "Postuler maintenant" */
+      .cta-with-copy { display: none; }
+      .micro-copy { display: none; }
+      /* Navbar is now shorter: only logo + Connexion */
+      .secondary-nav { top: 70px; }
+      .logo { height: 40px; width: 40px; }
+      .brand-name { font-size: 1.2rem; }
+      .navbar { padding: 0.7rem 0; }
+      .btn-outline { padding: 0.55rem 1rem; font-size: 0.85rem; }
     }
 
     @media (max-width: 480px) {
-      .hero-title { font-size:1.6rem; }
-      .hero-img { max-width:220px; }
+      .hero-title { font-size:1.55rem; line-height: 1.3; }
+      .hero-subtitle { font-size: 0.92rem; margin-bottom: 1.8rem; }
+      .hero-img { max-width:200px; }
+      .hero { padding: 2.5rem 0; }
+      .hero-image { padding: 1.5rem; }
       .logo { height:36px; width:36px; }
       .brand-name { font-size:1.1rem; }
-      .nav-header { padding: 0.5rem 1rem; }
+      .secondary-nav { top: 64px; }
       .modal-box { margin: 0; border-radius: 16px 16px 0 0; max-height: 95vh; }
       .footer-container { padding: 0 1rem; }
-      .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; }
       .container { padding: 0 1rem; }
-      .nav-actions { gap: 0.4rem; }
-      .btn { padding: 0.5rem 0.9rem; font-size: 0.82rem; }
+      .btn-large { padding: 0.9rem 1.8rem; font-size: 1rem; }
+      .section-title-sm { font-size: 1.5rem; }
+      .benefit-card-sm, .step-mini { padding: 1.1rem 1rem; }
     }
 
     @media (max-width: 360px) {
       .brand-name { display: none; }
-      .hero-title { font-size: 1.4rem; }
-      .btn { padding: 0.45rem 0.75rem; font-size: 0.8rem; }
+      .hero-title { font-size: 1.35rem; }
       .container { padding: 0 0.75rem; }
+      .secondary-nav { top: 60px; }
+      .snav-link { padding: 0 0.55rem; font-size: 0.78rem; height: 44px; }
     }
   `]
 })
