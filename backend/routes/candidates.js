@@ -39,7 +39,7 @@ router.post('/:id/generate-tracking', protect, authorize('recruiter'), generateT
 
 // Upload document for candidate (candidate or recruiter)
 router.post('/:id/documents', protect, uploadDocument);
-router.post('/:id/documents/:docId/sign-request', protect, authorize('recruiter'), generateSignedInternshipRequest);
+router.post('/:id/documents/:docId/sign-request', protect, authorize('recruiter', 'admin'), generateSignedInternshipRequest);
 router.post('/:id/documents/generate-assignment-letter', protect, authorize('recruiter'), generateAssignmentLetter);
 
 // Update recruiter notes for a candidate

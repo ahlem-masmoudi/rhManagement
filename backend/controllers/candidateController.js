@@ -7,38 +7,60 @@ function sanitize(value) {
   return String(value || '').trim();
 }
 
-function buildSignedRequestHtml({ candidate, signatoryName, signatoryTitle, originalName }) {
-  const fullName = `${sanitize(candidate.userId?.firstName)} ${sanitize(candidate.userId?.lastName)}`.trim();
-  return `
-    <html>
-      <head>
-        <meta charset="utf-8" />
-        <title>Demande de stage signée</title>
-        <style>
-          body { font-family: Arial, sans-serif; color: #111827; padding: 40px; line-height: 1.6; }
-          .header { border-bottom: 2px solid #1d4ed8; padding-bottom: 16px; margin-bottom: 24px; }
-          .badge { display: inline-block; padding: 6px 12px; border-radius: 999px; background: #dbeafe; color: #1d4ed8; font-weight: 700; }
-          .signature { margin-top: 40px; padding: 16px; border: 1px dashed #9ca3af; border-radius: 12px; background: #f9fafb; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="badge">Demande de stage signée</div>
-          <h1>${originalName || 'Demande de stage'}</h1>
-          <p>Document retourné au candidat après validation RH.</p>
-        </div>
-        <p>Nous confirmons la validation de la demande de stage de <strong>${fullName}</strong>.</p>
-        <p>Filière: <strong>${sanitize(candidate.expectedDegree || candidate.educationLevel || 'Non renseignée')}</strong></p>
-        <p>Etablissement: <strong>${sanitize(candidate.school || 'Non renseigné')}</strong></p>
-        <div class="signature">
-          <p><strong>Signé électroniquement</strong></p>
-          <p>Par: ${sanitize(signatoryName || 'Service RH')}</p>
-          <p>Fonction: ${sanitize(signatoryTitle || 'Responsable RH')}</p>
-          <p>Date: ${new Date().toLocaleString('fr-FR')}</p>
-        </div>
-      </body>
-    </html>
-  `;
+function buildSignedRequestHtml({ candidate, signatoryName, signatoryTitle, originalName,
+  entreprise, tel, fax, adresse, supervisorInfo, stageStartDate, stageEndDate, projectTitle, projectObjectives }) {
+  const fullName = `${sanitize(candidate.userId?.firstName || '')} ${sanitize(candidate.userId?.lastName || '')}`.trim() || 'Candidat';
+  const school = sanitize(candidate.school || candidate.educationLevel || '');
+  const degree = sanitize(candidate.expectedDegree || candidate.educationLevel || '');
+  const dateStr = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <title>Demande de stage signée – ${fullName}</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 13px; color: #111; padding: 32px 40px; line-height: 1.5; }
+    h2 { text-align: center; font-size: 15px; border: 1px solid #333; padding: 8px; margin: 20px 0 16px; }
+    .signed-banner { background: #d1fae5; border: 1.5px solid #059669; border-radius: 8px; padding: 10px 16px; margin-bottom: 20px; color: #065f46; font-weight: 700; font-size: 14px; }
+    table.fiche { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    table.fiche td { border: 1px solid #555; padding: 7px 10px; vertical-align: top; }
+    table.fiche td.lbl { font-weight: 700; width: 40%; background: #f9fafb; }
+    .signature-block { margin-top: 36px; display: flex; justify-content: space-between; }
+    .sig-box { border: 1px solid #aaa; border-radius: 6px; padding: 14px 20px; min-width: 220px; text-align: center; }
+    .sig-box .sig-name { font-weight: 700; margin-top: 40px; border-top: 1px solid #aaa; padding-top: 6px; }
+    .footer { margin-top: 28px; font-size: 11px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="signed-banner">✅ Demande de stage validée et signée par le service RH — à remettre à votre établissement</div>
+  <h2>Fiche de PFE / Demande de Stage</h2>
+  <p><strong>Stagiaire :</strong> ${fullName} &nbsp;|&nbsp; <strong>Établissement :</strong> ${school || '—'} &nbsp;|&nbsp; <strong>Filière :</strong> ${degree || '—'}</p>
+
+  <table class="fiche">
+    <tr><td class="lbl">Entreprise d'accueil :</td><td>${sanitize(entreprise || '')}</td></tr>
+    <tr><td class="lbl">Tél :</td><td>${sanitize(tel || '')} &nbsp;&nbsp; <strong>Fax :</strong> ${sanitize(fax || '')}</td></tr>
+    <tr><td class="lbl">Adresse :</td><td>${sanitize(adresse || '')}</td></tr>
+    <tr><td class="lbl">Responsable du stagiaire, sa fonction et son email :</td><td>${sanitize(supervisorInfo || '')}</td></tr>
+    <tr><td class="lbl">Stage prévu du :</td><td>${sanitize(stageStartDate || '')} &nbsp;&nbsp; <strong>au :</strong> ${sanitize(stageEndDate || '')}</td></tr>
+    <tr><td class="lbl">Titre du projet :</td><td>${sanitize(projectTitle || '')}</td></tr>
+    <tr><td class="lbl">Objectifs du travail demandé :</td><td style="white-space:pre-wrap">${sanitize(projectObjectives || '')}</td></tr>
+  </table>
+
+  <div class="signature-block">
+    <div class="sig-box">
+      <p>Le Directeur des Stages</p>
+      <div class="sig-name">${sanitize(candidate.school || 'Établissement')}</div>
+    </div>
+    <div class="sig-box">
+      <p>Signature et cachet de l'Entreprise</p>
+      <p style="margin-top:8px; font-size:12px; color:#374151">${sanitize(signatoryName || 'Service RH')}<br/>${sanitize(signatoryTitle || 'Responsable RH')}</p>
+      <div class="sig-name">Signé le ${dateStr}</div>
+    </div>
+  </div>
+
+  <div class="footer">Document généré électroniquement le ${dateStr} — Document original : ${sanitize(originalName || 'Demande de stage')}</div>
+</body>
+</html>`;
 }
 
 function buildAssignmentLetterHtml({
@@ -494,7 +516,16 @@ exports.generateSignedInternshipRequest = async (req, res) => {
       candidate,
       signatoryName: req.body.signatoryName,
       signatoryTitle: req.body.signatoryTitle,
-      originalName: sourceDoc.name
+      originalName: sourceDoc.name,
+      entreprise: req.body.entreprise,
+      tel: req.body.tel,
+      fax: req.body.fax,
+      adresse: req.body.adresse,
+      supervisorInfo: req.body.supervisorInfo,
+      stageStartDate: req.body.stageStartDate,
+      stageEndDate: req.body.stageEndDate,
+      projectTitle: req.body.projectTitle,
+      projectObjectives: req.body.projectObjectives
     });
 
     const now = new Date();
@@ -514,7 +545,11 @@ exports.generateSignedInternshipRequest = async (req, res) => {
       metadata: {
         kind: 'signed_request',
         originalDocumentName: sourceDoc.name,
-        signatoryTitle: sanitize(req.body.signatoryTitle || 'Responsable RH')
+        signatoryTitle: sanitize(req.body.signatoryTitle || 'Responsable RH'),
+        entreprise: sanitize(req.body.entreprise || ''),
+        projectTitle: sanitize(req.body.projectTitle || ''),
+        stageStartDate: sanitize(req.body.stageStartDate || ''),
+        stageEndDate: sanitize(req.body.stageEndDate || '')
       }
     };
 
@@ -536,8 +571,8 @@ exports.generateSignedInternshipRequest = async (req, res) => {
 
     res.status(201).json({ success: true, data: signedDoc });
   } catch (error) {
-    console.error('Error generating signed request:', error);
-    res.status(500).json({ success: false, message: 'Error generating signed request', error: error.message });
+    console.error('Error generating signed request:', error.message, error.stack);
+    res.status(500).json({ success: false, message: error.message || 'Error generating signed request' });
   }
 };
 

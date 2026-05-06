@@ -19,6 +19,15 @@ interface DossierEntry {
   showSignForm: boolean;
   signatoryName: string;
   signatoryTitle: string;
+  entreprise: string;
+  tel: string;
+  fax: string;
+  adresse: string;
+  supervisorInfo: string;
+  stageStartDate: string;
+  stageEndDate: string;
+  projectTitle: string;
+  projectObjectives: string;
 }
 
 @Component({
@@ -152,18 +161,67 @@ interface DossierEntry {
 
             <!-- Sign form -->
             <div *ngIf="entry.showSignForm" class="sign-form">
-              <h4 style="margin:0 0 12px">Signer la demande de stage</h4>
-              <div class="form-group">
-                <label>Nom du signataire</label>
-                <input type="text" [(ngModel)]="entry.signatoryName" placeholder="Ex: Mme Fatma Ben Ali">
+              <h4 style="margin:0 0 14px">Remplir et signer la demande de stage</h4>
+
+              <p class="sign-form-section-title">Informations de l'entreprise (Fiche PFE)</p>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label>Entreprise *</label>
+                  <input type="text" [(ngModel)]="entry.entreprise" placeholder="Nom de la société">
+                </div>
+                <div class="form-group">
+                  <label>Adresse</label>
+                  <input type="text" [(ngModel)]="entry.adresse" placeholder="Adresse de l'entreprise">
+                </div>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label>Tél</label>
+                  <input type="text" [(ngModel)]="entry.tel" placeholder="Numéro de téléphone">
+                </div>
+                <div class="form-group">
+                  <label>Fax</label>
+                  <input type="text" [(ngModel)]="entry.fax" placeholder="Numéro de fax">
+                </div>
               </div>
               <div class="form-group">
-                <label>Fonction</label>
-                <input type="text" [(ngModel)]="entry.signatoryTitle" placeholder="Ex: Responsable RH">
+                <label>Responsable du stagiaire, sa fonction et son email</label>
+                <input type="text" [(ngModel)]="entry.supervisorInfo" placeholder="Ex: M. Ahmed Ben Ali, Directeur technique, ahmed@societe.tn">
               </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label>Stage prévu du</label>
+                  <input type="date" [(ngModel)]="entry.stageStartDate">
+                </div>
+                <div class="form-group">
+                  <label>Au</label>
+                  <input type="date" [(ngModel)]="entry.stageEndDate">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Titre du projet</label>
+                <input type="text" [(ngModel)]="entry.projectTitle" placeholder="Ex: Développement d'une application de gestion RH">
+              </div>
+              <div class="form-group">
+                <label>Objectifs du travail demandé</label>
+                <textarea [(ngModel)]="entry.projectObjectives" rows="3" placeholder="Décrire les objectifs du stage..."></textarea>
+              </div>
+
+              <p class="sign-form-section-title" style="margin-top:14px">Signature</p>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label>Nom du signataire *</label>
+                  <input type="text" [(ngModel)]="entry.signatoryName" placeholder="Ex: Mme Fatma Ben Ali">
+                </div>
+                <div class="form-group">
+                  <label>Fonction</label>
+                  <input type="text" [(ngModel)]="entry.signatoryTitle" placeholder="Ex: Responsable RH">
+                </div>
+              </div>
+
               <div class="sign-actions">
                 <button class="btn-secondary" (click)="entry.showSignForm = false">Annuler</button>
-                <button class="btn-primary" [disabled]="entry.signing || !entry.signatoryName"
+                <button class="btn-primary" [disabled]="entry.signing || !entry.signatoryName || !entry.entreprise"
                         (click)="signDocument(entry)">
                   <span *ngIf="entry.signing" class="spinner spinner-sm"></span>
                   {{ entry.signing ? 'Signature en cours...' : 'Confirmer la signature' }}
@@ -482,9 +540,11 @@ interface DossierEntry {
       animation: fadeUp 0.3s ease both;
     }
     .sign-form h4 { margin: 0 0 14px; font-size: 15px; color: #065F46; font-weight: 700; }
-    .form-group { margin-bottom: 14px; }
+    .sign-form-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #059669; margin: 0 0 10px; padding-bottom: 4px; border-bottom: 1px solid #D1FAE5; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #374151; text-transform: uppercase; letter-spacing: 0.5px; }
-    .form-group input {
+    .form-group input, .form-group textarea {
       width: 100%;
       padding: 10px 14px;
       border: 1.5px solid #D1FAE5;
@@ -495,7 +555,8 @@ interface DossierEntry {
       transition: all 0.2s;
       box-sizing: border-box;
     }
-    .form-group input:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(5,150,105,0.12); }
+    .form-group input:focus, .form-group textarea:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(5,150,105,0.12); outline: none; }
+    .form-group textarea { resize: vertical; font-family: inherit; }
 
     .sign-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
     .btn-secondary {
@@ -625,7 +686,16 @@ export class DossiersComponent implements OnInit {
         signError: '',
         showSignForm: false,
         signatoryName: '',
-        signatoryTitle: 'Responsable RH'
+        signatoryTitle: 'Responsable RH',
+        entreprise: '',
+        tel: '',
+        fax: '',
+        adresse: '',
+        supervisorInfo: '',
+        stageStartDate: '',
+        stageEndDate: '',
+        projectTitle: '',
+        projectObjectives: ''
       }));
       this.loading = false;
       this.loadAllDocuments();
@@ -647,7 +717,16 @@ export class DossiersComponent implements OnInit {
         signError: '',
         showSignForm: false,
         signatoryName: '',
-        signatoryTitle: 'Responsable RH'
+        signatoryTitle: 'Responsable RH',
+        entreprise: '',
+        tel: '',
+        fax: '',
+        adresse: '',
+        supervisorInfo: '',
+        stageStartDate: '',
+        stageEndDate: '',
+        projectTitle: '',
+        projectObjectives: ''
       }));
       this.loading = false;
       this.loadAllDocuments();
@@ -736,7 +815,16 @@ export class DossiersComponent implements OnInit {
 
     this.candidateService.generateSignedInternshipRequest(candidateId, unsignedDoc.id, {
       signatoryName: entry.signatoryName,
-      signatoryTitle: entry.signatoryTitle || 'Responsable RH'
+      signatoryTitle: entry.signatoryTitle || 'Responsable RH',
+      entreprise: entry.entreprise,
+      tel: entry.tel,
+      fax: entry.fax,
+      adresse: entry.adresse,
+      supervisorInfo: entry.supervisorInfo,
+      stageStartDate: entry.stageStartDate,
+      stageEndDate: entry.stageEndDate,
+      projectTitle: entry.projectTitle,
+      projectObjectives: entry.projectObjectives
     }).subscribe({
       next: () => {
         entry.signing = false;
@@ -750,7 +838,7 @@ export class DossiersComponent implements OnInit {
       },
       error: (err: any) => {
         entry.signing = false;
-        entry.signError = err?.error?.message || 'Erreur lors de la signature.';
+        entry.signError = err?.error?.message || err?.message || 'Erreur lors de la signature.';
       }
     });
   }
