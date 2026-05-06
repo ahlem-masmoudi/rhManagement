@@ -66,7 +66,8 @@ interface Department {
             </li>
             <li class="snav-item has-dropdown"
                 (mouseenter)="showDeptDropdown = true"
-                (mouseleave)="showDeptDropdown = false">
+                (mouseleave)="showDeptDropdown = false"
+                (click)="showDeptDropdown = !showDeptDropdown">
               <a class="snav-link">
                 Nos Départements
                 <svg class="snav-chevron" [class.open]="showDeptDropdown"
