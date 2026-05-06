@@ -652,36 +652,48 @@ exports.downloadDocument = async (req, res) => {
 // @access  Public
 exports.uploadDocumentByTrackingToken = async (req, res) => {
   try {
-    const candidate = await Candidate.findOne({ trackingToken: req.params.token });
-    if (!candidate) return res.status(404).json({ success: false, message: 'Lien invalide ou expiré' });
-
     const { name, content, type } = req.body;
     if (!name || !content) return res.status(400).json({ success: false, message: 'name et content requis' });
 
+    const candidate = await Candidate.findOne({ trackingToken: req.params.token }).lean();
+    if (!candidate) return res.status(404).json({ success: false, message: 'Lien invalide ou expiré' });
+
     const docType = type || 'demande_stage';
-    candidate.documents = candidate.documents || [];
+    const now = new Date();
 
     // Replace existing unsigned doc of the same type, or push a new one
-    const existingIdx = candidate.documents.findIndex(d => d.type === docType && !d.isSigned);
+    // Use raw MongoDB updateOne to bypass Mongoose schema validation entirely
+    const existingIdx = (candidate.documents || []).findIndex(d => d.type === docType && !d.isSigned);
+
     if (existingIdx !== -1) {
-      candidate.documents[existingIdx].name = name;
-      candidate.documents[existingIdx].content = content;
-      candidate.documents[existingIdx].uploadedAt = new Date();
-      candidate.documents[existingIdx].status = 'soumis';
-      candidate.markModified('documents');
+      const setFields = {};
+      setFields[`documents.${existingIdx}.name`]       = name;
+      setFields[`documents.${existingIdx}.content`]    = content;
+      setFields[`documents.${existingIdx}.uploadedAt`] = now;
+      setFields[`documents.${existingIdx}.status`]     = 'soumis';
+      await Candidate.collection.updateOne(
+        { trackingToken: req.params.token },
+        { $set: setFields }
+      );
     } else {
-      candidate.documents.push({
-        id: `${Date.now()}_${Math.random().toString(36).substr(2, 8)}`,
-        name,
-        type: docType,
-        content,
-        status: 'soumis',
-        isSigned: false,
-        uploadedAt: new Date()
-      });
+      await Candidate.collection.updateOne(
+        { trackingToken: req.params.token },
+        {
+          $push: {
+            documents: {
+              id: `${Date.now()}_${Math.random().toString(36).substr(2, 8)}`,
+              name,
+              type: docType,
+              content,
+              status: 'soumis',
+              isSigned: false,
+              uploadedAt: now
+            }
+          }
+        }
+      );
     }
 
-    await candidate.save();
     res.json({ success: true, message: 'Document déposé avec succès' });
   } catch (error) {
     console.error('uploadDocumentByTrackingToken error:', error);
