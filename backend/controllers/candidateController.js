@@ -242,12 +242,23 @@ exports.getAllCandidates = async (req, res) => {
 // @access  Private (Recruiter only)
 exports.getCandidate = async (req, res) => {
   try {
-    const candidate = await Candidate.findById(req.params.id).populate('userId', '-password');
+    // Exclude heavy content field from documents for listing — use download endpoint for actual content
+    const candidate = await Candidate.findById(req.params.id)
+      .populate('userId', '-password')
+      .lean();
 
     if (!candidate) {
       return res.status(404).json({
         success: false,
         message: 'Candidate not found'
+      });
+    }
+
+    // Strip content from documents to keep response lightweight
+    if (Array.isArray(candidate.documents)) {
+      candidate.documents = candidate.documents.map(doc => {
+        const { content, ...rest } = doc;
+        return { ...rest, hasContent: !!content };
       });
     }
 
@@ -655,28 +666,38 @@ exports.uploadDocumentByTrackingToken = async (req, res) => {
     const { name, content, type } = req.body;
     if (!name || !content) return res.status(400).json({ success: false, message: 'name et content requis' });
 
-    const candidate = await Candidate.findOne({ trackingToken: req.params.token }).lean();
-    if (!candidate) return res.status(404).json({ success: false, message: 'Lien invalide ou expiré' });
-
     const docType = type || 'demande_stage';
     const now = new Date();
 
-    // Replace existing unsigned doc of the same type, or push a new one
-    // Use raw MongoDB updateOne to bypass Mongoose schema validation entirely
-    const existingIdx = (candidate.documents || []).findIndex(d => d.type === docType && !d.isSigned);
+    // Check if an unsigned doc of the same type already exists (to replace it)
+    const existing = await Candidate.findOne({
+      trackingToken: req.params.token,
+      'documents.type': docType,
+      'documents.isSigned': false
+    }).select('_id documents');
 
-    if (existingIdx !== -1) {
-      const setFields = {};
-      setFields[`documents.${existingIdx}.name`]       = name;
-      setFields[`documents.${existingIdx}.content`]    = content;
-      setFields[`documents.${existingIdx}.uploadedAt`] = now;
-      setFields[`documents.${existingIdx}.status`]     = 'soumis';
-      await Candidate.collection.updateOne(
-        { trackingToken: req.params.token },
-        { $set: setFields }
+    let updated;
+    if (existing) {
+      // Replace the first matching unsigned doc in-place using positional $
+      updated = await Candidate.findOneAndUpdate(
+        {
+          trackingToken: req.params.token,
+          'documents.type': docType,
+          'documents.isSigned': false
+        },
+        {
+          $set: {
+            'documents.$.name':       name,
+            'documents.$.content':    content,
+            'documents.$.uploadedAt': now,
+            'documents.$.status':     'soumis'
+          }
+        },
+        { new: true }
       );
     } else {
-      await Candidate.collection.updateOne(
+      // Push a brand-new document entry
+      updated = await Candidate.findOneAndUpdate(
         { trackingToken: req.params.token },
         {
           $push: {
@@ -690,10 +711,14 @@ exports.uploadDocumentByTrackingToken = async (req, res) => {
               uploadedAt: now
             }
           }
-        }
+        },
+        { new: true }
       );
     }
 
+    if (!updated) return res.status(404).json({ success: false, message: 'Lien invalide ou expiré' });
+
+    console.log(`uploadDocumentByTrackingToken: saved OK — candidate ${updated._id}, docs count ${(updated.documents || []).length}`);
     res.json({ success: true, message: 'Document déposé avec succès' });
   } catch (error) {
     console.error('uploadDocumentByTrackingToken error:', error);
