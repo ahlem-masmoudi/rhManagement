@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Candidate = require('../models/Candidate');
 const User = require('../models/User');
 const Application = require('../models/Application');
@@ -563,11 +564,14 @@ exports.generateSignedInternshipRequest = async (req, res) => {
       emailSent: false
     };
 
-    // Use findOneAndUpdate + $push to avoid .save() CastError on large content fields
-    await Candidate.findByIdAndUpdate(req.params.id, {
-      $push: { documents: signedDoc, statusHistory: statusHistoryEntry },
-      $set: { status: 'documents_recus' }
-    });
+    // Use raw MongoDB driver to bypass Mongoose schema casting on large HTML content
+    await Candidate.collection.updateOne(
+      { _id: new mongoose.Types.ObjectId(req.params.id) },
+      {
+        $push: { documents: signedDoc, statusHistory: statusHistoryEntry },
+        $set: { status: 'documents_recus' }
+      }
+    );
 
     res.status(201).json({ success: true, data: signedDoc });
   } catch (error) {

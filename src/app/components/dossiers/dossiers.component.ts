@@ -180,7 +180,7 @@ interface DossierEntry {
                   <input type="text" [(ngModel)]="entry.tel" placeholder="Numéro de téléphone">
                 </div>
                 <div class="form-group">
-                  <label>Fax</label>
+                  <label>Fax <span style="font-weight:400;text-transform:none;color:#9ca3af">(optionnel)</span></label>
                   <input type="text" [(ngModel)]="entry.fax" placeholder="Numéro de fax">
                 </div>
               </div>
