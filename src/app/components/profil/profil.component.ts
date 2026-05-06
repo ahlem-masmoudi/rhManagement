@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CandidateService } from '../../services/candidate.service';
-import { Candidate, CandidateStatus } from '../../models';
+import { MatchingService } from '../../services/matching.service';
+import { Candidate, CandidateStatus, Application } from '../../models';
 
 @Component({
   selector: 'app-profil',
@@ -100,6 +101,23 @@ import { Candidate, CandidateStatus } from '../../models';
                 <p class="text-muted" *ngIf="candidate.expectedGraduation">Diplôme prévu : {{ candidate.expectedGraduation | date:'MM/yyyy' }}</p>
               </div>
 
+              <div class="resume-section" *ngIf="candidateApplications.length">
+                <h4>Candidatures</h4>
+                <div class="application-row" *ngFor="let app of candidateApplications">
+                  <div class="application-offer">
+                    <span class="offer-title">{{ app.offer?.title || 'Offre inconnue' }}</span>
+                    <span class="offer-type-chip">{{ app.offer?.type || '' }}</span>
+                  </div>
+                  <div class="application-meta">
+                    <span *ngIf="app.offer?.location">{{ app.offer?.location }}</span>
+                    <span class="app-date">Postulé le {{ app.appliedAt | date:'dd/MM/yyyy' }}</span>
+                    <span class="app-status-chip" [ngStyle]="{ background: getStatusBg(app.status), color: getStatusColor(app.status) }">
+                      {{ getStatusLabel(app.status) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div class="resume-section" *ngIf="candidate.skills?.length">
                 <h4>Compétences clés</h4>
                 <div class="skills-chips">
@@ -145,18 +163,6 @@ import { Candidate, CandidateStatus } from '../../models';
                   </div>
                 </div>
               </div>
-            </div>
-
-            <!-- EXPERIENCES TAB -->
-            <div *ngIf="activeTab === 'experiences'">
-              <h3>Expériences professionnelles</h3>
-              <div class="empty-message">Aucune expérience professionnelle renseignée.</div>
-            </div>
-
-            <!-- PROJECTS TAB -->
-            <div *ngIf="activeTab === 'projects'">
-              <h3>Projets</h3>
-              <div class="empty-message">Aucun projet renseigné.</div>
             </div>
 
             <!-- DOCUMENTS TAB -->
@@ -568,6 +574,50 @@ import { Candidate, CandidateStatus } from '../../models';
     .resume-section p { margin: 0 0 4px; font-size: 14px; }
 
     .text-muted { color: var(--gray-500); font-size: 13px; }
+
+    /* Application rows (resume tab) */
+    .application-row {
+      padding: 10px 0;
+      border-top: 1px solid var(--gray-100);
+    }
+    .application-row:first-child { border-top: none; }
+
+    .application-offer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .offer-title { font-size: 14px; font-weight: 600; color: var(--gray-900); }
+
+    .offer-type-chip {
+      font-size: 11px;
+      padding: 2px 8px;
+      background: #EEF2FF;
+      color: var(--primary-color);
+      border-radius: 999px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .application-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--gray-500);
+    }
+
+    .app-date { color: var(--gray-400); }
+
+    .app-status-chip {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
 
     /* Skills chips (resume tab) */
     .skills-chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -1045,17 +1095,18 @@ export class ProfilComponent implements OnInit {
   };
 
   tabs = [
-    { id: 'resume',      label: 'Résumé' },
-    { id: 'skills',      label: 'Compétences' },
-    { id: 'experiences', label: 'Expériences' },
-    { id: 'projects',    label: 'Projets' },
-    { id: 'documents',   label: 'Documents RH' },
+    { id: 'resume',    label: 'Résumé' },
+    { id: 'skills',    label: 'Compétences' },
+    { id: 'documents', label: 'Documents RH' },
     { id: 'notes',       label: 'Notes' },
   ];
 
+  candidateApplications: Application[] = [];
+
   constructor(
     private route: ActivatedRoute,
-    private candidateService: CandidateService
+    private candidateService: CandidateService,
+    private matchingService: MatchingService
   ) {}
 
   ngOnInit(): void {
@@ -1093,6 +1144,10 @@ export class ProfilComponent implements OnInit {
       };
       this.selectedStatus = this.candidate.status;
       this.recruiterNotes = candidate.recruiterNotes || '';
+
+      this.matchingService.getApplications().subscribe(apps => {
+        this.candidateApplications = apps.filter(a => a.candidateId === id);
+      });
     });
   }
 

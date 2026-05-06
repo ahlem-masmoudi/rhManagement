@@ -20,12 +20,38 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
           <p class="text-muted">Gérez le parcours de vos candidats</p>
         </div>
         <div class="header-actions">
+          <button class="btn-secondary" (click)="showWeightsPanel = !showWeightsPanel">
+            ⚖️ Critères de scoring
+          </button>
           <button class="btn-secondary" (click)="toggleSelectMode()">
             {{ selectMode ? '✓ Mode sélection' : '☑️ Sélectionner' }}
           </button>
           <span *ngIf="selectedCandidates.size > 0" class="selection-count-badge">
             {{ selectedCandidates.size }} sélectionné(s)
           </span>
+        </div>
+      </div>
+
+      <!-- Scoring weights panel -->
+      <div class="weights-panel card mb-lg" *ngIf="showWeightsPanel">
+        <div class="weights-header">
+          <div>
+            <h3 style="margin:0 0 2px">Critères de scoring</h3>
+            <p style="margin:0;font-size:13px;color:var(--gray-500)">Ajustez les poids — les scores se recalculent en temps réel</p>
+          </div>
+          <div class="weights-total-wrap">
+            <button class="btn-secondary btn-sm" (click)="resetWeights()">Réinitialiser</button>
+          </div>
+        </div>
+        <div class="weights-grid">
+          <div *ngFor="let c of criteriaList" class="weight-row">
+            <span class="weight-label">{{ c.label }}</span>
+            <input type="range" min="0" max="100" step="5"
+                   [value]="weights[c.key]"
+                   (input)="onWeightChange(c.key, $event)"
+                   class="weight-slider">
+            <span class="weight-value">{{ weights[c.key] }}%</span>
+          </div>
         </div>
       </div>
 
@@ -58,55 +84,6 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
         </div>
       </div>
 
-      <!-- Archives section for accepted candidates -->
-      <div class="archives-section card mt-lg">
-        <div class="archives-header" style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <h2>Archives (Acceptés)</h2>
-          </div>
-          <div class="archives-actions">
-            <button class="btn-secondary" (click)="exportArchivedCSV()">Exporter CSV</button>
-          </div>
-        </div>
-
-        <div class="archives-grid" style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
-          <div *ngFor="let app of getArchivedApplications()" class="archive-card card" style="width:min(320px, 100%); padding:12px; position:relative;">
-            <div style="display:flex; gap:12px; align-items:center;">
-              <div class="candidate-avatar">{{ getInitials(app.candidateId) }}</div>
-              <div style="flex:1; min-width:0;">
-                <h4 style="margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ app.candidate?.firstName || '' }} {{ app.candidate?.lastName || '' }}</h4>
-                <div style="font-size:12px; color:var(--gray-500)">{{ app.offer?.title || '' }}</div>
-              </div>
-            </div>
-
-            <div style="margin-top:12px;">
-              <div style="font-size:12px; color:var(--gray-500);">Candidature : {{ formatDate(app.appliedAt) }}</div>
-
-              <div *ngIf="(archivedDocs[app.candidateId] || []).length > 0" style="margin-top:8px;">
-                <div *ngFor="let doc of archivedDocs[app.candidateId]" style="display:flex; justify-content:space-between; align-items:center; gap:8px; padding:6px 0; border-top:1px solid var(--gray-100);">
-                  <div style="min-width:0;">
-                    <div style="font-size:13px; font-weight:600">{{ doc.name }}</div>
-                    <div style="font-size:12px; color:var(--gray-500);">{{ doc.isSigned ? 'Signé' : 'Non signé' }}{{ doc.signedAt ? ' • ' + formatDate(doc.signedAt) : '' }}</div>
-                  </div>
-                  <div style="display:flex; gap:8px;">
-                    <button class="btn-secondary" (click)="openPreview(app.candidateId, doc.id)">Prévisualiser</button>
-                    <button class="btn-secondary" (click)="downloadSingleDocument(app.candidateId, doc.id, doc.name)">Télécharger</button>
-                  </div>
-                </div>
-              </div>
-
-              <div *ngIf="!(archivedDocs[app.candidateId] || []).length" style="margin-top:8px; color:var(--gray-500);">
-                <div *ngIf="archivedDocsLoading[app.candidateId]" style="margin-top:4px;">Chargement des documents...</div>
-                <div *ngIf="!archivedDocsLoading[app.candidateId]" style="display:flex; gap:8px; align-items:center;">
-                  <button class="btn-secondary" (click)="loadArchivedDocumentsForCandidate(app.candidateId)">Charger les documents</button>
-                  <div style="color:var(--gray-500);">Aucun document disponible</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Filters -->
       <div class="card filters-bar mb-lg">
         <input type="search" placeholder="Rechercher un candidat..." class="search-input" [(ngModel)]="searchTerm">
@@ -120,6 +97,13 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
           <option value="60-79">60-79</option>
           <option value="0-59">0-59</option>
         </select>
+        <label class="location-filter" title="Filtrer par ville de l'offre">
+          <input type="checkbox" [(ngModel)]="filterByLocation" [disabled]="!selectedOffer">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+          </svg>
+          Même ville
+        </label>
       </div>
 
       <!-- Kanban Board -->
@@ -146,8 +130,8 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
 
               <div class="card-header-row">
                 <div class="candidate-avatar">{{ getInitials(application.candidateId) }}</div>
-                <div class="score-badge" [style.background]="getScoreColor(application.matchingScore?.global || 0)">
-                  {{ application.matchingScore?.global || 0 }}
+                <div class="score-badge" [style.background]="getScoreColor(computeScore(application))">
+                  {{ computeScore(application) }}
                 </div>
               </div>
 
@@ -211,364 +195,457 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     </div>
   `,
   styles: [`
-    .candidatures-page {
-      max-width: 100%;
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
+    .candidatures-page { max-width: 100%; animation: fadeUp 0.4s ease both; }
+
+    /* ── Page Header ── */
     .page-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: var(--spacing-xl);
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 24px 28px;
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 55%, #24243e 100%);
+      border-radius: 18px;
+      position: relative;
+      overflow: hidden;
     }
-
-    .page-header h1 {
-      margin-bottom: var(--spacing-xs);
+    .page-header::before {
+      content: '';
+      position: absolute;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 70%);
+      top: -100px; right: -60px;
+      border-radius: 50%;
+      pointer-events: none;
     }
+    .page-header h1 { color: white; font-size: 22px; font-weight: 700; margin: 0 0 4px; }
+    .page-header .text-muted { color: rgba(255,255,255,0.55); font-size: 13px; margin: 0; }
 
     .header-actions {
       display: flex;
-      gap: var(--spacing-md);
+      gap: 10px;
       align-items: center;
+      position: relative;
+      z-index: 1;
     }
+    .btn-secondary {
+      padding: 9px 16px;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      backdrop-filter: blur(4px);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.4); }
 
     .selection-count-badge {
-      background: #667eea;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
       color: white;
-      padding: 6px 12px;
-      border-radius: 16px;
-      font-size: 0.875rem;
-      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(99,102,241,0.4);
     }
 
-    /* Filters */
+    /* ── Filters ── */
     .filters-bar {
       display: flex;
-      gap: var(--spacing-md);
-      padding: var(--spacing-md);
+      gap: 10px;
+      padding: 14px 18px;
+      background: white;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      border: 1px solid rgba(99,102,241,0.08);
+      align-items: center;
     }
-
     .search-input {
       flex: 1;
-      padding: 10px 12px;
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-md);
+      min-width: 120px;
+      padding: 9px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 13px;
+      background: #f9fafb;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .filters-bar select {
+      padding: 9px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 13px;
+      background: #f9fafb;
+      outline: none;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .search-input:focus, .filters-bar select:focus {
+      border-color: #6366f1;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
     }
 
-    /* Kanban Board */
+    /* ── Kanban Board ── */
     .kanban-board {
       display: flex;
-      gap: var(--spacing-lg);
+      gap: 16px;
       overflow-x: auto;
-      padding-bottom: var(--spacing-md);
+      padding-bottom: 12px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(99,102,241,0.2) transparent;
     }
+    .kanban-board::-webkit-scrollbar { height: 5px; }
+    .kanban-board::-webkit-scrollbar-track { background: transparent; }
+    .kanban-board::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.25); border-radius: 999px; }
 
     .kanban-column {
-      flex: 0 0 300px;
-      background: var(--gray-50);
-      border-radius: var(--radius-lg);
+      flex: 0 0 284px;
+      background: #f8f9fc;
+      border-radius: 16px;
       display: flex;
       flex-direction: column;
+      border: 1px solid rgba(0,0,0,0.06);
     }
 
     .column-header {
-      padding: var(--spacing-md);
+      padding: 14px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 2px solid var(--gray-200);
+      border-bottom: 2px solid rgba(0,0,0,0.06);
+      background: white;
+      border-radius: 16px 16px 0 0;
+      position: relative;
+      overflow: hidden;
     }
-
+    .column-header::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      opacity: 0.7;
+    }
     .column-header h3 {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--gray-700);
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
       margin: 0;
     }
-
     .column-count {
-      background: var(--gray-200);
-      color: var(--gray-700);
-      padding: 4px 8px;
-      border-radius: var(--radius-full);
+      background: #EEF2FF;
+      color: #6366f1;
+      padding: 3px 9px;
+      border-radius: 999px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .column-body {
-      padding: var(--spacing-md);
+      padding: 12px;
       flex: 1;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-md);
+      gap: 10px;
+      max-height: 580px;
     }
 
-    /* Candidate Card */
+    /* ── Candidate Card ── */
     .candidate-card {
       background: white;
-      border-radius: var(--radius-md);
-      padding: var(--spacing-md);
-      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid rgba(0,0,0,0.07);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative;
-      overflow: visible; /* allow badges to sit outside the card without being clipped */
+      overflow: visible;
     }
-
     .candidate-card:hover {
-      box-shadow: var(--shadow-md);
-      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(99,102,241,0.12);
+      transform: translateY(-3px);
+      border-color: rgba(99,102,241,0.2);
     }
-
     .candidate-card.selected {
-      border-color: #667eea;
+      border-color: #6366f1;
       background: #f5f3ff;
-      box-shadow: 0 0 0 2px #667eea;
+      box-shadow: 0 0 0 2.5px #6366f1;
     }
-
-    /* Accepted card visual */
     .candidate-card.accepted {
       border-color: #059669;
-      background: #f0fdf4;
-      box-shadow: 0 0 0 4px rgba(5,150,105,0.06);
+      background: linear-gradient(145deg, #f0fdf4, #ecfdf5);
+      box-shadow: 0 0 0 2px rgba(5,150,105,0.15);
     }
-
     .accepted-badge {
       position: absolute;
-      /* place the badge slightly above the top edge so it doesn't overlap the score */
-      top: -10px;
-      right: 12px;
-      background: #059669;
+      top: -10px; right: 12px;
+      background: linear-gradient(135deg, #059669, #10b981);
       color: white;
-      padding: 5px 9px;
+      padding: 4px 10px;
       border-radius: 999px;
       font-weight: 700;
-      font-size: 11px;
-      box-shadow: 0 2px 6px rgba(5,150,105,0.18);
+      font-size: 10px;
+      box-shadow: 0 3px 8px rgba(5,150,105,0.3);
       z-index: 20;
+      letter-spacing: 0.3px;
     }
-
-    .selection-checkbox {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      z-index: 10;
-    }
-
-    .selection-checkbox input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-    }
+    .selection-checkbox { position: absolute; top: 8px; left: 8px; z-index: 10; }
+    .selection-checkbox input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #6366f1; }
 
     .card-header-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: var(--spacing-md);
+      margin-bottom: 12px;
     }
-
     .candidate-avatar {
-      width: 40px;
-      height: 40px;
+      width: 38px; height: 38px;
       border-radius: 50%;
-      background: var(--primary-color);
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
       color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      font-size: 14px;
-    }
-
-    .score-badge {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
       font-size: 13px;
-      color: white;
+      box-shadow: 0 3px 10px rgba(99,102,241,0.3);
     }
-
-    .candidate-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--gray-900);
-      margin: 0 0 4px 0;
-    }
-
-    .candidate-school {
-      font-size: 13px;
-      color: var(--gray-500);
-      margin: 0 0 var(--spacing-md) 0;
-    }
-
-    .candidate-skills {
+    .score-badge {
+      width: 34px; height: 34px;
+      border-radius: 50%;
       display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: var(--spacing-md);
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 12px;
+      color: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
-
+    .candidate-name { font-size: 14px; font-weight: 700; color: #111827; margin: 0 0 3px; }
+    .candidate-school { font-size: 12px; color: #9CA3AF; margin: 0 0 10px; }
+    .candidate-skills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
     .skill-tag {
       background: #EEF2FF;
-      color: var(--primary-color);
-      padding: 4px 10px;
-      border-radius: var(--radius-full);
+      color: #6366f1;
+      padding: 3px 9px;
+      border-radius: 999px;
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 600;
     }
-
     .card-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: var(--spacing-md);
-      border-top: 1px solid var(--gray-200);
+      padding-top: 10px;
+      border-top: 1px solid #f3f4f6;
     }
-
     .candidate-meta {
       display: flex;
       align-items: center;
       gap: 4px;
-      font-size: 12px;
-      color: var(--gray-500);
+      font-size: 11px;
+      color: #9CA3AF;
     }
-
-    .card-actions {
-      display: flex;
-      gap: 4px;
-      position: relative;
-    }
-
+    .card-actions { display: flex; gap: 4px; position: relative; }
     .status-dropdown {
       position: fixed;
       background: white;
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius-md);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 12px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
       z-index: 9999;
       min-width: 200px;
       max-height: 340px;
       overflow-y: auto;
     }
-
     .dropdown-item {
       padding: 9px 14px;
       font-size: 13px;
-      color: var(--gray-700);
+      color: #374151;
       cursor: pointer;
       transition: background 0.15s;
     }
-
-    .dropdown-item:hover { background: var(--gray-50); }
-    .dropdown-item.active { background: #EEF2FF; color: var(--primary-color); font-weight: 600; }
-    .dropdown-item.item-accept { color: #16a34a; font-weight: 600; border-top: 1px solid var(--gray-100); margin-top: 4px; padding-top: 10px; }
+    .dropdown-item:hover { background: #f9fafb; }
+    .dropdown-item.active { background: #EEF2FF; color: #6366f1; font-weight: 600; }
+    .dropdown-item.item-accept { color: #16a34a; font-weight: 600; border-top: 1px solid #f0fdf4; margin-top: 4px; padding-top: 10px; }
     .dropdown-item.item-accept:hover { background: #f0fdf4; }
     .dropdown-item.item-reject { color: #dc2626; }
     .dropdown-item.item-reject:hover { background: #fef2f2; }
 
     .icon-btn {
-      width: 28px;
-      height: 28px;
-      border-radius: var(--radius-md);
+      width: 28px; height: 28px;
+      border-radius: 8px;
       background: none;
       border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--gray-400);
+      color: #D1D5DB;
       transition: all 0.2s;
     }
-
-    .icon-btn:hover {
-      background: var(--gray-100);
-      color: var(--gray-600);
-    }
+    .icon-btn:hover { background: #f3f4f6; color: #6366f1; }
 
     .column-pagination {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 8px var(--spacing-md);
-      border-top: 1px solid var(--gray-200);
+      padding: 10px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      background: white;
+      border-radius: 0 0 16px 16px;
     }
-
     .pag-btn {
-      width: 28px;
-      height: 28px;
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-md);
+      width: 28px; height: 28px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
       background: white;
       cursor: pointer;
-      font-size: 16px;
-      line-height: 1;
-      color: var(--gray-600);
+      font-size: 15px;
+      color: #6B7280;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.15s;
     }
+    .pag-btn:hover:not(:disabled) { background: #EEF2FF; border-color: #6366f1; color: #6366f1; }
+    .pag-btn:disabled { opacity: 0.3; cursor: default; }
+    .pag-info { font-size: 12px; color: #9CA3AF; min-width: 40px; text-align: center; }
 
-    .pag-btn:hover:not(:disabled) { background: var(--gray-100); color: var(--gray-900); }
-    .pag-btn:disabled { opacity: 0.35; cursor: default; }
-
-    .pag-info {
-      font-size: 12px;
-      color: var(--gray-500);
-      min-width: 40px;
-      text-align: center;
+    /* Location filter */
+    .location-filter {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; color: #374151; cursor: pointer;
+      white-space: nowrap; user-select: none; padding: 9px 12px;
+      border: 1.5px solid #e5e7eb; border-radius: 10px;
+      background: #f9fafb; transition: all 0.15s;
     }
+    .location-filter:has(input:checked) { background: #EEF2FF; border-color: #6366f1; color: #6366f1; font-weight: 600; }
+    .location-filter:has(input:disabled) { opacity: 0.45; cursor: not-allowed; }
+    .location-filter input { accent-color: #6366f1; cursor: pointer; }
+    .location-filter svg { flex-shrink: 0; }
+
+    /* Weights panel */
+    .weights-panel {
+      padding: 20px 24px;
+      background: white;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(99,102,241,0.1);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .weights-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    .weights-header h3 { color: #111827; }
+    .weights-total-wrap { display: flex; align-items: center; gap: 12px; }
+    .weights-total { font-weight: 700; font-size: 14px; padding: 5px 14px; border-radius: 999px; }
+    .weights-ok   { background: #D1FAE5; color: #065F46; }
+    .weights-warn { background: #FEE2E2; color: #991B1B; }
+    .weights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px 32px; }
+    .weight-row { display: flex; align-items: center; gap: 12px; }
+    .weight-label { font-size: 13px; color: #374151; width: 160px; flex-shrink: 0; }
+    .weight-slider { flex: 1; accent-color: #6366f1; }
+    .weight-value { font-size: 13px; font-weight: 700; color: #6366f1; width: 36px; text-align: right; flex-shrink: 0; }
+    .btn-sm {
+      padding: 7px 14px;
+      font-size: 13px;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      border-radius: 9px;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+    }
+    .btn-sm:hover { background: rgba(255,255,255,0.22); }
+
+    /* Preview modal */
+    .doc-preview-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(5px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .doc-preview {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+      max-width: 860px; width: 100%;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .doc-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 22px;
+      background: linear-gradient(135deg, #0f0c29, #302b63);
+    }
+    .doc-preview-header h3 { margin: 0; color: white; font-size: 16px; }
+    .doc-preview-header .btn-secondary {
+      border: 1.5px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      padding: 7px 16px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .doc-preview-header .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+    .doc-preview-body { flex: 1; overflow: auto; padding: 0; }
+    .doc-preview-footer {
+      padding: 14px 20px;
+      border-top: 1px solid #f3f4f6;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(99,102,241,0.4);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.5); }
 
     @media (max-width: 768px) {
-      .page-header { flex-direction: column; align-items: flex-start; gap: var(--spacing-md); }
-      .header-actions { width: 100%; justify-content: flex-start; }
-
-      .filters-bar {
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .filters-bar select,
-      .filters-bar .search-input {
-        width: 100%;
-      }
-
-      .kanban-board {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scroll-snap-type: x mandatory;
-        padding-bottom: 8px;
-        gap: var(--spacing-md);
-      }
-
-      .kanban-column {
-        flex: 0 0 calc(100vw - 80px);
-        min-width: calc(100vw - 80px);
-        scroll-snap-align: start;
-      }
-
-      .archives-section { padding: var(--spacing-md); }
+      .page-header { flex-direction: column; align-items: flex-start; gap: 16px; padding: 20px; }
+      .header-actions { width: 100%; flex-wrap: wrap; }
+      .filters-bar { flex-direction: column; gap: 8px; }
+      .filters-bar select, .filters-bar .search-input { width: 100%; }
+      .kanban-board { scroll-snap-type: x mandatory; gap: 12px; }
+      .kanban-column { flex: 0 0 calc(100vw - 80px); min-width: calc(100vw - 80px); scroll-snap-align: start; }
     }
-
     @media (max-width: 480px) {
-      .kanban-column {
-        flex: 0 0 calc(100vw - 48px);
-        min-width: calc(100vw - 48px);
-      }
-
+      .kanban-column { flex: 0 0 calc(100vw - 48px); min-width: calc(100vw - 48px); }
       .candidate-card { padding: 12px; }
-      .candidate-name { font-size: 14px; }
-
-      .doc-preview { margin: 0; max-height: 100vh; border-radius: 16px 16px 0 0; }
-      .doc-preview-header { padding: 12px 16px; }
-      .archive-card { width: 100% !important; }
+      .candidate-name { font-size: 13px; }
     }
   `]
 })
@@ -576,16 +653,26 @@ export class CandidaturesComponent implements OnInit {
   applications: Application[] = [];
   candidates: Candidate[] = [];
   offers: Offer[] = [];
-  // Map candidateId -> documents[] for archived candidates
-  archivedDocs: { [candidateId: string]: any[] } = {};
-  // loading state per candidate when fetching documents on demand
-  archivedDocsLoading: { [candidateId: string]: boolean } = {};
+  // --- Scoring weights ---
+  showWeightsPanel = false;
+  weights: Record<string, number> = { skills: 25, experience: 20, education: 10, semantic: 20, title: 5, bonus: 5, completeness: 15 };
+  private readonly defaultWeights = { skills: 25, experience: 20, education: 10, semantic: 20, title: 5, bonus: 5, completeness: 15 };
+  readonly criteriaList = [
+    { key: 'skills',       label: 'Compétences' },
+    { key: 'experience',   label: 'Expérience' },
+    { key: 'education',    label: 'Diplôme' },
+    { key: 'semantic',     label: 'Similarité sémantique' },
+    { key: 'title',        label: 'Alignement du poste' },
+    { key: 'bonus',        label: 'Signaux bonus' },
+    { key: 'completeness', label: 'Structure du CV' },
+  ];
+  filterByLocation = false;
   private _selectedOffer: string = '';
   private _searchTerm: string = '';
   private _selectedScoreRange: string = '';
 
   get selectedOffer() { return this._selectedOffer; }
-  set selectedOffer(v: string) { this._selectedOffer = v; this.columnPages = {}; }
+  set selectedOffer(v: string) { this._selectedOffer = v; this.columnPages = {}; if (!v) this.filterByLocation = false; }
 
   get searchTerm() { return this._searchTerm; }
   set searchTerm(v: string) { this._searchTerm = v; this.columnPages = {}; }
@@ -629,8 +716,6 @@ export class CandidaturesComponent implements OnInit {
     this.matchingService.getApplications().subscribe(applications => {
       this.applications = applications;
       console.log('Applications loaded in component:', this.applications);
-      // preload archived candidates' documents
-      this.loadArchivedDocuments();
     });
 
     // Load candidate objects so getSelectedCandidates() can return the actual Candidate[]
@@ -761,13 +846,18 @@ export class CandidaturesComponent implements OnInit {
         return fullName.includes(term) || email.includes(term) || skills.includes(term);
       })
       .filter(app => {
-        // Score range filter (matchingScore.global)
         if (!this.selectedScoreRange) return true;
-        const score = app.matchingScore?.global || 0;
+        const score = this.computeScore(app);
         if (this.selectedScoreRange === '80-100') return score >= 80 && score <= 100;
         if (this.selectedScoreRange === '60-79') return score >= 60 && score <= 79;
         if (this.selectedScoreRange === '0-59') return score >= 0 && score <= 59;
         return true;
+      })
+      .filter(app => {
+        if (!this.filterByLocation || !this.selectedOffer) return true;
+        const offer = this.offers.find(o => o.id === this.selectedOffer);
+        if (!offer?.location) return true;
+        return this.sameLocation(app.candidate?.location, offer.location);
       });
   }
 
@@ -805,6 +895,46 @@ export class CandidaturesComponent implements OnInit {
     return skills.map((skill: string) => ({ name: skill }));
   }
 
+  private sameLocation(candidateLoc: string | undefined, offerLoc: string): boolean {
+    if (!candidateLoc) return false;
+    const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+    const c = norm(candidateLoc);
+    const o = norm(offerLoc);
+    return c.includes(o) || o.includes(c);
+  }
+
+  // --- Scoring weight helpers ---
+  get weightsTotal(): number {
+    return Object.values(this.weights).reduce((s, v) => s + v, 0);
+  }
+
+  onWeightChange(key: string, event: Event): void {
+    this.weights = { ...this.weights, [key]: Number((event.target as HTMLInputElement).value) };
+  }
+
+  resetWeights(): void {
+    this.weights = { ...this.defaultWeights };
+  }
+
+  computeScore(app: Application): number {
+    const bd = app.matchingScore?.breakdown;
+    if (!bd || Object.values(bd).every(v => v === null)) {
+      return app.matchingScore?.global ?? 0;
+    }
+    const w = this.weights;
+    const total = Object.values(w).reduce((s, v) => s + v, 0);
+    if (total <= 0) return 0;
+    return Math.round(
+      (w['skills']       / total) * (bd.skills_score       ?? 0) +
+      (w['experience']   / total) * (bd.experience_score   ?? 0) +
+      (w['education']    / total) * (bd.education_score    ?? 0) +
+      (w['semantic']     / total) * (bd.semantic_score     ?? 0) +
+      (w['title']        / total) * (bd.title_score        ?? 0) +
+      (w['bonus']        / total) * (bd.bonus_score        ?? 0) +
+      (w['completeness'] / total) * (bd.completeness_score ?? 0)
+    );
+  }
+
   getScoreColor(score: number): string {
     if (score >= 80) return 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
     if (score >= 60) return 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)';
@@ -814,74 +944,6 @@ export class CandidaturesComponent implements OnInit {
   formatDate(date: Date): string {
     const d = new Date(date);
     return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
-  }
-
-  // --- Archives helpers ---
-  getArchivedApplications(): Application[] {
-    return this.applications.filter(a => a.status === 'offre_acceptee');
-  }
-
-  exportArchivedCSV(): void {
-    const apps = this.getArchivedApplications();
-    if (!apps || apps.length === 0) return;
-
-    const header = ['Candidate','Email','Offer','AppliedAt','ApplicationId','CandidateId','Documents'];
-    const rows = apps.map(a => {
-      const docs = (this.archivedDocs[a.candidateId] || []).map(d => `${d.name}${d.isSigned ? ' (Signé' + (d.signedAt ? ' ' + this.formatDate(d.signedAt) : '') + ')' : ''}`);
-      return [
-        `${a.candidate?.firstName || ''} ${a.candidate?.lastName || ''}`,
-        a.candidate?.email || '',
-        a.offer?.title || '',
-        new Date(a.appliedAt).toLocaleString('fr-FR'),
-        a.id,
-        a.candidateId,
-        docs.join(' | ')
-      ];
-    });
-
-    const csvContent = [header, ...rows].map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `archives_candidats_${new Date().toISOString().slice(0,10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  // Load documents for archived applicants (offre_acceptee)
-  loadArchivedDocuments(): void {
-    const archived = this.getArchivedApplications();
-    const uniqueCandidateIds = Array.from(new Set(archived.map(a => a.candidateId).filter(id => !!id)));
-
-    uniqueCandidateIds.forEach(id => {
-      // Only fetch if not already loaded
-      if (this.archivedDocs[id]) return;
-      this.candidateService.getCandidateFull(id).subscribe(candidate => {
-        this.archivedDocs[id] = candidate.documents || [];
-      }, err => {
-        console.error('Failed to load candidate documents for', id, err);
-        this.archivedDocs[id] = [];
-      });
-    });
-  }
-
-  // Load documents for a single archived candidate on demand (shows loading state)
-  loadArchivedDocumentsForCandidate(id: string): void {
-    if (!id) return;
-    if (this.archivedDocs[id]) return; // already loaded
-    this.archivedDocsLoading[id] = true;
-    this.candidateService.getCandidateFull(id).subscribe(candidate => {
-      this.archivedDocs[id] = candidate.documents || [];
-      this.archivedDocsLoading[id] = false;
-    }, err => {
-      console.error('Failed to load candidate documents for', id, err);
-      this.archivedDocs[id] = [];
-      this.archivedDocsLoading[id] = false;
-      alert('Impossible de charger les documents pour ce candidat. Vérifiez la connexion au serveur.');
-    });
   }
 
   // Download a single document for a candidate
@@ -963,24 +1025,11 @@ export class CandidaturesComponent implements OnInit {
   previewData: { name?: string; content?: string; mime?: string } | null = null;
 
   openPreview(candidateId: string, docId: string) {
-    const docs = this.archivedDocs[candidateId] || [];
-    const doc = docs.find((d: any) => d.id === docId);
-    if (doc && doc.content) {
-      this.previewData = {
-        name: doc.name,
-        content: doc.content,
-        mime: this.detectMimeType(doc.name)
-      };
-      this.previewVisible = true;
-      return;
-    }
-
-    // fetch from backend if not preloaded
     this.candidateService.downloadDocument(candidateId, docId).subscribe(resp => {
       this.previewData = {
-        name: resp.name || doc?.name || 'document',
+        name: resp.name || 'document',
         content: resp.content || '',
-        mime: this.detectMimeType(resp.name || doc?.name || '')
+        mime: this.detectMimeType(resp.name || '')
       };
       this.previewVisible = true;
     }, err => {

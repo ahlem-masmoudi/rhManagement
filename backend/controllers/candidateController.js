@@ -658,28 +658,40 @@ exports.uploadDocumentByTrackingToken = async (req, res) => {
     const { name, content, type } = req.body;
     if (!name || !content) return res.status(400).json({ success: false, message: 'name et content requis' });
 
-    // Prevent re-upload if an unsigned demande_stage already exists
-    const existing = (candidate.documents || []).find(d => d.type === (type || 'demande_stage') && !d.isSigned);
+    const docType = type || 'demande_stage';
+
+    // Use the raw MongoDB collection to bypass ALL Mongoose casting/validation
+    const col = Candidate.collection;
+
+    const existing = (candidate.documents || []).find(d => d.type === docType && !d.isSigned);
     if (existing) {
-      // Replace the old unsigned document instead of duplicating
-      existing.name = name;
-      existing.content = content;
-      existing.uploadedAt = new Date();
-      existing.status = 'soumis';
+      await col.updateOne(
+        { trackingToken: req.params.token, 'documents.id': existing.id },
+        {
+          $set: {
+            'documents.$.name': name,
+            'documents.$.content': content,
+            'documents.$.uploadedAt': new Date(),
+            'documents.$.status': 'soumis'
+          }
+        }
+      );
     } else {
-      candidate.documents = candidate.documents || [];
-      candidate.documents.push({
+      const newDoc = {
         id: `${Date.now()}_${Math.random().toString(36).substr(2, 8)}`,
         name,
-        type: type || 'demande_stage',
+        type: docType,
         content,
         status: 'soumis',
         isSigned: false,
         uploadedAt: new Date()
-      });
+      };
+      await col.updateOne(
+        { trackingToken: req.params.token },
+        { $push: { documents: newDoc } }
+      );
     }
 
-    await candidate.save();
     res.json({ success: true, message: 'Document déposé avec succès' });
   } catch (error) {
     console.error('uploadDocumentByTrackingToken error:', error);

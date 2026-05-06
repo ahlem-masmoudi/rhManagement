@@ -804,7 +804,7 @@ export class CompleteProfileComponent implements OnInit {
         this.profile.email = user.email;
 
         if (user.profileComplete) {
-          this.router.navigate(['/candidate']);
+          this.router.navigate(['/candidate/offers']);
         }
       } else {
         // Recruiter/admin should not see this form with their data — clear session
@@ -934,8 +934,7 @@ export class CompleteProfileComponent implements OnInit {
         // Update profile complete status
         this.authService.updateProfileComplete(userId);
 
-        // Redirect to candidate dashboard
-        this.router.navigate(['/candidate']);
+        this.router.navigate(['/candidate/offers']);
       },
       error: (error) => {
         this.isSubmitting = false;

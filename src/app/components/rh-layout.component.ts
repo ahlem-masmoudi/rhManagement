@@ -14,66 +14,98 @@ import { AuthService } from '../services/auth.service';
 
       <!-- Sidebar -->
       <aside class="sidebar" [class.open]="isSidebarOpen">
+
+        <!-- Logo Section -->
         <div class="sidebar-header">
-          <div class="logo">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="#4F46E5"/>
-              <path d="M12 10h8v2h-8v-2zm0 5h8v2h-8v-2zm0 5h5v2h-5v-2z" fill="white"/>
-            </svg>
-            <span>Espace admin RH</span>
+          <div class="logo-area">
+            <div class="logo-icon">
+              <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="8" fill="rgba(255,255,255,0.15)"/>
+                <path d="M12 10h8v2h-8v-2zm0 5h8v2h-8v-2zm0 5h5v2h-5v-2z" fill="white"/>
+              </svg>
+            </div>
+            <div class="logo-text-wrap">
+              <span class="logo-text">Espace RH</span>
+              <span class="logo-pulse"></span>
+            </div>
           </div>
         </div>
 
+        <!-- Navigation -->
         <nav class="sidebar-nav">
-          <a routerLink="/rh" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item" (click)="closeSidebar()">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-            </svg>
-            <span>Tableau de bord</span>
+          <div class="nav-section-label">Navigation</div>
+
+          <a routerLink="/rh" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+             class="nav-item" (click)="closeSidebar()" style="--i:0">
+            <span class="nav-icon">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+              </svg>
+            </span>
+            <span class="nav-label">Dashboard</span>
+            <span class="nav-glow"></span>
           </a>
 
-          <a routerLink="/rh/offres" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
-              <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/>
-            </svg>
-            <span>Offres de stage</span>
+          <a routerLink="/rh/offres" routerLinkActive="active"
+             class="nav-item" (click)="closeSidebar()" style="--i:1">
+            <span class="nav-icon">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/>
+              </svg>
+            </span>
+            <span class="nav-label">Offres de stage</span>
+            <span class="nav-glow"></span>
           </a>
 
-          <a routerLink="/rh/candidatures" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-              <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
-            </svg>
-            <span>Candidatures</span>
+          <a routerLink="/rh/candidatures" routerLinkActive="active"
+             class="nav-item" (click)="closeSidebar()" style="--i:2">
+            <span class="nav-icon">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+              </svg>
+            </span>
+            <span class="nav-label">Candidatures</span>
+            <span class="nav-glow"></span>
           </a>
 
-          <a routerLink="/rh/matching" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-            </svg>
-            <span>Intelligent Matching</span>
+          <a routerLink="/rh/dossiers" routerLinkActive="active"
+             class="nav-item" (click)="closeSidebar()" style="--i:3">
+            <span class="nav-icon">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
+              </svg>
+            </span>
+            <span class="nav-label">Dossiers accept&eacute;s</span>
+            <span class="nav-glow"></span>
           </a>
         </nav>
 
+        <!-- Footer -->
         <div class="sidebar-footer">
+          <!-- User profile -->
           <div class="user-profile">
-            <div class="avatar">{{ getUserInitials() }}</div>
+            <div class="avatar-wrap">
+              <div class="avatar">{{ getUserInitials() }}</div>
+            </div>
             <div class="user-info">
               <div class="user-name">{{ getUserName() }}</div>
               <div class="user-role">Recruteur</div>
             </div>
           </div>
 
+          <!-- Fingerprint section -->
           <div *ngIf="isFingerprintSupported" class="fingerprint-section">
-            <div *ngIf="fingerprintMessage" class="fingerprint-msg" [class.fingerprint-msg-error]="fingerprintError">
+            <div *ngIf="fingerprintMessage" class="fingerprint-msg"
+                 [class.fingerprint-msg-error]="fingerprintError">
               {{ fingerprintMessage }}
             </div>
-
             <div class="fingerprint-actions">
               <button class="btn-fp" (click)="registerFingerprint()" [disabled]="fpLoading"
                 title="{{ hasCredentials ? 'Ajouter une nouvelle empreinte' : 'Configurer l\'empreinte digitale' }}">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
                   <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
                   <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
@@ -87,9 +119,11 @@ import { AuthService } from '../services/auth.service';
                 <span>{{ hasCredentials ? 'Ajouter empreinte' : 'Configurer empreinte' }}</span>
                 <span *ngIf="fpLoading" class="fp-spinner"></span>
               </button>
-
-              <button *ngIf="hasCredentials" class="btn-fp btn-fp-danger" (click)="deleteFingerprints()" [disabled]="fpLoading" title="Supprimer les empreintes enregistrées">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <button *ngIf="hasCredentials" class="btn-fp btn-fp-danger"
+                      (click)="deleteFingerprints()" [disabled]="fpLoading"
+                      title="Supprimer les empreintes enregistr&eacute;es">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="3 6 5 6 21 6"/>
                   <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                   <path d="M10 11v6M14 11v6"/>
@@ -99,34 +133,47 @@ import { AuthService } from '../services/auth.service';
             </div>
           </div>
 
-          <button class="btn btn-secondary btn-sm" (click)="logout()" style="margin-top: 8px; width: 100%;">
-            Déconnexion
+          <!-- Logout -->
+          <button class="btn-logout" (click)="logout()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span>D&eacute;connexion</span>
           </button>
         </div>
       </aside>
 
       <!-- Main Content -->
       <div class="main-wrapper">
+
         <!-- Topbar -->
         <header class="topbar">
           <button class="menu-toggle" (click)="toggleSidebar()">
-            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
               <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </button>
 
-          <span class="topbar-title">Espace admin RH</span>
+          <div class="topbar-greeting">
+            <span class="greeting-text">{{ getGreeting() }},&nbsp;</span>
+            <span class="greeting-name">{{ getUserName().split(' ')[0] }}</span>
+          </div>
 
-          <div class="search-bar">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
-            </svg>
-            <input type="search" placeholder="Rechercher un candidat, une offre...">
+          <div class="topbar-center">
+            <div class="search-bar">
+              <svg width="17" height="17" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+              </svg>
+              <input type="search" placeholder="Rechercher un candidat, une offre...">
+            </div>
           </div>
 
           <div class="topbar-actions">
-            <button class="icon-btn">
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+            <button class="icon-btn" title="Notifications">
+              <svg width="19" height="19" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
               </svg>
               <span class="badge-notification">3</span>
@@ -142,17 +189,27 @@ import { AuthService } from '../services/auth.service';
     </div>
   `,
   styles: [`
+    /* ===================== RESET / BASE ===================== */
+    :host {
+      display: block;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    /* ===================== LAYOUT ===================== */
     .app-layout {
       display: flex;
       height: 100vh;
       overflow: hidden;
+      background: #f1f5f9;
     }
 
-    /* Sidebar */
+    /* ===================== SIDEBAR ===================== */
     .sidebar {
       width: 260px;
-      background: white;
-      border-right: 1px solid var(--gray-200);
+      min-width: 260px;
+      background: linear-gradient(180deg, #0d0c1d 0%, #1a1830 100%);
       display: flex;
       flex-direction: column;
       position: fixed;
@@ -160,192 +217,215 @@ import { AuthService } from '../services/auth.service';
       top: 0;
       bottom: 0;
       z-index: 100;
-      transition: transform 0.3s ease;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 4px 0 32px rgba(0, 0, 0, 0.35);
     }
 
+    /* ---- Logo ---- */
     .sidebar-header {
-      padding: 20px;
-      border-bottom: 1px solid var(--gray-200);
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
 
-    .logo {
+    .logo-area {
       display: flex;
       align-items: center;
       gap: 12px;
-      font-weight: 600;
-      font-size: 18px;
-      color: var(--gray-900);
     }
 
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+    }
+
+    .logo-text-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      background: linear-gradient(90deg, #a5b4fc, #c4b5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo-pulse {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+      animation: pulse-dot 2.2s ease infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%   { box-shadow: 0 0 0 0   rgba(16,185,129,0.6); }
+      70%  { box-shadow: 0 0 0 7px rgba(16,185,129,0); }
+      100% { box-shadow: 0 0 0 0   rgba(16,185,129,0); }
+    }
+
+    /* ---- Nav ---- */
     .sidebar-nav {
       flex: 1;
-      padding: 16px;
+      padding: 20px 12px;
       overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.08) transparent;
+    }
+
+    .sidebar-nav::-webkit-scrollbar { width: 4px; }
+    .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-nav::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      padding: 0 8px;
+      margin-bottom: 10px;
     }
 
     .nav-item {
+      position: relative;
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      color: var(--gray-600);
+      padding: 11px 14px;
+      border-radius: 12px;
+      color: #94a3b8;
       text-decoration: none;
+      font-size: 14px;
       font-weight: 500;
-      transition: all 0.2s;
       margin-bottom: 4px;
+      overflow: hidden;
+      transition: color 0.2s ease, background 0.2s ease;
+      animation: slideInLeft 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation-delay: calc(var(--i) * 70ms + 100ms);
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-22px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Glow layer — slides in on hover */
+    .nav-glow {
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background: rgba(99, 102, 241, 0.08);
+      border-left: 3px solid #6366f1;
+      opacity: 0;
+      transform: translateX(-6px);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+      pointer-events: none;
     }
 
     .nav-item:hover {
-      background: var(--gray-50);
-      color: var(--gray-900);
+      color: #c7d2fe;
     }
 
+    .nav-item:hover .nav-glow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Active state */
     .nav-item.active {
-      background: #EEF2FF;
-      color: var(--primary-color);
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      color: #ffffff;
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
     }
 
+    .nav-item.active .nav-glow {
+      display: none;
+    }
+
+    .nav-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      flex-shrink: 0;
+    }
+
+    .nav-label {
+      flex: 1;
+      white-space: nowrap;
+    }
+
+    /* ---- Footer ---- */
     .sidebar-footer {
-      padding: 20px;
-      border-top: 1px solid var(--gray-200);
+      padding: 16px 16px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .user-profile {
       display: flex;
-      gap: 12px;
       align-items: center;
+      gap: 12px;
+    }
+
+    .avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
     }
 
     .avatar {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background: var(--primary-color);
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 600;
-      font-size: 14px;
+      font-weight: 700;
+      font-size: 13px;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4), 0 0 0 5px rgba(99, 102, 241, 0.12);
     }
 
-    .user-info {
-      flex: 1;
-      min-width: 0;
-    }
+    .user-info { flex: 1; min-width: 0; }
 
     .user-name {
+      font-size: 13px;
       font-weight: 600;
-      font-size: 14px;
-      color: var(--gray-900);
+      color: #e2e8f0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .user-role {
-      font-size: 12px;
-      color: var(--gray-500);
-    }
-
-    /* Main Wrapper */
-    .main-wrapper {
-      flex: 1;
-      margin-left: 260px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* Topbar */
-    .topbar {
-      height: 70px;
-      background: white;
-      border-bottom: 1px solid var(--gray-200);
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      gap: 20px;
-    }
-
-    .menu-toggle {
-      display: none;
-    }
-
-    .search-bar {
-      flex: 1;
-      max-width: 500px;
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .search-bar svg {
-      position: absolute;
-      left: 12px;
-      color: var(--gray-400);
-    }
-
-    .search-bar input {
-      width: 100%;
-      padding: 10px 12px 10px 40px;
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius-md);
-      font-size: 14px;
-    }
-
-    .topbar-actions {
-      display: flex;
-      gap: 12px;
-    }
-
-    .icon-btn {
-      position: relative;
-      width: 40px;
-      height: 40px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--gray-200);
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .icon-btn:hover {
-      background: var(--gray-50);
-    }
-
-    .badge-notification {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      background: var(--danger-color);
-      color: white;
       font-size: 11px;
-      font-weight: 600;
-      min-width: 18px;
-      height: 18px;
-      border-radius: 9px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 5px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 2px;
     }
 
-    /* Main Content */
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      background: var(--gray-50);
-      padding: 24px;
-    }
-
-    /* Fingerprint Section */
+    /* ---- Fingerprint ---- */
     .fingerprint-section {
-      margin-top: 12px;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -362,25 +442,25 @@ import { AuthService } from '../services/auth.service';
       align-items: center;
       gap: 6px;
       padding: 7px 10px;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-md);
-      background: white;
-      color: var(--gray-600);
-      font-size: 12px;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.55);
+      font-size: 11.5px;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
       white-space: nowrap;
     }
 
     .btn-fp:hover:not(:disabled) {
-      border-color: var(--primary-color);
-      color: var(--primary-color);
-      background: #EEF2FF;
+      border-color: #6366f1;
+      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.12);
     }
 
     .btn-fp:disabled {
-      opacity: 0.5;
+      opacity: 0.4;
       cursor: not-allowed;
     }
 
@@ -390,25 +470,25 @@ import { AuthService } from '../services/auth.service';
     }
 
     .btn-fp-danger:hover:not(:disabled) {
-      border-color: var(--danger-color);
-      color: var(--danger-color);
-      background: #FEF2F2;
+      border-color: #ef4444 !important;
+      color: #fca5a5 !important;
+      background: rgba(239, 68, 68, 0.12) !important;
     }
 
     .fingerprint-msg {
       font-size: 11px;
-      color: #166534;
-      background: #DCFCE7;
-      border: 1px solid #86EFAC;
-      border-radius: var(--radius-sm);
-      padding: 5px 8px;
+      color: #6ee7b7;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 8px;
+      padding: 5px 9px;
       line-height: 1.4;
     }
 
     .fingerprint-msg.fingerprint-msg-error {
-      color: #991B1B;
-      background: #FEE2E2;
-      border-color: #FCA5A5;
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.25);
     }
 
     .fp-spinner {
@@ -420,46 +500,217 @@ import { AuthService } from '../services/auth.service';
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
       margin-left: 2px;
+      flex-shrink: 0;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Topbar title (hidden on desktop, shown on mobile) */
-    .topbar-title {
-      display: none;
+    /* ---- Logout ---- */
+    .btn-logout {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px;
+      border: 1.5px solid rgba(239, 68, 68, 0.25);
+      border-radius: 12px;
+      background: rgba(239, 68, 68, 0.06);
+      color: rgba(252, 165, 165, 0.75);
+      font-size: 13px;
       font-weight: 600;
-      font-size: 15px;
-      color: var(--gray-900);
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      cursor: pointer;
+      transition: all 0.22s ease;
     }
 
-    /* Sidebar overlay backdrop */
+    .btn-logout:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+
+    /* ===================== MAIN WRAPPER ===================== */
+    .main-wrapper {
+      flex: 1;
+      margin-left: 260px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* ===================== TOPBAR ===================== */
+    .topbar {
+      height: 68px;
+      background: #ffffff;
+      border-bottom: 1px solid #e8edf4;
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      gap: 20px;
+      flex-shrink: 0;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+    }
+
+    .menu-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      background: none;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #64748b;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .menu-toggle:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .topbar-greeting {
+      display: flex;
+      align-items: baseline;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .greeting-text {
+      font-size: 15px;
+      font-weight: 400;
+      color: #64748b;
+    }
+
+    .greeting-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .topbar-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    .search-bar {
+      width: 100%;
+      max-width: 440px;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-bar svg {
+      position: absolute;
+      left: 13px;
+      color: #94a3b8;
+      pointer-events: none;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 10px 14px 10px 40px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 13.5px;
+      color: #1e293b;
+      background: #f8fafc;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .search-bar input::placeholder { color: #94a3b8; }
+
+    .search-bar input:focus {
+      border-color: #6366f1;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #64748b;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      background: #eef2ff;
+      border-color: #a5b4fc;
+      color: #6366f1;
+      box-shadow: 0 4px 12px rgba(99,102,241,0.12);
+    }
+
+    .badge-notification {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(239,68,68,0.4);
+    }
+
+    /* ===================== MAIN CONTENT ===================== */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      background: #f1f5f9;
+      padding: 28px;
+    }
+
+    /* ===================== OVERLAY ===================== */
     .sidebar-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.45);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 99;
       animation: fadeIn 0.2s ease;
+      backdrop-filter: blur(2px);
     }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* Mobile Responsive */
+    /* ===================== RESPONSIVE ===================== */
     @media (max-width: 768px) {
       .sidebar {
         transform: translateX(-100%);
         width: 280px;
+        min-width: 280px;
         z-index: 200;
       }
 
       .sidebar.open {
         transform: translateX(0);
-        box-shadow: 4px 0 24px rgba(0,0,0,0.18);
       }
 
       .main-wrapper {
@@ -468,26 +719,18 @@ import { AuthService } from '../services/auth.service';
 
       .menu-toggle {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        flex-shrink: 0;
       }
 
-      .topbar-title { display: block; }
-      .search-bar { display: none; }
-      .topbar { padding: 0 12px; height: 60px; gap: 10px; }
+      .topbar-greeting { display: none; }
+      .topbar { padding: 0 16px; height: 60px; gap: 12px; }
       .main-content { padding: 16px; }
     }
 
     @media (max-width: 480px) {
-      .sidebar { width: 85vw; max-width: 300px; }
+      .sidebar { width: 85vw; min-width: unset; max-width: 300px; }
       .main-content { padding: 12px; }
-      .topbar { padding: 0 10px; }
+      .topbar { padding: 0 12px; }
+      .search-bar input { font-size: 13px; }
     }
   `]
 })
@@ -529,6 +772,13 @@ export class RhLayoutComponent implements OnInit {
   getUserInitials(): string {
     const user = this.authService.getCurrentUser();
     return user ? `${user.firstName[0]}${user.lastName[0]}` : 'RH';
+  }
+
+  getGreeting(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bonjour';
+    if (hour < 18) return 'Bon après-midi';
+    return 'Bonsoir';
   }
 
   registerFingerprint(): void {

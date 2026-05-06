@@ -24,9 +24,6 @@ import { Application, Offer } from '../../models';
           </div>
 
           <nav class="nav-menu">
-            <a routerLink="/candidate" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-              Dashboard
-            </a>
             <a routerLink="/candidate/offers" routerLinkActive="active">
               Offres disponibles
             </a>
@@ -48,12 +45,6 @@ import { Application, Offer } from '../../models';
 
       <!-- Bottom Nav (mobile only) -->
       <nav class="bottom-nav">
-        <a routerLink="/candidate" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="bottom-nav-item">
-          <svg width="22" height="22" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-          </svg>
-          <span>Accueil</span>
-        </a>
         <a routerLink="/candidate/offers" routerLinkActive="active" class="bottom-nav-item">
           <svg width="22" height="22" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5z" clip-rule="evenodd"/>

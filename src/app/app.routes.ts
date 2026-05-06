@@ -28,7 +28,8 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./components/candidate/home/candidate-home.component').then(m => m.CandidateHomeComponent)
+        redirectTo: 'offers',
+        pathMatch: 'full'
       },
       {
         path: 'offers',
@@ -36,7 +37,7 @@ export const routes: Routes = [
       }
     ]
   },
-  
+
   // Public candidate tracking route (no auth required)
   {
     path: 'candidat/suivi/:token',
@@ -62,8 +63,8 @@ export const routes: Routes = [
         loadComponent: () => import('./components/candidatures/candidatures.component').then(m => m.CandidaturesComponent)
       },
       {
-        path: 'matching',
-        loadComponent: () => import('./components/matching/matching.component').then(m => m.MatchingComponent)
+        path: 'dossiers',
+        loadComponent: () => import('./components/dossiers/dossiers.component').then(m => m.DossiersComponent)
       },
       {
         path: 'profil/:id',

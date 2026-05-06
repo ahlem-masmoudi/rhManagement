@@ -1,0 +1,655 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { MatchingService } from '../../services/matching.service';
+import { CandidateService } from '../../services/candidate.service';
+import { Application } from '../../models';
+import { environment } from '../../../environments/environment';
+
+interface DossierEntry {
+  application: Application;
+  documents: any[];
+  docsLoaded: boolean;
+  signing: boolean;
+  signSuccess: string;
+  signError: string;
+  showSignForm: boolean;
+  signatoryName: string;
+  signatoryTitle: string;
+}
+
+@Component({
+  selector: 'app-dossiers',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="dossiers-page">
+      <div class="page-header">
+        <div>
+          <h1>Dossiers acceptés</h1>
+          <p class="text-muted">Candidats dont l'offre a été acceptée — signez et renvoyez les demandes de stage</p>
+        </div>
+        <div class="header-right">
+          <span class="count-badge">{{ dossiers.length }} dossier(s)</span>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!loading && dossiers.length === 0" class="empty-state card">
+        <svg width="48" height="48" fill="none" viewBox="0 0 48 48" style="margin:0 auto 16px">
+          <circle cx="24" cy="24" r="24" fill="#F0FDF4"/>
+          <path d="M16 14h16v20H16V14z" fill="#D1FAE5" stroke="#059669" stroke-width="1.5"/>
+          <path d="M20 20h8M20 25h6" stroke="#059669" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <h3>Aucun dossier pour le moment</h3>
+        <p style="color:var(--gray-500)">Les candidats dont le statut est "Offre acceptée" apparaîtront ici avec leurs documents.</p>
+      </div>
+
+      <div *ngIf="loading" class="loading-state card">
+        <div class="spinner"></div>
+        <p>Chargement des dossiers...</p>
+      </div>
+
+      <!-- Dossier cards -->
+      <div class="dossiers-grid" *ngIf="!loading && dossiers.length > 0">
+        <div *ngFor="let entry of dossiers; let i = index" class="dossier-card" [style]="'--i:' + i">
+          <!-- Candidate header -->
+          <div class="candidate-header">
+            <div class="avatar">{{ getInitials(entry.application) }}</div>
+            <div class="candidate-info">
+              <h3>{{ entry.application.candidate?.firstName }} {{ entry.application.candidate?.lastName }}</h3>
+              <div class="meta">{{ entry.application.candidate?.email }}</div>
+              <div class="meta">{{ entry.application.offer?.title }}</div>
+            </div>
+            <div class="status-chip accepted">Offre acceptée</div>
+          </div>
+
+          <!-- Documents section -->
+          <div class="docs-section">
+            <div class="docs-header">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+              </svg>
+              <span>Documents</span>
+            </div>
+
+            <!-- Loading documents -->
+            <div *ngIf="!entry.docsLoaded" class="doc-loading">
+              <div class="spinner spinner-sm"></div> Chargement...
+            </div>
+
+            <!-- No documents -->
+            <div *ngIf="entry.docsLoaded && entry.documents.length === 0" class="no-docs">
+              Aucun document déposé par le candidat.
+            </div>
+
+            <!-- Document list -->
+            <div *ngFor="let doc of entry.documents" class="doc-row">
+              <div class="doc-info">
+                <div class="doc-name">{{ doc.name }}</div>
+                <div class="doc-meta">
+                  <span [class]="'doc-type type-' + doc.type">{{ getDocTypeLabel(doc.type) }}</span>
+                  <span *ngIf="doc.isSigned" class="signed-chip">Signé</span>
+                  <span *ngIf="!doc.isSigned && doc.status === 'soumis'" class="pending-chip">En attente de signature</span>
+                </div>
+              </div>
+              <div class="doc-actions">
+                <button class="btn-icon" title="Prévisualiser" (click)="previewDoc(entry, doc)">
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10z" clip-rule="evenodd"/>
+                  </svg>
+                </button>
+                <button class="btn-icon" title="Télécharger" (click)="downloadDoc(entry, doc)">
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                  </svg>
+                </button>
+                <button *ngIf="!doc.isSigned && (doc.type === 'demande_stage' || doc.type === 'convention_stage')"
+                        class="btn-sign" (click)="toggleSignForm(entry)">
+                  Signer
+                </button>
+              </div>
+            </div>
+
+            <!-- Sign form -->
+            <div *ngIf="entry.showSignForm" class="sign-form">
+              <h4 style="margin:0 0 12px">Signer la demande de stage</h4>
+              <div class="form-group">
+                <label>Nom du signataire</label>
+                <input type="text" [(ngModel)]="entry.signatoryName" placeholder="Ex: Mme Fatma Ben Ali">
+              </div>
+              <div class="form-group">
+                <label>Fonction</label>
+                <input type="text" [(ngModel)]="entry.signatoryTitle" placeholder="Ex: Responsable RH">
+              </div>
+              <div class="sign-actions">
+                <button class="btn-secondary" (click)="entry.showSignForm = false">Annuler</button>
+                <button class="btn-primary" [disabled]="entry.signing || !entry.signatoryName"
+                        (click)="signDocument(entry)">
+                  <span *ngIf="entry.signing" class="spinner spinner-sm"></span>
+                  {{ entry.signing ? 'Signature en cours...' : 'Confirmer la signature' }}
+                </button>
+              </div>
+              <div *ngIf="entry.signSuccess" class="alert alert-success">{{ entry.signSuccess }}</div>
+              <div *ngIf="entry.signError" class="alert alert-error">{{ entry.signError }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview modal -->
+      <div *ngIf="preview.visible" class="modal-overlay" (click)="closePreview()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>{{ preview.name }}</h3>
+            <button class="btn-secondary" (click)="closePreview()">Fermer</button>
+          </div>
+          <div class="modal-body">
+            <object *ngIf="preview.mime === 'application/pdf'"
+                    [data]="getDataUrl()" type="application/pdf" width="100%" height="600">
+              Votre navigateur ne peut pas afficher ce PDF.
+            </object>
+            <img *ngIf="preview.mime && preview.mime.startsWith('image/')"
+                 [src]="getDataUrl()" style="max-width:100%;max-height:600px;display:block;margin:auto"/>
+            <pre *ngIf="preview.mime === 'text/html' || preview.mime === 'text/plain'"
+                 style="white-space:pre-wrap;max-height:600px;overflow:auto;font-size:13px">{{ preview.content }}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .dossiers-page { max-width: 100%; animation: fadeUp 0.4s ease both; }
+
+    /* ── Page Header ── */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 26px 30px;
+      background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+      border-radius: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-header::before {
+      content: '';
+      position: absolute;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%);
+      top: -100px; right: -60px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .page-header h1 { color: white; font-size: 22px; font-weight: 700; margin: 0 0 4px; }
+    .page-header .text-muted { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
+    .header-right { position: relative; z-index: 1; }
+
+    .count-badge {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.25);
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── States ── */
+    .empty-state, .loading-state {
+      text-align: center;
+      padding: 56px 24px;
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+    }
+    .empty-state h3 { margin: 0 0 8px; font-size: 18px; color: #111827; }
+    .loading-state { display: flex; align-items: center; justify-content: center; gap: 12px; color: #6B7280; }
+
+    /* ── Dossier Grid ── */
+    .dossiers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+      gap: 20px;
+    }
+
+    .dossier-card {
+      background: white;
+      border-radius: 18px;
+      padding: 22px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: fadeUp 0.5s calc(var(--i, 0) * 0.08s) both;
+      position: relative;
+      overflow: hidden;
+    }
+    .dossier-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #059669, #10b981);
+    }
+    .dossier-card:hover {
+      box-shadow: 0 12px 40px rgba(5,150,105,0.12);
+      transform: translateY(-4px);
+      border-color: rgba(5,150,105,0.2);
+    }
+
+    /* ── Candidate Header ── */
+    .candidate-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .avatar {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(5,150,105,0.3);
+    }
+    .candidate-info { flex: 1; min-width: 0; }
+    .candidate-info h3 { margin: 0 0 5px; font-size: 16px; font-weight: 700; color: #111827; }
+    .meta { font-size: 13px; color: #9CA3AF; line-height: 1.5; }
+
+    .status-chip {
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+      letter-spacing: 0.3px;
+    }
+    .accepted {
+      background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+      color: #065F46;
+      border: 1px solid rgba(5,150,105,0.2);
+    }
+
+    /* ── Docs Section ── */
+    .docs-header {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .doc-loading, .no-docs {
+      font-size: 13px;
+      color: #9CA3AF;
+      padding: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .doc-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-top: 1px solid #f9fafb;
+    }
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-name { font-size: 14px; font-weight: 600; color: #111827; margin-bottom: 5px; }
+    .doc-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    .doc-type {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .type-demande_stage   { background: #FEF3C7; color: #92400E; }
+    .type-convention_stage { background: #DBEAFE; color: #1E40AF; }
+    .type-cv              { background: #F3F4F6; color: #374151; }
+    .type-convention_signee { background: #D1FAE5; color: #065F46; }
+    .type-autre           { background: #F3F4F6; color: #6B7280; }
+
+    .signed-chip  { font-size: 11px; background: #D1FAE5; color: #065F46; padding: 3px 9px; border-radius: 999px; font-weight: 700; }
+    .pending-chip { font-size: 11px; background: #FEF3C7; color: #92400E; padding: 3px 9px; border-radius: 999px; font-weight: 600; }
+
+    .doc-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .btn-icon {
+      width: 32px; height: 32px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 9px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #9CA3AF;
+      transition: all 0.2s;
+    }
+    .btn-icon:hover { background: #f0fdf4; color: #059669; border-color: #059669; }
+
+    .btn-sign {
+      padding: 7px 16px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: white;
+      border: none;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 3px 10px rgba(5,150,105,0.3);
+    }
+    .btn-sign:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(5,150,105,0.4); }
+
+    /* ── Sign Form ── */
+    .sign-form {
+      margin-top: 16px;
+      padding: 18px;
+      background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+      border: 1px solid #A7F3D0;
+      border-radius: 12px;
+      animation: fadeUp 0.3s ease both;
+    }
+    .sign-form h4 { margin: 0 0 14px; font-size: 15px; color: #065F46; font-weight: 700; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #374151; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #D1FAE5;
+      border-radius: 10px;
+      font-size: 14px;
+      background: white;
+      outline: none;
+      transition: all 0.2s;
+      box-sizing: border-box;
+    }
+    .form-group input:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(5,150,105,0.12); }
+
+    .sign-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+    .btn-secondary {
+      padding: 8px 18px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 9px;
+      background: white;
+      color: #374151;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: #f9fafb; border-color: #374151; }
+    .btn-primary {
+      padding: 9px 20px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: white;
+      border: none;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 3px 10px rgba(5,150,105,0.3);
+    }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(5,150,105,0.4); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .alert { margin-top: 12px; padding: 10px 14px; border-radius: 10px; font-size: 13px; }
+    .alert-success { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+    .alert-error   { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+
+    /* ── Preview Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(5px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.25);
+      max-width: 840px; width: 100%;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 22px;
+      background: linear-gradient(135deg, #064e3b, #065f46);
+    }
+    .modal-header h3 { margin: 0; font-size: 16px; color: white; font-weight: 700; }
+    .modal-header .btn-secondary {
+      border: 1.5px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    .modal-header .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+    .modal-body { flex: 1; overflow: auto; }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 22px; height: 22px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .spinner-sm { width: 14px; height: 14px; border-width: 2px; }
+
+    @media (max-width: 768px) {
+      .page-header { flex-direction: column; gap: 14px; padding: 20px; }
+      .dossiers-grid { grid-template-columns: 1fr; }
+    }
+  `]
+})
+export class DossiersComponent implements OnInit {
+  dossiers: DossierEntry[] = [];
+  loading = true;
+
+  preview: { visible: boolean; name: string; content: string; mime: string } = {
+    visible: false, name: '', content: '', mime: ''
+  };
+
+  private apiUrl = environment.apiUrl;
+
+  constructor(
+    private matchingService: MatchingService,
+    private candidateService: CandidateService
+  ) {}
+
+  ngOnInit(): void {
+    this.matchingService.getApplications().subscribe(apps => {
+      const accepted = apps.filter(a => a.status === 'offre_acceptee');
+      this.dossiers = accepted.map(app => ({
+        application: app,
+        documents: [],
+        docsLoaded: false,
+        signing: false,
+        signSuccess: '',
+        signError: '',
+        showSignForm: false,
+        signatoryName: '',
+        signatoryTitle: 'Responsable RH'
+      }));
+      this.loading = false;
+      this.loadAllDocuments();
+    });
+  }
+
+  private loadAllDocuments(): void {
+    this.dossiers.forEach(entry => {
+      const candidateId = entry.application.candidateId;
+      if (!candidateId) { entry.docsLoaded = true; return; }
+      this.candidateService.getCandidateFull(candidateId).subscribe({
+        next: candidate => {
+          entry.documents = (candidate.documents || []);
+          entry.docsLoaded = true;
+        },
+        error: () => { entry.docsLoaded = true; }
+      });
+    });
+  }
+
+  getInitials(app: Application): string {
+    const first = app.candidate?.firstName?.[0] || '';
+    const last = app.candidate?.lastName?.[0] || '';
+    return (first + last).toUpperCase() || '?';
+  }
+
+  getDocTypeLabel(type: string): string {
+    const labels: Record<string, string> = {
+      demande_stage: 'Demande de stage',
+      convention_stage: 'Convention de stage',
+      convention_signee: 'Convention signée',
+      cv: 'CV',
+      lettre_motivation: 'Lettre de motivation',
+      attestation: 'Attestation',
+      autre: 'Autre'
+    };
+    return labels[type] || type;
+  }
+
+  toggleSignForm(entry: DossierEntry): void {
+    entry.showSignForm = !entry.showSignForm;
+    entry.signSuccess = '';
+    entry.signError = '';
+  }
+
+  signDocument(entry: DossierEntry): void {
+    const unsignedDoc = entry.documents.find(
+      d => !d.isSigned && (d.type === 'demande_stage' || d.type === 'convention_stage')
+    );
+    if (!unsignedDoc) return;
+
+    const candidateId = entry.application.candidateId;
+    entry.signing = true;
+    entry.signError = '';
+
+    this.candidateService.generateSignedInternshipRequest(candidateId, unsignedDoc.id, {
+      signatoryName: entry.signatoryName,
+      signatoryTitle: entry.signatoryTitle || 'Responsable RH'
+    }).subscribe({
+      next: () => {
+        entry.signing = false;
+        entry.signSuccess = 'Document signé et envoyé au candidat avec succès.';
+        entry.showSignForm = false;
+        // Reload documents
+        this.candidateService.getCandidateFull(candidateId).subscribe({
+          next: candidate => { entry.documents = candidate.documents || []; },
+          error: () => {}
+        });
+      },
+      error: (err: any) => {
+        entry.signing = false;
+        entry.signError = err?.error?.message || 'Erreur lors de la signature.';
+      }
+    });
+  }
+
+  previewDoc(entry: DossierEntry, doc: any): void {
+    if (doc.content) {
+      this.preview = {
+        visible: true,
+        name: doc.name,
+        content: doc.content,
+        mime: this.detectMime(doc.name)
+      };
+      return;
+    }
+    this.candidateService.downloadDocument(entry.application.candidateId, doc.id).subscribe({
+      next: resp => {
+        this.preview = {
+          visible: true,
+          name: resp.name || doc.name,
+          content: resp.content || '',
+          mime: this.detectMime(resp.name || doc.name)
+        };
+      },
+      error: () => alert('Impossible de charger le document.')
+    });
+  }
+
+  downloadDoc(entry: DossierEntry, doc: any): void {
+    const doDownload = (name: string, content: string) => {
+      const isBase64 = /^[A-Za-z0-9+/=\r\n]+$/.test(content.trim());
+      let blob: Blob;
+      if (isBase64) {
+        const bytes = atob(content.replace(/\s/g, ''));
+        const arr = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+        blob = new Blob([arr]);
+      } else {
+        blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    if (doc.content) { doDownload(doc.name, doc.content); return; }
+
+    this.candidateService.downloadDocument(entry.application.candidateId, doc.id).subscribe({
+      next: resp => doDownload(resp.name || doc.name, resp.content || ''),
+      error: () => alert('Erreur lors du téléchargement.')
+    });
+  }
+
+  closePreview(): void {
+    this.preview = { visible: false, name: '', content: '', mime: '' };
+  }
+
+  getDataUrl(): string {
+    if (!this.preview.content) return '';
+    const isBase64 = /^[A-Za-z0-9+/=\r\n]+$/.test(this.preview.content.trim());
+    if (isBase64) return `data:${this.preview.mime};base64,${this.preview.content.replace(/\s/g, '')}`;
+    return `data:${this.preview.mime};charset=utf-8,${encodeURIComponent(this.preview.content)}`;
+  }
+
+  private detectMime(filename: string): string {
+    const lower = (filename || '').toLowerCase();
+    if (lower.endsWith('.pdf')) return 'application/pdf';
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+    if (lower.endsWith('.html') || lower.endsWith('.htm')) return 'text/html';
+    if (lower.endsWith('.txt')) return 'text/plain';
+    return 'application/octet-stream';
+  }
+}

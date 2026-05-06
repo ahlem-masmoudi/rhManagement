@@ -24,36 +24,42 @@ import { Offer } from '../../models';
       </div>
 
       <!-- Filters -->
-      <div class="card mb-lg">
-        <div class="filters-grid">
+      <div class="filters-bar-card">
+        <div class="filter-search-wrap">
+          <svg class="filter-icon" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+          </svg>
           <input type="search" placeholder="Rechercher une offre..." class="search-input" [(ngModel)]="searchTerm" (input)="filterOffers()">
-          <select [(ngModel)]="selectedDepartment" (change)="filterOffers()">
-            <option value="">Tous les départements</option>
-            <option value="Consulting ERP">Consulting ERP</option>
-            <option value="Système management Qualité">Système management Qualité</option>
-            <option value="Intelligence artificielle">Intelligence artificielle</option>
-            <option value="Data Analytics / Business Intelligence">Data Analytics / Business Intelligence</option>
-            <option value="Développement informatique">Développement informatique</option>
-            <option value="Marketing & Commercial">Marketing & Commercial</option>
-          </select>
-          <select [(ngModel)]="selectedStatus" (change)="filterOffers()">
-            <option value="">Tous les statuts</option>
-            <option value="published">Publiée</option>
-            <option value="draft">Brouillon</option>
-            <option value="closed">Fermée</option>
-          </select>
         </div>
+        <select [(ngModel)]="selectedDepartment" (change)="filterOffers()">
+          <option value="">Tous les départements</option>
+          <option value="Consulting ERP">Consulting ERP</option>
+          <option value="Système management Qualité">Système management Qualité</option>
+          <option value="Intelligence artificielle">Intelligence artificielle</option>
+          <option value="Data Analytics / Business Intelligence">Data Analytics / Business Intelligence</option>
+          <option value="Développement informatique">Développement informatique</option>
+          <option value="Marketing & Commercial">Marketing & Commercial</option>
+        </select>
+        <select [(ngModel)]="selectedStatus" (change)="filterOffers()">
+          <option value="">Tous les statuts</option>
+          <option value="published">Publiée</option>
+          <option value="draft">Brouillon</option>
+          <option value="closed">Fermée</option>
+        </select>
       </div>
 
       <!-- Offers Grid -->
-      <div *ngIf="offers.length === 0" class="card">
-        <p style="text-align: center; padding: 40px; color: #666;">
-          Aucune offre ne correspond à vos critères de recherche.
-        </p>
+      <div *ngIf="offers.length === 0" class="empty-card">
+        <svg width="48" height="48" fill="none" viewBox="0 0 48 48" style="margin:0 auto 16px;display:block">
+          <circle cx="24" cy="24" r="24" fill="#EEF2FF"/>
+          <path d="M16 14h16v20H16V14z" fill="#C7D2FE" stroke="#6366f1" stroke-width="1.5"/>
+          <path d="M20 20h8M20 25h5" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <p style="color:#6B7280;font-size:15px">Aucune offre ne correspond à vos critères.</p>
       </div>
-      
+
       <div class="grid-3">
-        <div *ngFor="let offer of offers" class="card offer-card">
+        <div *ngFor="let offer of offers; let i = index" class="card offer-card" [style]="'--i:' + i">
           <div class="offer-header">
             <h3 class="offer-title">{{ offer.title }}</h3>
             <span class="badge badge-success" *ngIf="offer.status === 'publiee' || offer.status === 'published'">Publiée</span>
@@ -76,8 +82,8 @@ import { Offer } from '../../models';
             </div>
           </div>
           
-          <div class="meta-item" style="margin-top: 8px; color: #4F46E5; font-weight: 500;">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20" style="margin-right: 4px;">
+          <div class="dept-badge">
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
               <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
             </svg>
             {{ offer.department }}
@@ -140,7 +146,7 @@ import { Offer } from '../../models';
 
               <div class="form-group">
                 <label>Localisation *</label>
-                <input type="text" [(ngModel)]="newOffer.location" placeholder="Paris, Lyon...">
+                <input type="text" [(ngModel)]="newOffer.location" placeholder="Tunis, Sfax...">
               </div>
             </div>
 
@@ -191,73 +197,221 @@ import { Offer } from '../../models';
     </div>
   `,
   styles: [`
-    .offres-page {
-      max-width: 1400px;
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pageFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes modalSlideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
+    /* pageFadeIn instead of fadeUp to avoid creating a stacking context that breaks position:fixed modals */
+    .offres-page { max-width: 1400px; animation: pageFadeIn 0.4s ease both; }
+
+    /* ── Page Header ── */
     .page-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: var(--spacing-xl);
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 28px 32px;
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 55%, #24243e 100%);
+      border-radius: 18px;
+      position: relative;
+      overflow: hidden;
     }
-
-    .page-header h1 {
-      margin-bottom: var(--spacing-xs);
+    .page-header::before {
+      content: '';
+      position: absolute;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(99,102,241,0.35) 0%, transparent 70%);
+      top: -120px; right: -80px;
+      border-radius: 50%;
+      pointer-events: none;
     }
+    .page-header h1 { color: white; font-size: 24px; font-weight: 700; margin: 0 0 5px; }
+    .page-header .text-muted { color: rgba(255,255,255,0.55); font-size: 13px; margin: 0; }
 
-    .filters-grid {
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      border: none;
+      padding: 11px 22px;
+      border-radius: 11px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s;
+      box-shadow: 0 4px 18px rgba(99,102,241,0.45);
+      white-space: nowrap;
+      position: relative;
+      z-index: 1;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(99,102,241,0.55); }
+
+    /* ── Filters ── */
+    .filters-bar-card {
+      background: white;
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 22px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      border: 1px solid rgba(99,102,241,0.09);
       display: grid;
       grid-template-columns: 2fr 1fr 1fr;
-      gap: var(--spacing-md);
+      gap: 12px;
+      align-items: center;
     }
-
+    .filter-search-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .filter-icon {
+      position: absolute;
+      left: 12px;
+      color: #9CA3AF;
+      pointer-events: none;
+    }
     .search-input {
       width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-md);
+      padding: 10px 14px 10px 36px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #f9fafb;
+      color: #374151;
+      transition: all 0.2s;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .filters-bar-card select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #f9fafb;
+      color: #374151;
+      transition: all 0.2s;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .search-input:focus, .filters-bar-card select:focus {
+      border-color: #6366f1;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
     }
 
-    /* Offer Cards */
+    /* ── Cards Grid ── */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+    }
+
+    .empty-card {
+      background: white;
+      border-radius: 16px;
+      padding: 60px 24px;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
     .offer-card {
+      background: white;
+      border-radius: 16px;
+      padding: 22px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 2px 14px rgba(0,0,0,0.05);
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-md);
+      gap: 14px;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: fadeUp 0.5s calc(var(--i, 0) * 0.06s) both;
+      position: relative;
+      overflow: hidden;
     }
+    .offer-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+      transform-origin: left;
+    }
+    .offer-card:hover {
+      box-shadow: 0 14px 42px rgba(99,102,241,0.14);
+      transform: translateY(-5px);
+      border-color: rgba(99,102,241,0.2);
+    }
+    .offer-card:hover::before { transform: scaleX(1); }
 
     .offer-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: var(--spacing-md);
+      gap: 12px;
     }
-
     .offer-title {
       font-size: 16px;
-      font-weight: 600;
-      color: var(--gray-900);
+      font-weight: 700;
+      color: #111827;
       margin: 0;
       flex: 1;
+      line-height: 1.4;
     }
-
-    .offer-meta {
-      display: flex;
-      gap: var(--spacing-md);
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+      letter-spacing: 0.3px;
     }
+    .badge-success { background: #D1FAE5; color: #065F46; }
+    .badge-gray    { background: #F3F4F6; color: #6B7280; }
+    .badge-warning { background: #FEF3C7; color: #92400E; }
 
+    .offer-meta { display: flex; gap: 16px; flex-wrap: wrap; }
     .meta-item {
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 13px;
-      color: var(--gray-500);
+      color: #6B7280;
+    }
+    .dept-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+      color: #6366f1;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid rgba(99,102,241,0.15);
     }
 
     .offer-description {
-      font-size: 14px;
-      color: var(--gray-600);
-      line-height: 1.5;
+      font-size: 13px;
+      color: #6B7280;
+      line-height: 1.6;
       margin: 0;
       overflow: hidden;
       display: -webkit-box;
@@ -272,135 +426,183 @@ import { Offer } from '../../models';
     .desc-toggle {
       background: none;
       border: none;
-      color: #4F46E5;
-      font-size: 0.78rem;
+      color: #6366f1;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       padding: 2px 0;
-      margin-top: 2px;
       transition: color 0.2s;
     }
-    .desc-toggle:hover { color: #3730a3; }
+    .desc-toggle:hover { color: #4338ca; }
 
     .offer-stats {
       display: flex;
-      gap: var(--spacing-lg);
-      padding-top: var(--spacing-md);
-      border-top: 1px solid var(--gray-200);
+      gap: 24px;
+      padding: 14px 0;
+      border-top: 1px solid #f3f4f6;
+      border-bottom: 1px solid #f3f4f6;
     }
-
-    .stat {
-      text-align: center;
-    }
-
+    .stat { display: flex; flex-direction: column; gap: 2px; }
     .stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--gray-900);
+      font-size: 22px;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.5px;
     }
-
     .stat-label {
-      font-size: 12px;
-      color: var(--gray-500);
-      margin-top: 4px;
+      font-size: 11px;
+      color: #9CA3AF;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .offer-actions {
       display: flex;
-      gap: var(--spacing-sm);
-      padding-top: var(--spacing-md);
-      border-top: 1px solid var(--gray-200);
+      gap: 8px;
+      margin-top: auto;
     }
+    .btn-secondary {
+      flex: 1;
+      padding: 9px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 9px;
+      background: white;
+      color: #374151;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .btn-secondary:hover { background: #f5f3ff; border-color: #6366f1; color: #6366f1; }
 
-    /* Modal */
+    .btn-danger {
+      flex: 1;
+      padding: 9px 14px;
+      border: 1.5px solid #fee2e2;
+      border-radius: 9px;
+      background: #fff5f5;
+      color: #dc2626;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .btn-danger:hover { background: #fee2e2; border-color: #dc2626; }
+
+    /* ── Modal ── */
     .modal {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(5px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 1000;
       padding: 20px;
+      animation: fadeIn 0.2s ease both;
     }
-
     .modal-content {
       background: white;
-      border-radius: var(--radius-lg);
+      border-radius: 20px;
       max-width: 800px;
       width: 100%;
       max-height: 90vh;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+      animation: modalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
     }
-
     .modal-header {
-      padding: 24px;
-      border-bottom: 1px solid var(--gray-200);
+      padding: 22px 28px;
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-
-    .modal-header h2 {
-      margin: 0;
-      font-size: 20px;
-    }
-
+    .modal-header h2 { margin: 0; font-size: 18px; color: white; font-weight: 700; }
     .close-btn {
-      background: none;
+      background: rgba(255,255,255,0.12);
       border: none;
+      border-radius: 8px;
       cursor: pointer;
-      color: var(--gray-400);
-      padding: 4px;
+      color: white;
+      padding: 6px;
+      width: 32px; height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
     }
+    .close-btn:hover { background: rgba(255,255,255,0.22); }
 
-    .modal-body {
-      padding: 24px;
-      overflow-y: auto;
+    .modal-body { padding: 24px 28px; overflow-y: auto; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #374151; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: all 0.2s;
+      outline: none;
+      box-sizing: border-box;
+      background: #f9fafb;
+      color: #111827;
     }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: #6366f1;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+    }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
     .modal-footer {
-      padding: 24px;
-      border-top: 1px solid var(--gray-200);
+      padding: 16px 28px;
+      border-top: 1px solid #f3f4f6;
       display: flex;
       justify-content: flex-end;
-      gap: var(--spacing-md);
+      gap: 10px;
+      background: #fafafa;
     }
+    .modal-footer .btn-secondary { flex: 0; padding: 10px 22px; }
+    .modal-footer .btn-primary   { flex: 0; }
 
-    .skills-input {
-      display: flex;
-      gap: 8px;
-    }
-
+    .skills-input { display: flex; gap: 8px; }
     .skills-input input {
       flex: 1;
-      padding: 8px 12px;
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
       font-size: 14px;
+      background: #f9fafb;
+      outline: none;
+      transition: all 0.2s;
     }
-
-    .skills-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
+    .skills-input input:focus {
+      border-color: #6366f1;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
     }
-
+    .skills-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
     .skill-tag {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 10px;
-      background: #eef2ff;
+      padding: 5px 12px;
+      background: #EEF2FF;
       color: #4338ca;
       border-radius: 20px;
-      font-size: 13px;
-      font-weight: 500;
+      font-size: 12px;
+      font-weight: 600;
     }
-
     .remove-skill {
       background: none;
       border: none;
@@ -409,34 +611,29 @@ import { Offer } from '../../models';
       font-size: 16px;
       line-height: 1;
       padding: 0;
+      opacity: 0.7;
+      transition: opacity 0.15s;
     }
+    .remove-skill:hover { opacity: 1; }
+    .text-sm.text-muted { font-size: 12px; color: #9CA3AF; margin-top: 6px; }
 
     @media (max-width: 768px) {
-      .filters-grid { grid-template-columns: 1fr; }
-      .page-header { flex-direction: column; gap: var(--spacing-md); }
-      .modal-content { max-height: 95vh; border-radius: var(--radius-md); }
+      .filters-bar-card { grid-template-columns: 1fr; }
+      .page-header { flex-direction: column; gap: 16px; padding: 20px; }
+      .modal-content { max-height: 95vh; border-radius: 14px; }
       .modal-header, .modal-body, .modal-footer { padding: 16px; }
-      .offer-stats { flex-wrap: wrap; gap: var(--spacing-md); }
+      .offer-stats { flex-wrap: wrap; }
       .offer-actions { flex-wrap: wrap; }
     }
-
     @media (max-width: 480px) {
-      .modal { padding: 4px; align-items: flex-end; }
-      .modal-content { border-radius: 16px 16px 0 0; max-height: 96vh; margin: 0; width: 100%; }
+      .modal { padding: 0; align-items: flex-end; }
+      .modal-content { border-radius: 20px 20px 0 0; max-height: 96vh; width: 100%; }
       .modal-footer { flex-direction: column; }
       .modal-footer button { width: 100%; justify-content: center; }
       .skills-input { flex-direction: column; }
-      .skills-input input { width: 100%; }
-      .offer-meta { flex-wrap: wrap; gap: 8px; }
-      .offer-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-      .page-header h1 { font-size: 18px; }
-      .header-actions { width: 100%; }
-      .header-actions button { flex: 1; justify-content: center; }
-    }
-
-    @media (max-width: 360px) {
-      .modal-header, .modal-body, .modal-footer { padding: 12px; }
-      .stat-value { font-size: 20px; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .offer-header { flex-direction: column; align-items: flex-start; }
+      .page-header h1 { font-size: 20px; }
     }
   `]
 })

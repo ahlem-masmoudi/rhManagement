@@ -165,7 +165,16 @@ function formatMatchingScore(app) {
     semantic,
     rules,
     source: 'python',
-    explanations: buildMatchingExplanation(app)
+    explanations: buildMatchingExplanation(app),
+    breakdown: {
+      skills_score:       breakdown.skills_score       ?? null,
+      experience_score:   breakdown.experience_score   ?? null,
+      education_score:    breakdown.education_score    ?? null,
+      semantic_score:     breakdown.semantic_score     ?? null,
+      title_score:        breakdown.title_score        ?? null,
+      bonus_score:        breakdown.bonus_score        ?? null,
+      completeness_score: breakdown.completeness_score ?? null
+    }
   };
 }
 
@@ -200,6 +209,7 @@ exports.getAllApplications = async (req, res) => {
           lastName: userObj.lastName || '',
           email: userObj.email || '',
           school: candidateObj.school || '',
+          location: candidateObj.location || '',
           skills: candidateObj.skills || []
         },
         offerId: offerObj._id || null,
@@ -260,6 +270,7 @@ exports.getApplicationsByOffer = async (req, res) => {
         lastName: app.candidate.userId.lastName,
         email: app.candidate.userId.email,
         school: app.candidate.school || '',
+        location: app.candidate.location || '',
         skills: app.candidate.skills || []
       },
       offerId: app.offer._id,

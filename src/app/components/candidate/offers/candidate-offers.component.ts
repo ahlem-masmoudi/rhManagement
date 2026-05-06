@@ -11,272 +11,303 @@ import { Offer } from '../../../models';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="candidate-offers-page">
-      <div class="page-header">
-        <div>
-          <h1>Offres recommandees</h1>
-          <p class="text-muted">Nous affichons uniquement les offres compatibles avec votre profil et vos competences.</p>
+    <div class="page-wrap">
+
+      <!-- ── Hero ── -->
+      <section class="hero">
+        <div class="hero-blobs">
+          <div class="blob blob-1"></div>
+          <div class="blob blob-2"></div>
+          <div class="blob blob-3"></div>
         </div>
-      </div>
+        <div class="hero-content">
+          <div class="hero-badge">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+            </svg>
+            Offres recommandées pour vous
+          </div>
+          <h1 class="hero-title">
+            <span *ngIf="!isLoading">{{ filteredOffers.length }}</span>
+            <span *ngIf="isLoading" class="hero-count-skeleton"></span>
+            opportunité{{ filteredOffers.length !== 1 ? 's' : '' }} compatible{{ filteredOffers.length !== 1 ? 's' : '' }}
+          </h1>
+          <p class="hero-sub">Sélectionnées selon vos compétences et votre profil</p>
 
-      <div *ngIf="errorMessage" class="card feedback-card error-card">
-        <strong>Impossible de charger les offres compatibles.</strong>
-        <p>{{ errorMessage }}</p>
-      </div>
-
-      <div *ngIf="!errorMessage" class="card filters-section mb-lg">
-        <div class="search-row">
-          <div class="search-box">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+          <!-- Search in hero -->
+          <div class="hero-search">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
             </svg>
             <input
               type="search"
               [(ngModel)]="searchQuery"
               (input)="applyFilters()"
-              placeholder="Rechercher par titre, departement, localisation...">
+              placeholder="Titre, département, ville…">
+            <button *ngIf="searchQuery" class="search-clear" (click)="searchQuery=''; applyFilters()">✕</button>
           </div>
         </div>
+      </section>
 
-        <div class="filters-row">
+      <!-- ── Filters strip ── -->
+      <div class="filters-strip">
+        <div class="filters-left">
+          <button class="filter-all-btn" [class.active]="!selectedDepartment && !selectedLocation && !selectedDuration" (click)="resetFilters()">
+            Tous
+          </button>
           <div class="filter-group">
-            <label>Departement</label>
-            <select [(ngModel)]="selectedDepartment" (change)="applyFilters()">
-              <option value="">Tous</option>
-              <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+            <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20" class="filter-icon">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4z" clip-rule="evenodd"/>
+            </svg>
+            <select class="filter-select" [(ngModel)]="selectedDepartment" (change)="applyFilters()">
+              <option value="">Département</option>
+              <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
             </select>
           </div>
-
           <div class="filter-group">
-            <label>Localisation</label>
-            <select [(ngModel)]="selectedLocation" (change)="applyFilters()">
-              <option value="">Toutes</option>
-              <option *ngFor="let loc of locations" [value]="loc">{{ loc }}</option>
+            <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20" class="filter-icon">
+              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+            </svg>
+            <select class="filter-select" [(ngModel)]="selectedLocation" (change)="applyFilters()">
+              <option value="">Localisation</option>
+              <option *ngFor="let l of locations" [value]="l">{{ l }}</option>
             </select>
           </div>
-
           <div class="filter-group">
-            <label>Duree</label>
-            <select [(ngModel)]="selectedDuration" (change)="applyFilters()">
-              <option value="">Toutes</option>
+            <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20" class="filter-icon">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+            </svg>
+            <select class="filter-select" [(ngModel)]="selectedDuration" (change)="applyFilters()">
+              <option value="">Durée</option>
               <option value="3">3 mois</option>
               <option value="4">4 mois</option>
               <option value="6">6 mois</option>
             </select>
           </div>
+        </div>
+        <div class="filters-right">
+          <span class="results-pill">{{ filteredOffers.length }} résultat{{ filteredOffers.length !== 1 ? 's' : '' }}</span>
+        </div>
+      </div>
 
-          <button class="btn btn-secondary" (click)="resetFilters()">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+      <!-- ── Loading skeletons ── -->
+      <div class="offers-grid" *ngIf="isLoading">
+        <div class="offer-card skeleton-card" *ngFor="let i of [1,2,3,4,5,6]">
+          <div class="sk sk-title"></div>
+          <div class="sk sk-sub"></div>
+          <div class="sk sk-body"></div>
+          <div class="sk sk-body short"></div>
+        </div>
+      </div>
+
+      <!-- ── Error ── -->
+      <div *ngIf="errorMessage" class="error-banner">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        {{ errorMessage }}
+      </div>
+
+      <!-- ── Empty state ── -->
+      <div *ngIf="!isLoading && !errorMessage && filteredOffers.length === 0" class="empty-state">
+        <div class="empty-orbit">
+          <div class="orbit-ring ring-1"></div>
+          <div class="orbit-ring ring-2"></div>
+          <div class="orbit-center">
+            <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#a5b4fc" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
-            Reinitialiser
-          </button>
+          </div>
         </div>
+        <h3>Aucune offre trouvée</h3>
+        <p *ngIf="candidateSkillsCount === 0">Complétez votre profil avec des compétences pour recevoir des recommandations.</p>
+        <p *ngIf="candidateSkillsCount > 0">Aucune offre ne correspond à vos filtres actuels.</p>
+        <button class="btn-reset" (click)="resetFilters()">Réinitialiser les filtres</button>
       </div>
 
-      <div *ngIf="isLoading" class="card feedback-card">
-        <p>Analyse de votre profil et recherche des offres compatibles...</p>
-      </div>
+      <!-- ── Offers grid ── -->
+      <div class="offers-grid" *ngIf="!isLoading && !errorMessage && filteredOffers.length > 0">
+        <div
+          *ngFor="let offer of filteredOffers; let i = index"
+          class="offer-card"
+          [style]="'--i:' + i"
+          [class.applied]="hasApplied(offer.id)">
 
-      <ng-container *ngIf="!isLoading && !errorMessage">
-        <div class="results-header">
-          <p class="results-count">{{ filteredOffers.length }} offre(s) compatible(s)</p>
-        </div>
+          <!-- Score ring -->
+          <div class="score-ring-wrap">
+            <svg class="score-ring" viewBox="0 0 72 72" width="72" height="72">
+              <circle cx="36" cy="36" r="28" class="ring-bg"/>
+              <circle cx="36" cy="36" r="28" class="ring-fg"
+                [style]="getRingStyle(offer.compatibilityScore)"
+                [attr.stroke]="getRingStroke(offer.compatibilityScore)"/>
+            </svg>
+            <div class="score-value" [style.color]="getRingStroke(offer.compatibilityScore)">
+              {{ offer.compatibilityScore || 0 }}<small>%</small>
+            </div>
+          </div>
 
-        <div class="offers-grid" *ngIf="filteredOffers.length > 0; else emptyState">
-          <div *ngFor="let offer of filteredOffers" class="offer-card card">
-            <div class="offer-header">
-              <div class="offer-title-block">
-                <h3>{{ offer.title }}</h3>
-                <span class="compatibility-label">{{ offer.compatibilityLabel || 'Compatible' }}</span>
-              </div>
-              <div class="score-badge" [style.background]="getScoreColor(offer.compatibilityScore)">
-                {{ offer.compatibilityScore || 0 }}%
+          <!-- Card body -->
+          <div class="card-body">
+            <div class="card-top">
+              <div class="type-chip type-{{ offer.type }}">{{ offer.type }}</div>
+              <div class="compat-label" [style.color]="getRingStroke(offer.compatibilityScore)">
+                {{ offer.compatibilityLabel || 'Compatible' }}
               </div>
             </div>
 
-            <div class="offer-company">
-              <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"/>
-              </svg>
-              <span>{{ offer.department }}</span>
-            </div>
+            <h3 class="offer-title">{{ offer.title }}</h3>
 
             <div class="offer-meta">
-              <div class="meta-item">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+              <span class="meta-item">
+                <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4z" clip-rule="evenodd"/>
+                </svg>
+                {{ offer.department }}
+              </span>
+              <span class="meta-dot">·</span>
+              <span class="meta-item">
+                <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
                 </svg>
                 {{ offer.location }}
-              </div>
-              <div class="meta-item">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+              </span>
+              <span class="meta-dot">·</span>
+              <span class="meta-item">
+                <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
                 </svg>
                 {{ offer.duration }}
-              </div>
-              <div class="meta-item">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+              </span>
+            </div>
+
+            <p class="offer-desc">{{ offer.description }}</p>
+
+            <!-- Matched skills -->
+            <div class="skills-row" *ngIf="offer.matchedSkills?.length">
+              <span class="skills-label matched-label">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                 </svg>
-                Des le {{ formatDate(offer.startDate) }}
+                Vos atouts
+              </span>
+              <div class="chips">
+                <span *ngFor="let s of offer.matchedSkills" class="chip chip-match">{{ s }}</span>
               </div>
             </div>
 
-            <p class="offer-description">{{ offer.description }}</p>
-
-            <div class="match-section" *ngIf="offer.matchedSkills?.length">
-              <div class="match-title">Competences compatibles</div>
-              <div class="offer-skills">
-                <span *ngFor="let skill of offer.matchedSkills" class="skill-tag matched-tag">
-                  {{ skill }}
-                </span>
-              </div>
-            </div>
-
-            <div class="match-section" *ngIf="offer.missingSkills?.length">
-              <div class="match-title">Competences demandees</div>
-              <div class="offer-skills">
-                <ng-container *ngFor="let req of offer.missingSkills; let i = index">
-                  <span
-                    *ngIf="i < 4 || expandedSkills.has(offer.id)"
-                    class="skill-tag missing-tag">
-                    {{ req }}
-                  </span>
+            <!-- Missing skills -->
+            <div class="skills-row" *ngIf="offer.missingSkills?.length">
+              <span class="skills-label missing-label">À acquérir</span>
+              <div class="chips">
+                <ng-container *ngFor="let s of offer.missingSkills; let j = index">
+                  <span *ngIf="j < 3 || expandedSkills.has(offer.id)" class="chip chip-miss">{{ s }}</span>
                 </ng-container>
-                <span
-                  *ngIf="(offer.missingSkills || []).length > 4 && !expandedSkills.has(offer.id)"
-                  class="more-skills clickable"
-                  (click)="toggleSkills(offer.id)">
-                  +{{ (offer.missingSkills || []).length - 4 }} voir tout
-                </span>
-                <span
-                  *ngIf="(offer.missingSkills || []).length > 4 && expandedSkills.has(offer.id)"
-                  class="more-skills clickable"
-                  (click)="toggleSkills(offer.id)">
-                  Reduire
+                <span *ngIf="(offer.missingSkills||[]).length > 3 && !expandedSkills.has(offer.id)"
+                      class="chip chip-more" (click)="toggleSkills(offer.id)">
+                  +{{ (offer.missingSkills||[]).length - 3 }}
                 </span>
               </div>
             </div>
 
-            <div class="offer-footer">
-              <div class="offer-stats">
-                <span class="stat-item">
-                  <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-                  </svg>
-                  {{ offer.applicationsCount }} candidatures
-                </span>
-              </div>
+            <!-- Footer -->
+            <div class="card-footer">
+              <span class="applicants-info">
+                <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+                {{ offer.applicationsCount }} candidature{{ offer.applicationsCount !== 1 ? 's' : '' }}
+              </span>
               <button
-                class="btn btn-primary btn-sm"
-                (click)="applyToOffer(offer)"
-                [disabled]="hasApplied(offer.id)">
-                {{ hasApplied(offer.id) ? 'Deja postule' : 'Postuler' }}
+                class="apply-btn"
+                [class.applied-btn]="hasApplied(offer.id)"
+                [disabled]="hasApplied(offer.id)"
+                (click)="applyToOffer(offer)">
+                <span *ngIf="!hasApplied(offer.id)">
+                  Postuler
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                  </svg>
+                </span>
+                <span *ngIf="hasApplied(offer.id)">
+                  <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Déjà postulé
+                </span>
               </button>
             </div>
           </div>
         </div>
-      </ng-container>
+      </div>
 
-      <ng-template #emptyState>
-        <div class="empty-state">
-          <svg width="64" height="64" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
-          </svg>
-          <h3>Aucune offre disponible pour le moment</h3>
-          <p *ngIf="candidateSkillsCount === 0">
-            Votre profil ne contient pas encore de competences. Completez votre profil pour recevoir des recommandations.
-          </p>
-          <p *ngIf="candidateSkillsCount > 0">
-            Aucune offre active n'a ete trouvee dans le systeme. Revenez plus tard ou contactez l'equipe RH.
-          </p>
-          <p *ngIf="candidateSkillsCount < 0">
-            Verifiez que le serveur backend est demarré et que des offres ont ete creees.
-          </p>
-        </div>
-      </ng-template>
-
-      <!-- Apply Modal -->
+      <!-- ── Apply Modal ── -->
       <div class="modal-backdrop" *ngIf="showApplyModal" (click)="closeApplyModal()">
         <div class="apply-modal" (click)="$event.stopPropagation()">
 
-          <!-- Success state -->
           <div *ngIf="applySuccess" class="apply-success">
-            <div class="success-icon">
-              <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            <div class="success-ring">
+              <svg width="44" height="44" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
               </svg>
             </div>
-            <h3>Candidature envoyee avec succes !</h3>
-            <p>Votre candidature pour <strong>{{ applyingToOffer?.title }}</strong> a bien ete transmise. L'equipe RH vous contactera prochainement.</p>
-            <button class="btn btn-primary" (click)="closeApplyModal()">Fermer</button>
+            <h3>Candidature envoyée !</h3>
+            <p>Votre candidature pour <strong>{{ applyingToOffer?.title }}</strong> a bien été transmise. L'équipe RH vous contactera par email.</p>
+            <button class="apply-btn" style="width:100%;justify-content:center" (click)="closeApplyModal()">Fermer</button>
           </div>
 
-          <!-- Form state -->
           <ng-container *ngIf="!applySuccess">
-            <div class="apply-modal-header">
+            <div class="modal-header">
               <div>
-                <h2>Postuler a l'offre</h2>
-                <p class="text-muted">{{ applyingToOffer?.title }} — {{ applyingToOffer?.department }}</p>
+                <div class="type-chip type-{{ applyingToOffer?.type }}" style="margin-bottom:6px">{{ applyingToOffer?.type }}</div>
+                <h2>{{ applyingToOffer?.title }}</h2>
+                <p class="modal-sub">{{ applyingToOffer?.department }} · {{ applyingToOffer?.location }}</p>
               </div>
-              <button class="close-btn" (click)="closeApplyModal()">
-                <svg width="22" height="22" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                </svg>
-              </button>
+              <button class="close-btn" (click)="closeApplyModal()">✕</button>
             </div>
 
-            <div class="apply-modal-body">
-              <!-- CV Upload -->
+            <div class="modal-body">
               <div class="form-group">
-                <label class="field-label">CV <span class="required">*</span></label>
-                <div
-                  class="drop-zone"
-                  [class.drag-over]="isDraggingOver"
-                  [class.has-file]="cvFile"
-                  (dragover)="onDragOver($event)"
-                  (dragleave)="onDragLeave()"
-                  (drop)="onDrop($event)"
-                  (click)="fileInput.click()">
+                <label class="field-label">CV <span class="req">*</span></label>
+                <div class="drop-zone"
+                     [class.drag-over]="isDraggingOver"
+                     [class.has-file]="cvFile"
+                     (dragover)="onDragOver($event)"
+                     (dragleave)="onDragLeave()"
+                     (drop)="onDrop($event)"
+                     (click)="fileInput.click()">
                   <input #fileInput type="file" accept=".pdf" style="display:none" (change)="onFileSelect($event)">
                   <ng-container *ngIf="!cvFile">
-                    <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" stroke-width="1.5">
+                    <svg width="34" height="34" fill="none" viewBox="0 0 24 24" stroke="#a5b4fc" stroke-width="1.5">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                     </svg>
-                    <p class="drop-zone-text">Glissez votre CV ici ou <span class="link-text">cliquez pour parcourir</span></p>
-                    <p class="drop-zone-hint">PDF uniquement — max 5 Mo</p>
+                    <p class="dz-text">Glissez votre CV ici ou <span class="dz-link">parcourir</span></p>
+                    <p class="dz-hint">PDF · max 5 Mo</p>
                   </ng-container>
                   <ng-container *ngIf="cvFile">
-                    <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#ef4444" stroke-width="1.5">
+                    <svg width="30" height="30" fill="none" viewBox="0 0 24 24" stroke="#ef4444" stroke-width="1.5">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
                     <p class="file-name">{{ cvFile.name }}</p>
-                    <p class="file-size">{{ formatFileSize(cvFile.size) }}</p>
-                    <button type="button" class="remove-file" (click)="removeFile($event)">Supprimer</button>
+                    <p class="dz-hint">{{ formatFileSize(cvFile.size) }}</p>
+                    <button class="remove-file" (click)="removeFile($event)">Supprimer</button>
                   </ng-container>
                 </div>
-                <p *ngIf="applyError && !cvFile" class="field-error-msg">Veuillez joindre votre CV.</p>
               </div>
 
-              <!-- Cover Letter -->
               <div class="form-group">
-                <label class="field-label">Lettre de motivation <span class="optional">(optionnel)</span></label>
-                <textarea
-                  [(ngModel)]="coverLetter"
-                  placeholder="Expliquez pourquoi vous etes interesse par ce poste, vos motivations..."
-                  rows="5"
-                  class="cover-letter-input"></textarea>
+                <label class="field-label">Lettre de motivation <span class="opt">(optionnel)</span></label>
+                <textarea [(ngModel)]="coverLetter" rows="4" class="textarea"
+                  placeholder="Expliquez votre motivation pour ce poste…"></textarea>
               </div>
 
-              <p *ngIf="applyError" class="submit-error">{{ applyError }}</p>
+              <p *ngIf="applyError" class="err-msg">{{ applyError }}</p>
             </div>
 
-            <div class="apply-modal-footer">
-              <button class="btn btn-secondary" (click)="closeApplyModal()" [disabled]="isApplying">Annuler</button>
-              <button class="btn btn-primary" (click)="submitApplication()" [disabled]="isApplying || !cvFile">
+            <div class="modal-footer">
+              <button class="btn-cancel" (click)="closeApplyModal()" [disabled]="isApplying">Annuler</button>
+              <button class="apply-btn" (click)="submitApplication()" [disabled]="isApplying || !cvFile">
                 <span *ngIf="!isApplying">Envoyer ma candidature</span>
-                <span *ngIf="isApplying">Envoi en cours...</span>
+                <span *ngIf="isApplying" class="spinner"></span>
               </button>
             </div>
           </ng-container>
@@ -285,390 +316,635 @@ import { Offer } from '../../../models';
     </div>
   `,
   styles: [`
-    .candidate-offers-page {
-      max-width: 1200px;
-      margin: 0 auto;
+    /* ── Base ── */
+    .page-wrap {
+      min-height: 100vh;
+      background: #f8f7ff;
+      padding-bottom: 60px;
     }
 
-    .page-header {
-      margin-bottom: var(--spacing-xl);
-    }
-
-    .page-header h1 {
-      margin-bottom: var(--spacing-xs);
-    }
-
-    .filters-section,
-    .feedback-card {
-      padding: var(--spacing-lg);
-    }
-
-    .error-card {
-      border: 1px solid #fecaca;
-      background: #fef2f2;
-      color: #991b1b;
-    }
-
-    .error-card p,
-    .feedback-card p {
-      margin: 8px 0 0;
-    }
-
-    .search-row {
-      margin-bottom: var(--spacing-md);
-    }
-
-    .search-box {
+    /* ── Hero ── */
+    .hero {
       position: relative;
+      background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 40%, #6d28d9 100%);
+      padding: 52px 32px 72px;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0; right: 0;
+      height: 48px;
+      background: #f8f7ff;
+      clip-path: ellipse(55% 100% at 50% 100%);
+    }
+
+    .hero-blobs { position: absolute; inset: 0; pointer-events: none; }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(72px);
+      opacity: 0.2;
+      animation: float 10s ease-in-out infinite;
+    }
+    .blob-1 { width: 380px; height: 380px; background: #818cf8; top: -100px; left: -100px; animation-delay: 0s; }
+    .blob-2 { width: 280px; height: 280px; background: #22d3ee; top: -20px; right: -80px; animation-delay: 3s; }
+    .blob-3 { width: 220px; height: 220px; background: #e879f9; bottom: -60px; left: 38%; animation-delay: 6s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-24px) scale(1.06); }
+    }
+
+    .hero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      color: #c7d2fe;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.15);
+      margin-bottom: 18px;
+    }
+
+    .hero-title {
+      font-size: clamp(30px, 5vw, 52px);
+      font-weight: 900;
+      color: white;
+      margin: 0 0 10px;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-count-skeleton {
+      display: inline-block;
+      width: 52px;
+      height: 50px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      vertical-align: middle;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    .hero-sub {
+      color: #a5b4fc;
+      font-size: 15px;
+      margin: 0 0 28px;
+      font-weight: 400;
+    }
+
+    .hero-search {
+      position: relative;
+      max-width: 500px;
+      margin: 0 auto;
       display: flex;
       align-items: center;
     }
 
-    .search-box svg {
+    .hero-search svg {
       position: absolute;
-      left: 16px;
-      color: var(--gray-400);
+      left: 18px;
+      color: #818cf8;
       pointer-events: none;
+      z-index: 1;
     }
 
-    .search-box input {
+    .hero-search input {
       width: 100%;
-      padding: 12px 16px 12px 48px;
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-md);
+      padding: 15px 48px 15px 48px;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(255,255,255,0.18);
+      border-radius: 999px;
+      color: white;
       font-size: 15px;
+      transition: all 0.25s;
+      box-sizing: border-box;
     }
 
-    .filters-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: var(--spacing-md);
-      align-items: end;
+    .hero-search input::placeholder { color: #818cf8; }
+    .hero-search input:focus {
+      outline: none;
+      background: rgba(255,255,255,0.14);
+      border-color: rgba(255,255,255,0.45);
+      box-shadow: 0 0 0 4px rgba(129,140,248,0.15);
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 16px;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 12px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .search-clear:hover { background: rgba(255,255,255,0.25); }
+
+    /* ── Filters strip ── */
+    .filters-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 32px;
+      background: white;
+      border-bottom: 1px solid #ede9fe;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 4px 20px rgba(99,102,241,0.07);
+    }
+
+    .filters-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .filters-left::-webkit-scrollbar { display: none; }
+
+    .filters-right { flex-shrink: 0; }
+
+    .filter-all-btn {
+      white-space: nowrap;
+      background: none;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.18s;
+      flex-shrink: 0;
+    }
+    .filter-all-btn.active,
+    .filter-all-btn:hover {
+      border-color: #6366f1;
+      color: #6366f1;
+      background: #eef2ff;
     }
 
     .filter-group {
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      align-items: center;
+      gap: 0;
+      background: #f8f7ff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 0 14px 0 12px;
+      transition: border-color 0.18s;
+      flex-shrink: 0;
+    }
+    .filter-group:focus-within {
+      border-color: #6366f1;
+      background: #eef2ff;
     }
 
-    .filter-group label {
+    .filter-icon { color: #9ca3af; flex-shrink: 0; }
+
+    .filter-select {
+      background: transparent;
+      border: none;
+      outline: none;
       font-size: 13px;
       font-weight: 600;
-      color: var(--gray-700);
+      color: #374151;
+      cursor: pointer;
+      padding: 7px 20px 7px 8px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' fill='%236b7280' viewBox='0 0 20 20'%3E%3Cpath d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0px center;
+      min-width: 110px;
     }
 
-    .filter-group select {
-      padding: 10px 12px;
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-md);
-      font-size: 14px;
+    .results-pill {
+      font-size: 12px;
+      font-weight: 800;
+      color: #6366f1;
+      background: linear-gradient(135deg, #eef2ff 0%, #ede9fe 100%);
+      padding: 6px 14px;
+      border-radius: 999px;
+      white-space: nowrap;
+      border: 1px solid #c7d2fe;
     }
 
-    .results-header {
-      margin-bottom: var(--spacing-md);
-    }
-
-    .results-count {
-      font-size: 14px;
-      color: var(--gray-600);
-      margin: 0;
-    }
-
+    /* ── Grid ── */
     .offers-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-      gap: var(--spacing-lg);
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 20px;
+      padding: 28px 32px;
+      max-width: 1400px;
+      margin: 0 auto;
     }
 
+    /* ── Offer Card ── */
     .offer-card {
+      background: white;
+      border-radius: 20px;
       display: flex;
-      flex-direction: column;
-      gap: var(--spacing-md);
-      transition: all 0.2s;
+      gap: 16px;
+      padding: 22px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+      border: 1px solid #f1f0fe;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      animation: slideUp 0.45s ease both;
+      animation-delay: calc(var(--i, 0) * 70ms);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .offer-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(99,102,241,0.03) 0%, transparent 60%);
+      pointer-events: none;
     }
 
     .offer-card:hover {
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-2px);
+      transform: translateY(-5px);
+      box-shadow: 0 8px 30px rgba(99,102,241,0.12), 0 2px 8px rgba(0,0,0,0.06);
     }
 
-    .offer-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: var(--spacing-md);
+    .offer-card.applied {
+      border-color: #a7f3d0;
+      background: linear-gradient(135deg, #f0fdf4 0%, white 100%);
     }
 
-    .offer-title-block {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      flex: 1;
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    .offer-header h3 {
-      font-size: 16px;
-      margin: 0;
-      line-height: 1.4;
+    /* ── Score ring ── */
+    .score-ring-wrap {
+      position: relative;
+      flex-shrink: 0;
+      width: 72px;
+      height: 72px;
     }
 
-    .compatibility-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: #4338ca;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+    .score-ring {
+      transform: rotate(-90deg);
     }
 
-    .score-badge {
-      min-width: 68px;
-      height: 68px;
-      border-radius: 18px;
-      display: grid;
-      place-items: center;
-      color: white;
-      font-size: 20px;
-      font-weight: 800;
-      box-shadow: 0 18px 30px rgba(79, 70, 229, 0.18);
+    .ring-bg {
+      fill: none;
+      stroke: #f3f4f6;
+      stroke-width: 6;
     }
 
-    .offer-company {
+    .ring-fg {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 175.93;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .score-value {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--gray-700);
-      padding: 8px 12px;
-      background: var(--gray-50);
-      border-radius: var(--radius-md);
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .score-value small { font-size: 10px; font-weight: 600; margin-top: 1px; }
+
+    /* ── Card body ── */
+    .card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+
+    .card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+    .type-chip {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .type-stage    { background: #ede9fe; color: #6d28d9; }
+    .type-alternance { background: #dbeafe; color: #1d4ed8; }
+    .type-cdd      { background: #fef3c7; color: #92400e; }
+    .type-cdi      { background: #d1fae5; color: #065f46; }
+
+    .compat-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .offer-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111827;
+      margin: 0;
+      line-height: 1.35;
     }
 
     .offer-meta {
       display: flex;
+      align-items: center;
       flex-wrap: wrap;
-      gap: var(--spacing-md);
+      gap: 4px;
+      font-size: 12px;
+      color: #9ca3af;
     }
 
-    .meta-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    .meta-item { display: flex; align-items: center; gap: 3px; }
+    .meta-dot { color: #d1d5db; }
+
+    .offer-desc {
       font-size: 13px;
-      color: var(--gray-500);
-    }
-
-    .offer-description {
-      font-size: 14px;
-      color: var(--gray-600);
-      line-height: 1.6;
+      color: #6b7280;
+      line-height: 1.55;
       margin: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
       display: -webkit-box;
-      -webkit-line-clamp: 3;
+      -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
-    .match-section {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    /* ── Skills ── */
+    .skills-row { display: flex; flex-direction: column; gap: 5px; }
 
-    .match-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--gray-700);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .offer-skills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .skill-tag {
-      padding: 4px 10px;
-      border-radius: var(--radius-full);
-      font-size: 12px;
-      font-weight: 500;
-    }
-
-    .matched-tag {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .missing-tag {
-      background: #eef2ff;
-      color: #4338ca;
-    }
-
-    .more-skills {
-      background: var(--gray-100);
-      color: var(--gray-600);
-      padding: 4px 10px;
-      border-radius: var(--radius-full);
-      font-size: 12px;
-      font-weight: 500;
-    }
-
-    .more-skills.clickable {
-      cursor: pointer;
-      user-select: none;
-      transition: background 0.15s, color 0.15s;
-    }
-
-    .more-skills.clickable:hover {
-      background: #e0e7ff;
-      color: #4338ca;
-    }
-
-    .offer-footer {
-      display: flex;
-      justify-content: space-between;
+    .skills-label {
+      display: inline-flex;
       align-items: center;
-      padding-top: var(--spacing-md);
-      border-top: 1px solid var(--gray-200);
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .matched-label { color: #059669; }
+    .missing-label { color: #6366f1; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .chip {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+    .chip-match { background: #d1fae5; color: #065f46; }
+    .chip-miss  { background: #eef2ff; color: #4338ca; }
+    .chip-more  { background: #f3f4f6; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+    .chip-more:hover { background: #374151; color: white; }
+
+    /* ── Card footer ── */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid #f3f4f6;
       margin-top: auto;
     }
 
-    .offer-stats {
-      display: flex;
-      gap: var(--spacing-md);
-    }
-
-    .stat-item {
+    .applicants-info {
       display: flex;
       align-items: center;
       gap: 4px;
-      font-size: 12px;
-      color: var(--gray-500);
+      font-size: 11px;
+      color: #9ca3af;
     }
 
+    .apply-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .apply-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+      transform: translateX(-100%);
+      transition: transform 0.4s;
+    }
+
+    .apply-btn:not(:disabled):hover::after { transform: translateX(100%); }
+    .apply-btn:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
+    .apply-btn:disabled { opacity: 0.75; cursor: not-allowed; }
+
+    .applied-btn {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    }
+
+    /* ── Skeletons ── */
+    .skeleton-card { flex-direction: column; gap: 12px; }
+
+    .sk {
+      border-radius: 8px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    .sk-title  { height: 20px; width: 70%; }
+    .sk-sub    { height: 14px; width: 45%; }
+    .sk-body   { height: 14px; width: 90%; }
+    .sk-body.short { width: 60%; }
+
+    @keyframes shimmer {
+      from { background-position: 200% 0; }
+      to   { background-position: -200% 0; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    /* ── Empty state ── */
     .empty-state {
       text-align: center;
-      padding: var(--spacing-xl) 0;
+      padding: 80px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
     }
 
-    .empty-state svg {
-      color: var(--gray-300);
-      margin-bottom: var(--spacing-md);
+    .empty-orbit {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      margin-bottom: 8px;
     }
 
-    .empty-state h3 {
-      color: var(--gray-900);
-      margin-bottom: var(--spacing-sm);
+    .orbit-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px dashed #c7d2fe;
+      animation: spin 6s linear infinite;
+    }
+    .ring-1 { inset: 0; animation-duration: 6s; }
+    .ring-2 { inset: 14px; animation-duration: 10s; animation-direction: reverse; }
+
+    .orbit-center {
+      position: absolute;
+      inset: 26px;
+      background: #eef2ff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .empty-state p {
-      color: var(--gray-500);
-      margin: 0;
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state h3 { font-size: 18px; color: #374151; margin: 0; }
+    .empty-state p  { font-size: 14px; color: #9ca3af; margin: 0; max-width: 320px; }
+
+    .btn-reset {
+      margin-top: 4px;
+      padding: 9px 20px;
+      border: 1.5px solid #6366f1;
+      border-radius: 999px;
+      background: white;
+      color: #6366f1;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-reset:hover { background: #eef2ff; }
+
+    /* ── Error ── */
+    .error-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 24px 32px;
+      padding: 14px 18px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      color: #991b1b;
+      font-size: 14px;
     }
 
-    @media (max-width: 768px) {
-      .offers-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .filters-row {
-        grid-template-columns: 1fr;
-      }
-
-      .offer-header,
-      .offer-footer {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .score-badge {
-        width: 68px;
-      }
-    }
-
-    /* ── Apply Modal ── */
+    /* ── Modal ── */
     .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
+      position: fixed; inset: 0;
+      background: rgba(15,10,40,0.6);
+      backdrop-filter: blur(4px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 1000;
       padding: 20px;
+      animation: fadeIn 0.2s ease;
     }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .apply-modal {
       background: white;
-      border-radius: 16px;
+      border-radius: 20px;
       width: 100%;
-      max-width: 560px;
+      max-width: 520px;
       max-height: 90vh;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+      animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
     }
 
-    .apply-modal-header {
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.92) translateY(20px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      padding: 28px 28px 20px;
-      border-bottom: 1px solid #f0f0f0;
+      padding: 24px 24px 18px;
+      border-bottom: 1px solid #f3f4f6;
     }
 
-    .apply-modal-header h2 {
-      font-size: 18px;
-      font-weight: 700;
-      margin: 0 0 4px;
-    }
-
-    .apply-modal-header .text-muted {
-      font-size: 13px;
-      color: #6b7280;
-      margin: 0;
-    }
+    .modal-header h2 { font-size: 18px; font-weight: 700; margin: 0 0 4px; color: #111827; }
+    .modal-sub { font-size: 13px; color: #9ca3af; margin: 0; }
 
     .close-btn {
-      background: none;
+      background: #f3f4f6;
       border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
       cursor: pointer;
-      color: #9ca3af;
-      padding: 4px;
-      border-radius: 8px;
-      transition: background 0.15s;
+      font-size: 14px;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
+      transition: background 0.15s;
     }
+    .close-btn:hover { background: #e5e7eb; color: #374151; }
 
-    .close-btn:hover { background: #f3f4f6; color: #374151; }
-
-    .apply-modal-body {
-      padding: 24px 28px;
+    .modal-body {
+      padding: 20px 24px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
     }
 
-    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group { display: flex; flex-direction: column; gap: 7px; }
 
-    .field-label {
-      font-size: 14px;
-      font-weight: 600;
-      color: #374151;
-    }
-
-    .required { color: #ef4444; }
-    .optional { font-weight: 400; color: #9ca3af; font-size: 13px; }
+    .field-label { font-size: 13px; font-weight: 600; color: #374151; }
+    .req { color: #ef4444; }
+    .opt { font-weight: 400; color: #9ca3af; font-size: 12px; }
 
     .drop-zone {
       border: 2px dashed #d1d5db;
-      border-radius: 12px;
-      padding: 32px 20px;
+      border-radius: 14px;
+      padding: 28px 16px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
@@ -676,141 +952,118 @@ import { Offer } from '../../../models';
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: #6366f1; background: #eef2ff; }
+    .drop-zone.has-file { border-color: #10b981; border-style: solid; background: #f0fdf4; }
 
-    .drop-zone:hover, .drop-zone.drag-over {
-      border-color: #6366f1;
-      background: #eef2ff;
-    }
-
-    .drop-zone.has-file {
-      border-color: #10b981;
-      background: #f0fdf4;
-      border-style: solid;
-    }
-
-    .drop-zone-text {
-      font-size: 14px;
-      color: #6b7280;
-      margin: 0;
-    }
-
-    .link-text { color: #6366f1; font-weight: 600; }
-
-    .drop-zone-hint {
-      font-size: 12px;
-      color: #9ca3af;
-      margin: 0;
-    }
-
-    .file-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: #374151;
-      margin: 0;
-    }
-
-    .file-size { font-size: 12px; color: #9ca3af; margin: 0; }
+    .dz-text { font-size: 13px; color: #6b7280; margin: 0; }
+    .dz-link { color: #6366f1; font-weight: 600; }
+    .dz-hint { font-size: 11px; color: #9ca3af; margin: 0; }
+    .file-name { font-size: 13px; font-weight: 600; color: #374151; margin: 0; }
 
     .remove-file {
       background: none;
       border: 1px solid #fca5a5;
       color: #ef4444;
-      font-size: 12px;
-      padding: 4px 12px;
-      border-radius: 20px;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 999px;
       cursor: pointer;
-      margin-top: 4px;
-      transition: all 0.15s;
+      transition: background 0.15s;
     }
-
     .remove-file:hover { background: #fef2f2; }
 
-    .cover-letter-input {
+    .textarea {
       width: 100%;
-      padding: 12px 14px;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      font-size: 14px;
+      padding: 11px 13px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 13px;
       resize: vertical;
       font-family: inherit;
       color: #374151;
       transition: border-color 0.15s;
       box-sizing: border-box;
     }
+    .textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
 
-    .cover-letter-input:focus {
-      outline: none;
-      border-color: #6366f1;
-      box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
-    }
+    .err-msg { font-size: 12px; color: #ef4444; margin: 0; }
 
-    .field-error-msg, .submit-error {
-      font-size: 13px;
-      color: #ef4444;
-      margin: 0;
-    }
-
-    .apply-modal-footer {
+    .modal-footer {
       display: flex;
       justify-content: flex-end;
-      gap: 12px;
-      padding: 16px 28px 24px;
-      border-top: 1px solid #f0f0f0;
+      gap: 10px;
+      padding: 14px 24px 20px;
+      border-top: 1px solid #f3f4f6;
     }
 
-    /* Success state */
+    .btn-cancel {
+      padding: 9px 18px;
+      background: white;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-cancel:hover { border-color: #9ca3af; color: #374151; }
+
+    /* Success */
     .apply-success {
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      padding: 48px 32px;
-      gap: 16px;
+      padding: 44px 28px;
+      gap: 14px;
     }
 
-    .success-icon {
-      width: 80px;
-      height: 80px;
-      background: #dcfce7;
+    .success-ring {
+      width: 76px;
+      height: 76px;
       border-radius: 50%;
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
       display: flex;
       align-items: center;
       justify-content: center;
+      animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
     }
 
-    .apply-success h3 {
-      font-size: 20px;
-      font-weight: 700;
-      color: #166534;
-      margin: 0;
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
     }
 
-    .apply-success p {
-      font-size: 14px;
-      color: #6b7280;
-      margin: 0;
-      max-width: 360px;
-      line-height: 1.6;
+    .apply-success h3 { font-size: 20px; font-weight: 800; color: #065f46; margin: 0; }
+    .apply-success p  { font-size: 14px; color: #6b7280; margin: 0; max-width: 320px; line-height: 1.6; }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .hero { padding: 36px 16px 60px; }
+      .hero-title { font-size: 28px; }
+      .filters-strip { padding: 10px 14px; gap: 8px; }
+      .filter-all-btn { padding: 6px 14px; font-size: 12px; }
+      .filter-select { font-size: 12px; min-width: 90px; }
+      .offers-grid { grid-template-columns: 1fr; padding: 16px 14px; gap: 14px; }
     }
 
     @media (max-width: 480px) {
       .modal-backdrop { padding: 0; align-items: flex-end; }
-      .apply-modal { border-radius: 16px 16px 0 0; max-height: 95vh; width: 100%; }
-      .apply-modal-body { padding: 14px; }
-      .apply-modal-header { padding: 14px 16px; }
-      .apply-modal-footer { padding: 10px 14px; flex-direction: column; }
-      .apply-modal-footer button { width: 100%; justify-content: center; }
-      .score-badge { width: 52px !important; height: 52px; font-size: 16px; }
-      .offer-card { padding: 14px; }
-      .offer-title { font-size: 14px; }
-      .drop-zone { padding: 20px 12px; }
-    }
-
-    @media (max-width: 360px) {
-      .filters-row { gap: 6px; }
-      .offer-card { padding: 12px; }
+      .apply-modal { border-radius: 20px 20px 0 0; max-height: 95vh; }
+      .score-ring-wrap { width: 56px; height: 56px; }
+      .score-ring { width: 56px; height: 56px; }
     }
   `]
 })
@@ -820,20 +1073,10 @@ export class CandidateOffersComponent implements OnInit {
   appliedOffers: Set<string> = new Set();
   isLoading = true;
   errorMessage = '';
-  candidateSkillsCount = -1; // -1 = unknown, 0 = no skills, >0 = has skills
+  candidateSkillsCount = -1;
 
-  // Expanded skills state per offer
   expandedSkills = new Set<string>();
 
-  toggleSkills(offerId: string): void {
-    if (this.expandedSkills.has(offerId)) {
-      this.expandedSkills.delete(offerId);
-    } else {
-      this.expandedSkills.add(offerId);
-    }
-  }
-
-  // Apply modal state
   showApplyModal = false;
   applyingToOffer: Offer | null = null;
   cvFile: File | null = null;
@@ -877,16 +1120,9 @@ export class CandidateOffersComponent implements OnInit {
       });
 
       this.matchingService.getMyApplications().subscribe({
-        next: (apps) => {
-          apps.forEach(app => {
-            this.appliedOffers.add(app.offerId);
-          });
-        },
-        error: (error) => {
-          console.error('Error loading applications:', error);
-        }
+        next: (apps) => apps.forEach(app => this.appliedOffers.add(app.offerId)),
+        error: () => {}
       });
-
       return;
     }
 
@@ -899,19 +1135,21 @@ export class CandidateOffersComponent implements OnInit {
     });
   }
 
+  toggleSkills(offerId: string): void {
+    this.expandedSkills.has(offerId) ? this.expandedSkills.delete(offerId) : this.expandedSkills.add(offerId);
+  }
+
   applyFilters(): void {
     this.filteredOffers = this.offers.filter(offer => {
-      const matchesSearch =
-        !this.searchQuery ||
-        offer.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        offer.department.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        offer.location.toLowerCase().includes(this.searchQuery.toLowerCase());
-
-      const matchesDepartment = !this.selectedDepartment || offer.department === this.selectedDepartment;
-      const matchesLocation = !this.selectedLocation || offer.location === this.selectedLocation;
-      const matchesDuration = !this.selectedDuration || offer.duration.includes(this.selectedDuration);
-
-      return matchesSearch && matchesDepartment && matchesLocation && matchesDuration;
+      const q = this.searchQuery.toLowerCase();
+      const matchesSearch = !q ||
+        offer.title.toLowerCase().includes(q) ||
+        offer.department.toLowerCase().includes(q) ||
+        offer.location.toLowerCase().includes(q);
+      const matchesDept     = !this.selectedDepartment || offer.department === this.selectedDepartment;
+      const matchesLoc      = !this.selectedLocation   || offer.location === this.selectedLocation;
+      const matchesDuration = !this.selectedDuration   || offer.duration.includes(this.selectedDuration);
+      return matchesSearch && matchesDept && matchesLoc && matchesDuration;
     });
   }
 
@@ -923,14 +1161,11 @@ export class CandidateOffersComponent implements OnInit {
     this.applyFilters();
   }
 
-  hasApplied(offerId: string): boolean {
-    return this.appliedOffers.has(offerId);
-  }
+  hasApplied(offerId: string): boolean { return this.appliedOffers.has(offerId); }
 
   applyToOffer(offer: Offer): void {
     const user = this.authService.getCurrentUser();
-    if (!user) return;
-    if (user.role !== 'candidate') return;
+    if (!user || user.role !== 'candidate') return;
     this.applyingToOffer = offer;
     this.cvFile = null;
     this.coverLetter = '';
@@ -951,19 +1186,12 @@ export class CandidateOffersComponent implements OnInit {
   }
 
   onFileSelect(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
+    const file = (event.target as HTMLInputElement).files?.[0];
     if (file) this.setFile(file);
   }
 
-  onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    this.isDraggingOver = true;
-  }
-
-  onDragLeave(): void {
-    this.isDraggingOver = false;
-  }
+  onDragOver(event: DragEvent): void { event.preventDefault(); this.isDraggingOver = true; }
+  onDragLeave(): void { this.isDraggingOver = false; }
 
   onDrop(event: DragEvent): void {
     event.preventDefault();
@@ -973,22 +1201,13 @@ export class CandidateOffersComponent implements OnInit {
   }
 
   private setFile(file: File): void {
-    if (file.type !== 'application/pdf') {
-      this.applyError = 'Seuls les fichiers PDF sont acceptes.';
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      this.applyError = 'Le fichier ne doit pas depasser 5 Mo.';
-      return;
-    }
+    if (file.type !== 'application/pdf') { this.applyError = 'Seuls les fichiers PDF sont acceptés.'; return; }
+    if (file.size > 5 * 1024 * 1024)     { this.applyError = 'Le fichier ne doit pas dépasser 5 Mo.'; return; }
     this.cvFile = file;
     this.applyError = '';
   }
 
-  removeFile(event: Event): void {
-    event.stopPropagation();
-    this.cvFile = null;
-  }
+  removeFile(event: Event): void { event.stopPropagation(); this.cvFile = null; }
 
   formatFileSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} o`;
@@ -997,18 +1216,13 @@ export class CandidateOffersComponent implements OnInit {
   }
 
   submitApplication(): void {
-    if (!this.cvFile) {
-      this.applyError = 'Veuillez joindre votre CV.';
-      return;
-    }
+    if (!this.cvFile) { this.applyError = 'Veuillez joindre votre CV.'; return; }
     this.isApplying = true;
     this.applyError = '';
-
     const reader = new FileReader();
     reader.onload = () => {
-      const cvBase64 = reader.result as string;
       this.offerService.applyToOffer(this.applyingToOffer!.id, {
-        cvBase64,
+        cvBase64: reader.result as string,
         cvName: this.cvFile!.name,
         coverLetter: this.coverLetter.trim()
       }).subscribe({
@@ -1019,13 +1233,9 @@ export class CandidateOffersComponent implements OnInit {
         },
         error: (error) => {
           this.isApplying = false;
-          if (error.message?.includes('Already applied')) {
-            this.applyError = 'Vous avez deja postule a cette offre.';
-          } else if (error.message?.includes('profile not found')) {
-            this.applyError = 'Profil incomplet. Veuillez completer votre profil avant de postuler.';
-          } else {
-            this.applyError = error.message || 'Erreur lors de l\'envoi. Veuillez reessayer.';
-          }
+          if (error.message?.includes('Already applied'))       this.applyError = 'Vous avez déjà postulé à cette offre.';
+          else if (error.message?.includes('profile not found')) this.applyError = 'Profil incomplet. Complétez votre profil avant de postuler.';
+          else this.applyError = error.message || 'Erreur lors de l\'envoi. Veuillez réessayer.';
         }
       });
     };
@@ -1033,18 +1243,20 @@ export class CandidateOffersComponent implements OnInit {
   }
 
   formatDate(dateString: string): string {
-    if (!dateString) {
-      return 'date a definir';
-    }
-
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+    if (!dateString) return 'date à définir';
+    return new Date(dateString).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
   }
 
-  getScoreColor(score: number | undefined): string {
-    const value = score || 0;
-    if (value >= 75) return 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-    if (value >= 55) return 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-    return 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)';
+  getRingStroke(score: number | undefined): string {
+    const v = score || 0;
+    if (v >= 75) return '#10b981';
+    if (v >= 55) return '#f59e0b';
+    return '#6366f1';
+  }
+
+  getRingStyle(score: number | undefined): string {
+    const v = score || 0;
+    const offset = 175.93 - (v / 100) * 175.93;
+    return `stroke-dashoffset: ${offset}`;
   }
 }

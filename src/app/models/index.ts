@@ -64,6 +64,7 @@ export interface Application {
     lastName: string;
     email: string;
     school?: string;
+    location?: string;
     skills?: string[];
   };
   offer?: {
@@ -138,6 +139,15 @@ export interface MatchingScore {
   semantic: number;
   rules: number;
   explanations: MatchingExplanation;
+  breakdown?: {
+    skills_score:       number | null;
+    experience_score:   number | null;
+    education_score:    number | null;
+    semantic_score:     number | null;
+    title_score:        number | null;
+    bonus_score:        number | null;
+    completeness_score: number | null;
+  };
 }
 
 export interface MatchingExplanation {

@@ -30,12 +30,7 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
       return true;
     }
 
-    // Redirect to appropriate dashboard
-    if (user.role === 'candidate') {
-      router.navigate(['/candidate']);
-    } else {
-      router.navigate(['/']);
-    }
+    router.navigate(['/']);
     return false;
   };
 };
