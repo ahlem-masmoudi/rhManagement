@@ -398,15 +398,14 @@ interface Department {
     }
 
     @media (max-width: 540px) {
-      /* Hide "Commencez" button from navbar on small phones — hero has "Postuler maintenant" */
-      .cta-with-copy { display: none; }
-      .micro-copy { display: none; }
-      /* Navbar is now shorter: only logo + Connexion */
+      /* Compact both buttons, hide micro-copy */
+      .micro-copy { display: none !important; }
+      .cta-with-copy { display: inline-block; }
       .secondary-nav { top: 70px; }
       .logo { height: 40px; width: 40px; }
       .brand-name { font-size: 1.2rem; }
       .navbar { padding: 0.7rem 0; }
-      .btn-outline { padding: 0.55rem 1rem; font-size: 0.85rem; }
+      .btn { padding: 0.5rem 0.85rem; font-size: 0.8rem; }
     }
 
     @media (max-width: 480px) {
