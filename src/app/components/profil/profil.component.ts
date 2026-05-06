@@ -260,6 +260,15 @@ import { Candidate, CandidateStatus, Application } from '../../models';
                 {{ trackingCopied ? 'Lien copié ✓' : (trackingLoading ? '...' : 'Lien de suivi') }}
               </button>
             </div>
+
+            <!-- Tracking URL box (shown when clipboard is unavailable) -->
+            <div *ngIf="trackingUrl && !trackingCopied" class="tracking-url-row">
+              <input #urlInput type="text" class="tracking-url-input" [value]="trackingUrl" readonly (click)="urlInput.select()">
+              <button class="btn-copy-url" (click)="copyFromInput(urlInput)">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>
+                Copier
+              </button>
+            </div>
           </div>
         </main>
       </div>
@@ -839,6 +848,39 @@ import { Candidate, CandidateStatus, Application } from '../../models';
     }
     .btn-tracking:hover:not(:disabled) { background: #dcfce7; }
 
+    .tracking-url-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 10px;
+    }
+    .tracking-url-input {
+      flex: 1;
+      border: 1px solid #d1fae5;
+      border-radius: 7px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: #065f46;
+      background: white;
+      cursor: text;
+      min-width: 0;
+    }
+    .btn-copy-url {
+      display: flex; align-items: center; gap: 5px;
+      padding: 6px 14px;
+      background: #059669; color: white;
+      border: none; border-radius: 7px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-copy-url:hover { background: #047857; }
+
     .btn-outline {
       background: white;
       color: var(--primary-color);
@@ -1053,6 +1095,7 @@ export class ProfilComponent implements OnInit {
   notesSaved = false;
   trackingLoading = false;
   trackingCopied = false;
+  trackingUrl = '';
 
   statusOptions = [
     { value: 'nouveau',              label: 'Nouveau' },
@@ -1268,37 +1311,48 @@ export class ProfilComponent implements OnInit {
   copyTrackingLink(): void {
     if (!this.candidate) return;
     this.trackingLoading = true;
+    this.trackingUrl = '';
     this.candidateService.generateTrackingLink(this.candidate.id).subscribe({
       next: (token) => {
         const url = `${window.location.origin}/candidat/suivi/${token}`;
         this.trackingLoading = false;
-        const markCopied = () => {
-          this.trackingCopied = true;
-          setTimeout(() => { this.trackingCopied = false; }, 3000);
-        };
+        this.trackingUrl = url;
+        // Try clipboard — may fail on HTTP localhost (async context loses user gesture)
         if (navigator.clipboard) {
-          navigator.clipboard.writeText(url).then(markCopied).catch(() => {
-            this.legacyCopy(url);
-            markCopied();
+          navigator.clipboard.writeText(url).then(() => {
+            this.trackingUrl = '';
+            this.trackingCopied = true;
+            setTimeout(() => { this.trackingCopied = false; }, 3000);
+          }).catch(() => {
+            // URL box is already shown — user can select+copy manually
           });
-        } else {
-          this.legacyCopy(url);
-          markCopied();
         }
+        // No legacyCopy here: execCommand also fails in async context on localhost
       },
       error: () => { this.trackingLoading = false; }
     });
   }
 
-  private legacyCopy(text: string): void {
-    const el = document.createElement('textarea');
-    el.value = text;
-    el.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
-    document.body.appendChild(el);
-    el.focus();
-    el.select();
-    try { document.execCommand('copy'); } catch (_) {}
-    document.body.removeChild(el);
+  copyFromInput(input: HTMLInputElement): void {
+    input.select();
+    input.setSelectionRange(0, 99999);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(input.value).then(() => {
+        this.trackingUrl = '';
+        this.trackingCopied = true;
+        setTimeout(() => { this.trackingCopied = false; }, 3000);
+      }).catch(() => {
+        try { document.execCommand('copy'); } catch (_) {}
+        this.trackingUrl = '';
+        this.trackingCopied = true;
+        setTimeout(() => { this.trackingCopied = false; }, 3000);
+      });
+    } else {
+      try { document.execCommand('copy'); } catch (_) {}
+      this.trackingUrl = '';
+      this.trackingCopied = true;
+      setTimeout(() => { this.trackingCopied = false; }, 3000);
+    }
   }
 
   envoyerEmail(): void {
