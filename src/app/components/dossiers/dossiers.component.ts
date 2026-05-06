@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { MatchingService } from '../../services/matching.service';
 import { CandidateService } from '../../services/candidate.service';
 import { Application } from '../../models';
@@ -63,6 +64,23 @@ interface DossierEntry {
               <div class="meta">{{ entry.application.offer?.title }}</div>
             </div>
             <div class="status-chip accepted">Offre acceptée</div>
+          </div>
+
+          <!-- Card actions -->
+          <div class="card-actions-row">
+            <button class="btn-view" (click)="viewProfile(entry.application.candidateId)">
+              <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10z" clip-rule="evenodd"/>
+              </svg>
+              Voir profil
+            </button>
+            <button class="btn-delete" (click)="removeDossier(entry)">
+              <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+              Supprimer
+            </button>
           </div>
 
           <!-- Documents section -->
@@ -287,6 +305,35 @@ interface DossierEntry {
       border: 1px solid rgba(5,150,105,0.2);
     }
 
+    /* ── Card Action Buttons ── */
+    .card-actions-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .btn-view {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white; border: none; border-radius: 9px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 3px 10px rgba(99,102,241,0.3);
+    }
+    .btn-view:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(99,102,241,0.45); }
+
+    .btn-delete {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      background: white; color: #dc2626;
+      border: 1.5px solid #fee2e2; border-radius: 9px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-delete:hover { background: #fee2e2; border-color: #dc2626; transform: translateY(-1px); }
+
     /* ── Docs Section ── */
     .docs-header {
       display: flex;
@@ -490,8 +537,19 @@ export class DossiersComponent implements OnInit {
 
   constructor(
     private matchingService: MatchingService,
-    private candidateService: CandidateService
+    private candidateService: CandidateService,
+    private router: Router
   ) {}
+
+  viewProfile(candidateId: string): void {
+    this.router.navigate(['/rh/profil', candidateId]);
+  }
+
+  removeDossier(entry: DossierEntry): void {
+    const name = `${entry.application.candidate?.firstName} ${entry.application.candidate?.lastName}`;
+    if (!confirm(`Supprimer le dossier de ${name} ?`)) return;
+    this.dossiers = this.dossiers.filter(d => d !== entry);
+  }
 
   ngOnInit(): void {
     this.matchingService.getApplications().subscribe(apps => {
