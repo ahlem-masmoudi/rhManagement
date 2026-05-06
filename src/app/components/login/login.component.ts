@@ -493,38 +493,38 @@ type AuthView = 'login' | 'forgot' | 'reset';
     input[type="password"],
     input[type="text"],
     input[type="number"] {
-      background: rgba(255,255,255,0.08) !important;
-      border: 1px solid rgba(255,255,255,0.12) !important;
-      color: white !important;
+      background: white !important;
+      border: 1px solid rgba(255,255,255,0.25) !important;
+      color: #1f2937 !important;
       border-radius: 12px !important;
       padding: 13px 16px !important;
       font-size: 14px !important;
       transition: all 0.25s !important;
     }
-    input::placeholder { color: rgba(255,255,255,0.3) !important; }
+    input::placeholder { color: #9ca3af !important; }
     input:focus {
       outline: none !important;
       border-color: #4F46E5 !important;
-      background: rgba(79,70,229,0.1) !important;
+      background: white !important;
       box-shadow: 0 0 0 3px rgba(79,70,229,0.25) !important;
     }
     input:disabled { opacity: 0.4 !important; cursor: not-allowed !important; }
     input.input-invalid { border-color: rgba(239,68,68,0.7) !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important; }
 
     .input-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
-    .svg-icon svg { width: 18px; height: 18px; display: block; stroke: rgba(255,255,255,0.65); stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .svg-icon svg { width: 18px; height: 18px; display: block; stroke: #4F46E5; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
     .field-error-marker { flex: 0 0 auto; width: 18px; text-align: center; font-size: 20px; font-weight: 800; color: #f87171; }
 
     /* ── Password toggle ── */
     .password-toggle {
-      border: none; background: transparent; color: rgba(255,255,255,0.65);
+      border: none; background: transparent; color: #4F46E5;
       border-radius: 999px; min-width: 34px; height: 34px;
       padding: 0; cursor: pointer; white-space: nowrap; transition: color 0.2s;
     }
     .inside-input { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); z-index: 1; }
     .password-toggle svg { width: 18px; height: 18px; display: block; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; margin: 0 auto; }
-    .password-toggle:hover { color: white; }
+    .password-toggle:hover { color: #4338CA; }
     .password-toggle:disabled { cursor: not-allowed; opacity: 0.4; }
 
     /* ── Help / lockout ── */
