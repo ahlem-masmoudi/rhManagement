@@ -388,21 +388,31 @@ interface Department {
       .nav-actions { gap:0.5rem; }
       .btn { padding:0.6rem 1.1rem; font-size:0.88rem; }
       .snav-link { padding: 0 0.75rem; font-size: 0.82rem; }
-      /* secondary-nav sits just below the main navbar (~80px on tablet) */
-      .secondary-nav { top: 80px; overflow-x: auto; }
+      /* overflow:visible so dropdown is not clipped */
+      .secondary-nav { top: 80px; overflow: visible; }
+      /* On mobile, dropdown becomes fixed to avoid clipping by sticky parent */
+      .dept-dropdown {
+        position: fixed;
+        top: 132px;
+        left: 0;
+        right: 0;
+        min-width: unset;
+        width: 100%;
+        border-radius: 0 0 12px 12px;
+        z-index: 500;
+      }
       .modal-box { max-height:92vh; padding:0; border-radius: 16px; }
       .modal-offers-grid { grid-template-columns:1fr; }
-      .dept-dropdown { min-width:240px; }
       .moc-grid { grid-template-columns: 1fr !important; }
       .why-join { padding: 2rem 0; }
       .how-it-works { padding: 2rem 0; }
     }
 
     @media (max-width: 540px) {
-      /* Compact both buttons, hide micro-copy */
       .micro-copy { display: none !important; }
       .cta-with-copy { display: inline-block; }
       .secondary-nav { top: 70px; }
+      .dept-dropdown { top: 122px; }
       .logo { height: 40px; width: 40px; }
       .brand-name { font-size: 1.2rem; }
       .navbar { padding: 0.7rem 0; }
@@ -418,6 +428,7 @@ interface Department {
       .logo { height:36px; width:36px; }
       .brand-name { font-size:1.1rem; }
       .secondary-nav { top: 64px; }
+      .dept-dropdown { top: 116px; }
       .modal-box { margin: 0; border-radius: 16px 16px 0 0; max-height: 95vh; }
       .footer-container { padding: 0 1rem; }
       .container { padding: 0 1rem; }
@@ -431,6 +442,7 @@ interface Department {
       .hero-title { font-size: 1.35rem; }
       .container { padding: 0 0.75rem; }
       .secondary-nav { top: 60px; }
+      .dept-dropdown { top: 108px; }
       .snav-link { padding: 0 0.55rem; font-size: 0.78rem; height: 44px; }
     }
   `]
