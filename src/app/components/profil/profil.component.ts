@@ -1334,25 +1334,13 @@ export class ProfilComponent implements OnInit {
   }
 
   copyFromInput(input: HTMLInputElement): void {
+    // Fully synchronous — execCommand works in direct click handlers everywhere
+    input.focus();
     input.select();
-    input.setSelectionRange(0, 99999);
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(input.value).then(() => {
-        this.trackingUrl = '';
-        this.trackingCopied = true;
-        setTimeout(() => { this.trackingCopied = false; }, 3000);
-      }).catch(() => {
-        try { document.execCommand('copy'); } catch (_) {}
-        this.trackingUrl = '';
-        this.trackingCopied = true;
-        setTimeout(() => { this.trackingCopied = false; }, 3000);
-      });
-    } else {
-      try { document.execCommand('copy'); } catch (_) {}
-      this.trackingUrl = '';
-      this.trackingCopied = true;
-      setTimeout(() => { this.trackingCopied = false; }, 3000);
-    }
+    try { document.execCommand('copy'); } catch (_) {}
+    this.trackingUrl = '';
+    this.trackingCopied = true;
+    setTimeout(() => { this.trackingCopied = false; }, 3000);
   }
 
   envoyerEmail(): void {
