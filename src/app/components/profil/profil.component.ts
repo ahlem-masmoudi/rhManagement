@@ -253,7 +253,7 @@ import { Candidate, CandidateStatus, Application } from '../../models';
                   <button class="btn btn-primary"
                           [disabled]="interviewLoading || !interviewForm.date || !interviewForm.time || isSlotBooked(interviewForm.date, interviewForm.time)"
                           (click)="saveInterview()">
-                    <span *ngIf="!interviewLoading">{{ currentInterview() ? 'Modifier l\'entretien' : 'Programmer l\'entretien' }}</span>
+                    <span *ngIf="!interviewLoading">{{ interviewButtonLabel() }}</span>
                     <span *ngIf="interviewLoading">Enregistrement...</span>
                   </button>
                 </div>
@@ -1646,6 +1646,10 @@ export class ProfilComponent implements OnInit {
     return this.candidateApplications[0]?.interviewDate ? this.candidateApplications[0] : null;
   }
 
+  interviewButtonLabel(): string {
+    return this.currentInterview() ? "Modifier l'entretien" : "Programmer l'entretien";
+  }
+
   formatInterviewDate(dateStr: string): string {
     if (!dateStr) return '';
     return new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -1666,6 +1670,9 @@ export class ProfilComponent implements OnInit {
   saveInterview(): void {
     const appId = this.candidateApplications[0]?.id;
     if (!appId || !this.interviewForm.date || !this.interviewForm.time) return;
+    // Capture old slot before it gets overwritten (reschedule case)
+    const oldDate = (this.candidateApplications[0] as any)?.interviewDate as string | undefined;
+    const oldTime = (this.candidateApplications[0] as any)?.interviewTime as string | undefined;
     this.interviewLoading = true;
     this.interviewError = '';
     this.interviewSuccess = '';
@@ -1685,7 +1692,12 @@ export class ProfilComponent implements OnInit {
           this.candidate.status = 'entretien_programme' as any;
           this.selectedStatus = 'entretien_programme';
         }
-        this.bookedSlots = [...this.bookedSlots, { date: this.interviewForm.date, time: this.interviewForm.time }];
+        // Remove old slot (if rescheduling) then add new one
+        let slots = this.bookedSlots;
+        if (oldDate && oldTime) {
+          slots = slots.filter(s => !(s.date === oldDate && s.time === oldTime));
+        }
+        this.bookedSlots = [...slots, { date: this.interviewForm.date, time: this.interviewForm.time }];
       },
       error: (err) => {
         this.interviewLoading = false;

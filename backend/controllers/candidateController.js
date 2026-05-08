@@ -463,9 +463,11 @@ exports.uploadDocument = async (req, res) => {
       metadata: metadata || undefined
     };
 
-    candidate.documents = candidate.documents || [];
-    candidate.documents.push(doc);
-    await candidate.save();
+    // Use raw driver to avoid Mongoose CastError on large binary/HTML content
+    await Candidate.collection.updateOne(
+      { _id: new mongoose.Types.ObjectId(req.params.id) },
+      { $push: { documents: doc } }
+    );
 
     let scoringInfo = { attempted: false, applied: false };
     if (doc.type === 'cv' && doc.content) {
