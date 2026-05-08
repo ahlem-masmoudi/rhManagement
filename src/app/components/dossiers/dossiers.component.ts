@@ -31,6 +31,8 @@ interface DossierEntry {
   reuploadLoading: boolean;
   reuploadSuccess: string;
   reuploadError: string;
+  notifyLoading: boolean;
+  notifyUrl: string;
 }
 
 @Component({
@@ -94,12 +96,42 @@ interface DossierEntry {
               </svg>
               Voir profil
             </button>
+            <button class="btn-notify" [disabled]="entry.notifyLoading" (click)="notifyCandidate(entry)"
+                    title="Générer le lien de suivi et envoyer au candidat">
+              <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+              </svg>
+              {{ entry.notifyLoading ? '...' : 'Notifier le candidat' }}
+            </button>
             <button class="btn-delete" (click)="removeDossier(entry)">
               <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
               </svg>
               Supprimer
             </button>
+          </div>
+
+          <!-- Tracking URL row (shown after Notifier click) -->
+          <div *ngIf="entry.notifyUrl" class="notify-url-row">
+            <div class="notify-url-label">
+              Lien de suivi généré — copiez-le et envoyez-le au candidat :
+            </div>
+            <div class="notify-url-inner">
+              <input #notifyInput type="text" class="notify-url-input" [value]="entry.notifyUrl" readonly
+                     (click)="notifyInput.select()">
+              <button class="btn-copy-notify" (click)="copyNotifyUrl(entry, notifyInput)">Copier</button>
+              <a class="btn-email-notify"
+                 [href]="getMailtoLink(entry)"
+                 target="_blank"
+                 title="Ouvrir dans la messagerie">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                </svg>
+                Email
+              </a>
+            </div>
           </div>
 
           <!-- Documents section -->
@@ -441,6 +473,18 @@ interface DossierEntry {
     }
     .btn-delete:hover { background: #fee2e2; border-color: #dc2626; transform: translateY(-1px); }
 
+    .btn-notify {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: white; border: none; border-radius: 10px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      box-shadow: 0 3px 10px rgba(14,165,233,0.3);
+      transition: all 0.2s;
+    }
+    .btn-notify:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(14,165,233,0.45); }
+    .btn-notify:disabled { opacity: 0.6; cursor: not-allowed; }
+
     /* ── Docs Section ── */
     .docs-header {
       display: flex;
@@ -668,6 +712,34 @@ interface DossierEntry {
     }
     .spinner-sm { width: 14px; height: 14px; border-width: 2px; }
 
+    /* ── Notify row ── */
+    .notify-url-row {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+    }
+    .notify-url-label { font-size: 11px; font-weight: 600; color: #1e40af; margin-bottom: 6px; }
+    .notify-url-inner { display: flex; align-items: center; gap: 6px; }
+    .notify-url-input {
+      flex: 1; min-width: 0;
+      border: 1px solid #bfdbfe; border-radius: 7px;
+      padding: 6px 10px; font-size: 12px; color: #1e3a8a;
+      background: white; cursor: text;
+    }
+    .btn-copy-notify, .btn-email-notify {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 12px;
+      border: none; border-radius: 7px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      white-space: nowrap; text-decoration: none;
+    }
+    .btn-copy-notify { background: #1d4ed8; color: white; }
+    .btn-copy-notify:hover { background: #1e40af; }
+    .btn-email-notify { background: #059669; color: white; }
+    .btn-email-notify:hover { background: #047857; }
+
     @media (max-width: 768px) {
       .page-header { flex-direction: column; gap: 14px; padding: 20px; }
       .dossiers-grid { grid-template-columns: 1fr; }
@@ -725,7 +797,9 @@ export class DossiersComponent implements OnInit {
         projectObjectives: '',
         reuploadLoading: false,
         reuploadSuccess: '',
-        reuploadError: ''
+        reuploadError: '',
+        notifyLoading: false,
+        notifyUrl: ''
       }));
       this.loading = false;
       this.loadAllDocuments();
@@ -759,7 +833,9 @@ export class DossiersComponent implements OnInit {
         projectObjectives: '',
         reuploadLoading: false,
         reuploadSuccess: '',
-        reuploadError: ''
+        reuploadError: '',
+        notifyLoading: false,
+        notifyUrl: ''
       }));
       this.loading = false;
       this.loadAllDocuments();
@@ -890,7 +966,9 @@ export class DossiersComponent implements OnInit {
       this.candidateService.uploadCandidateDocument(candidateId, {
         name: `${doc.name.replace(/\.[^.]+$/, '')}_signe_cachet.pdf`,
         content,
-        type: 'convention_signee'
+        type: 'convention_signee',
+        isSigned: true,
+        status: 'signe'
       }).subscribe({
         next: () => {
           entry.reuploadLoading = false;
@@ -906,6 +984,49 @@ export class DossiersComponent implements OnInit {
       });
     };
     reader.readAsDataURL(file);
+  }
+
+  notifyCandidate(entry: DossierEntry): void {
+    entry.notifyLoading = true;
+    entry.notifyUrl = '';
+    this.candidateService.generateTrackingLink(entry.application.candidateId).subscribe({
+      next: (token) => {
+        entry.notifyLoading = false;
+        const url = `${window.location.origin}/candidat/suivi/${token}`;
+        entry.notifyUrl = url;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).catch(() => {});
+        }
+      },
+      error: () => { entry.notifyLoading = false; }
+    });
+  }
+
+  copyNotifyUrl(entry: DossierEntry, input: HTMLInputElement): void {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(entry.notifyUrl).then(() => {
+        entry.notifyUrl = '';
+      }).catch(() => {
+        input.select();
+        window.prompt('Copiez ce lien :', entry.notifyUrl);
+      });
+    } else {
+      window.prompt('Copiez ce lien :', entry.notifyUrl);
+    }
+  }
+
+  getMailtoLink(entry: DossierEntry): string {
+    const email = encodeURIComponent(entry.application.candidate?.email || '');
+    const firstName = entry.application.candidate?.firstName || '';
+    const lastName = entry.application.candidate?.lastName || '';
+    const subject = encodeURIComponent(`Votre dossier de stage — document disponible`);
+    const body = encodeURIComponent(
+      `Bonjour ${firstName} ${lastName},\n\n` +
+      `Votre demande de stage a été traitée et signée. Vous pouvez consulter et télécharger votre document depuis votre espace de suivi :\n\n` +
+      `${entry.notifyUrl}\n\n` +
+      `Cordialement,\nL'équipe RH`
+    );
+    return `https://mail.google.com/mail/?view=cm&to=${email}&su=${subject}&body=${body}`;
   }
 
   previewDoc(entry: DossierEntry, doc: any): void {
