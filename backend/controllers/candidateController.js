@@ -802,10 +802,10 @@ exports.uploadDocumentByTrackingToken = async (req, res) => {
 // @access  Public
 exports.downloadDocumentByTrackingToken = async (req, res) => {
   try {
-    const candidate = await Candidate.findOne({ trackingToken: req.params.token });
+    const candidate = await Candidate.findOne({ trackingToken: req.params.token }).lean();
     if (!candidate) return res.status(404).json({ success: false, message: 'Candidate not found' });
 
-    const doc = (candidate.documents || []).find(d => d.id === req.params.docId);
+    const doc = (candidate.documents || []).find(d => String(d.id) === req.params.docId);
     if (!doc) return res.status(404).json({ success: false, message: 'Document not found' });
 
     res.status(200).json({ success: true, data: { name: doc.name, content: doc.content, isSigned: doc.isSigned, type: doc.type, status: doc.status } });
