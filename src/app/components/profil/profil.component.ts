@@ -1463,17 +1463,17 @@ export class ProfilComponent implements OnInit {
         const url = `${window.location.origin}/candidat/suivi/${token}`;
         this.ngZone.run(() => {
           this.trackingLoading = false;
-          // On HTTPS: clipboard API works even from async context
-          if (location.protocol === 'https:' && navigator.clipboard) {
+          // Always show the URL box so the user can always find the link
+          this.trackingUrl = url;
+          // Also try clipboard — works on localhost (secure context) and HTTPS
+          if (navigator.clipboard) {
             navigator.clipboard.writeText(url).then(() => {
               this.trackingCopied = true;
+              this.trackingUrl = '';  // hide box — clipboard succeeded
               setTimeout(() => { this.trackingCopied = false; }, 3000);
             }).catch(() => {
-              this.trackingUrl = url;
+              // URL box stays visible — user can copy manually
             });
-          } else {
-            // HTTP / localhost: show URL box, let user copy from it
-            this.trackingUrl = url;
           }
         });
       },
