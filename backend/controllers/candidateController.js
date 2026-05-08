@@ -374,10 +374,11 @@ exports.bulkUpdateStatus = async (req, res) => {
         emailSent: false
       };
 
-      candidate.status = newStatus;
-      candidate.statusHistory = candidate.statusHistory || [];
-      candidate.statusHistory.push(change);
-      await candidate.save();
+      // Use raw driver to avoid CastError on large document content
+      await Candidate.collection.updateOne(
+        { _id: candidate._id },
+        { $set: { status: newStatus }, $push: { statusHistory: change } }
+      );
 
       // Also update any related Application documents so the kanban (applications) reflects the new status
       try {
@@ -421,12 +422,15 @@ exports.bulkUpdateStatus = async (req, res) => {
 // @access  Private (Recruiter only)
 exports.generateTrackingToken = async (req, res) => {
   try {
-    const candidate = await Candidate.findById(req.params.id);
-    if (!candidate) return res.status(404).json({ success: false, message: 'Candidate not found' });
+    const exists = await Candidate.exists({ _id: req.params.id });
+    if (!exists) return res.status(404).json({ success: false, message: 'Candidate not found' });
 
     const token = `${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
-    candidate.trackingToken = token;
-    await candidate.save();
+    // Use raw driver to avoid Mongoose CastError on documents with large HTML content
+    await Candidate.collection.updateOne(
+      { _id: new mongoose.Types.ObjectId(req.params.id) },
+      { $set: { trackingToken: token } }
+    );
 
     res.status(200).json({ success: true, data: { token, trackingUrl: `${req.protocol}://${req.get('host')}/candidat/suivi/${token}` } });
   } catch (error) {
@@ -663,21 +667,23 @@ exports.generateAssignmentLetter = async (req, res) => {
       }
     };
 
-    candidate.documents = candidate.documents || [];
-    candidate.documents.push(assignmentDoc);
-    const previousStatus = candidate.status;
-    candidate.status = 'offre_envoyee';
-    candidate.statusHistory = candidate.statusHistory || [];
-    candidate.statusHistory.push({
+    const historyEntry = {
       id: `${Date.now()}_${Math.random().toString(36).substr(2,8)}`,
-      previousStatus,
+      previousStatus: candidate.status,
       newStatus: 'offre_envoyee',
       changedBy: req.user.id,
       changedAt: new Date(),
       comment: 'Lettre d affectation generee et envoyee au candidat.',
       emailSent: false
-    });
-    await candidate.save();
+    };
+    // Use raw driver to avoid CastError on large document content
+    await Candidate.collection.updateOne(
+      { _id: new mongoose.Types.ObjectId(req.params.id) },
+      {
+        $push: { documents: assignmentDoc, statusHistory: historyEntry },
+        $set: { status: 'offre_envoyee' }
+      }
+    );
 
     res.status(201).json({ success: true, data: assignmentDoc });
   } catch (error) {
