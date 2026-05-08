@@ -685,11 +685,27 @@ export class CandidateTrackingComponent implements OnInit {
 
     this.candidateService.downloadTrackingDocument(this.trackingToken, doc.id).subscribe({
       next: (response) => {
-        const blob = new Blob([response.content], { type: 'text/html;charset=utf-8' });
+        const content = response.content || '';
+        const name = response.name || doc.name;
+        let blob: Blob;
+        const isBase64 = content.length > 0 && /^[A-Za-z0-9+/=\r\n]+$/.test(content.trim());
+        if (isBase64) {
+          const binary = atob(content.replace(/\s/g, ''));
+          const arr = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+          const lower = name.toLowerCase();
+          const mime = lower.endsWith('.pdf') ? 'application/pdf'
+            : lower.endsWith('.png') ? 'image/png'
+            : lower.endsWith('.jpg') || lower.endsWith('.jpeg') ? 'image/jpeg'
+            : 'application/octet-stream';
+          blob = new Blob([arr], { type: mime });
+        } else {
+          blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+        }
         const url = window.URL.createObjectURL(blob);
         const link = window.document.createElement('a');
         link.href = url;
-        link.download = response.name || doc.name;
+        link.download = name;
         link.click();
         window.URL.revokeObjectURL(url);
       }
