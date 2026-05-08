@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -33,6 +33,7 @@ interface DossierEntry {
   reuploadError: string;
   notifyLoading: boolean;
   notifyUrl: string;
+  notifyError: string;
 }
 
 @Component({
@@ -133,6 +134,8 @@ interface DossierEntry {
               </a>
             </div>
           </div>
+
+          <div *ngIf="entry.notifyError" class="alert alert-error" style="margin-top:8px">{{ entry.notifyError }}</div>
 
           <!-- Documents section -->
           <div class="docs-section">
@@ -759,7 +762,8 @@ export class DossiersComponent implements OnInit {
   constructor(
     private matchingService: MatchingService,
     private candidateService: CandidateService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   viewProfile(candidateId: string): void {
@@ -799,7 +803,8 @@ export class DossiersComponent implements OnInit {
         reuploadSuccess: '',
         reuploadError: '',
         notifyLoading: false,
-        notifyUrl: ''
+        notifyUrl: '',
+        notifyError: ''
       }));
       this.loading = false;
       this.loadAllDocuments();
@@ -835,7 +840,8 @@ export class DossiersComponent implements OnInit {
         reuploadSuccess: '',
         reuploadError: '',
         notifyLoading: false,
-        notifyUrl: ''
+        notifyUrl: '',
+        notifyError: ''
       }));
       this.loading = false;
       this.loadAllDocuments();
@@ -989,16 +995,23 @@ export class DossiersComponent implements OnInit {
   notifyCandidate(entry: DossierEntry): void {
     entry.notifyLoading = true;
     entry.notifyUrl = '';
+    entry.notifyError = '';
+    this.cdr.detectChanges();
     this.candidateService.generateTrackingLink(entry.application.candidateId).subscribe({
       next: (token) => {
         entry.notifyLoading = false;
         const url = `${window.location.origin}/candidat/suivi/${token}`;
         entry.notifyUrl = url;
+        this.cdr.detectChanges();
         if (navigator.clipboard) {
           navigator.clipboard.writeText(url).catch(() => {});
         }
       },
-      error: () => { entry.notifyLoading = false; }
+      error: (err: any) => {
+        entry.notifyLoading = false;
+        entry.notifyError = err?.error?.message || err?.message || 'Erreur lors de la génération du lien.';
+        this.cdr.detectChanges();
+      }
     });
   }
 
