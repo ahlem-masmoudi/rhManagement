@@ -74,6 +74,15 @@ export interface Application {
     type: string;
     status?: string;
   };
+  interviewDate?: string;
+  interviewTime?: string;
+  interviewNotes?: string;
+  evaluation?: {
+    rating?: string;
+    outcome?: string;
+    comment?: string;
+    evaluatedAt?: Date;
+  };
 }
 
 // Gestion des documents pour les candidatures

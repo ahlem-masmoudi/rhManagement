@@ -57,6 +57,44 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
           </div>
         </div>
 
+        <!-- Interview info (preselectionne / entretien_programme) -->
+        <div class="card interview-card" *ngIf="hasInterviewInfo()">
+          <h2>📅 Votre entretien</h2>
+          <div class="interview-info">
+            <div class="interview-row">
+              <span class="interview-icon">🗓️</span>
+              <div>
+                <div class="interview-label">Date</div>
+                <div class="interview-value">{{ formatInterviewDate(application?.interviewDate) }}</div>
+              </div>
+            </div>
+            <div class="interview-row">
+              <span class="interview-icon">🕐</span>
+              <div>
+                <div class="interview-label">Heure</div>
+                <div class="interview-value">{{ application?.interviewTime }}</div>
+              </div>
+            </div>
+            <div class="interview-row" *ngIf="application?.offer?.title">
+              <span class="interview-icon">💼</span>
+              <div>
+                <div class="interview-label">Poste</div>
+                <div class="interview-value">{{ application?.offer?.title }}</div>
+              </div>
+            </div>
+            <div class="interview-row" *ngIf="application?.interviewNotes">
+              <span class="interview-icon">📝</span>
+              <div>
+                <div class="interview-label">Notes</div>
+                <div class="interview-value">{{ application?.interviewNotes }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="interview-advice">
+            💡 Merci de vous présenter à l'heure indiquée. En cas d'empêchement, contactez-nous dans les meilleurs délais.
+          </div>
+        </div>
+
         <!-- Upload demande de stage -->
         <div class="card upload-card" *ngIf="canUploadDemandeStage()">
           <h2>📤 Déposer votre demande de stage</h2>
@@ -447,6 +485,15 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       margin: var(--spacing-sm) 0;
     }
 
+    /* Interview card */
+    .interview-card { border-left: 4px solid #06b6d4; }
+    .interview-info { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+    .interview-row { display: flex; align-items: flex-start; gap: 12px; }
+    .interview-icon { font-size: 22px; line-height: 1; }
+    .interview-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.5px; }
+    .interview-value { font-size: 16px; font-weight: 600; color: #111827; margin-top: 2px; }
+    .interview-advice { background: #ecfeff; border: 1px solid #a5f3fc; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #0e7490; }
+
     @media (max-width: 768px) {
       .tracking-page { padding: var(--spacing-md); }
       .timeline { padding-left: 32px; }
@@ -482,6 +529,7 @@ export class CandidateTrackingComponent implements OnInit {
     if (this.trackingToken) {
       this.candidateService.getTrackingCandidate(this.trackingToken).subscribe({
         next: (candidate) => {
+          this.application = candidate.application || null;
           this.candidate = {
             id: candidate._id,
             firstName: candidate.userId?.firstName || '',
@@ -518,15 +566,19 @@ export class CandidateTrackingComponent implements OnInit {
   uploadError = '';
   uploadSuccess = false;
 
+  application: any = null;
+
   get needsDocuments(): boolean {
     return this.candidate?.status === 'en_attente_documents' ||
-           this.candidate?.status === 'preselectionne';
+           this.candidate?.status === 'offre_acceptee';
+  }
+
+  hasInterviewInfo(): boolean {
+    return !!this.application?.interviewDate && !!this.application?.interviewTime;
   }
 
   canUploadDemandeStage(): boolean {
-    const active = ['preselectionne','en_attente_documents','documents_recus',
-      'entretien_programme','entretien_realise','test_technique',
-      'validation_finale','offre_envoyee','offre_acceptee'];
+    const active = ['offre_acceptee', 'en_attente_documents', 'documents_recus'];
     return active.includes(this.candidate?.status || '');
   }
 
@@ -685,10 +737,10 @@ export class CandidateTrackingComponent implements OnInit {
   getStatusDescription(status: string): string {
     const descriptions: Record<string, string> = {
       'nouveau': 'Votre candidature a bien été reçue et est en cours d\'examen.',
-      'preselectionne': 'Félicitations ! Votre profil a retenu notre attention.',
-      'en_attente_documents': 'Merci de déposer les documents demandés pour continuer.',
-      'documents_recus': 'Vos documents sont en cours de vérification.',
-      'entretien_programme': 'Un entretien sera bientôt programmé.',
+      'preselectionne': 'Félicitations ! Votre profil a retenu notre attention. Consultez ci-dessous la date et l\'heure de votre entretien.',
+      'en_attente_documents': 'Votre candidature est acceptée. Veuillez déposer votre demande de stage (formulaire vierge) ci-dessous.',
+      'documents_recus': 'Votre demande de stage a été reçue. Le service RH est en train de la traiter.',
+      'entretien_programme': 'Votre entretien est confirmé. Consultez les détails ci-dessous.',
       'entretien_realise': 'Merci pour votre participation à l\'entretien.',
       'test_technique': 'Vous allez recevoir un test technique.',
       'validation_finale': 'Votre candidature est en validation finale.',
@@ -708,6 +760,13 @@ export class CandidateTrackingComponent implements OnInit {
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
+    });
+  }
+
+  formatInterviewDate(dateStr: string): string {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
     });
   }
 }

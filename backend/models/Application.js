@@ -61,6 +61,17 @@ const ApplicationSchema = new mongoose.Schema({
   missingSkills: {
     type: [String],
     default: []
+  },
+  // Interview scheduling
+  interviewDate: { type: String },
+  interviewTime: { type: String },
+  interviewNotes: { type: String },
+  // Post-internship evaluation
+  evaluation: {
+    rating: { type: String, enum: ['insuffisant', 'bien', 'tres_bien', 'excellent'] },
+    outcome: { type: String, enum: ['aucun', 'stage_suivant', 'embauche'] },
+    comment: { type: String },
+    evaluatedAt: { type: Date }
   }
 }, {
   timestamps: true

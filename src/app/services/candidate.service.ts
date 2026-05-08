@@ -421,6 +421,31 @@ export class CandidateService {
     );
   }
 
+  // ── Interview scheduling ────────────────────────────────────────────────────
+  getBookedSlots(): Observable<{ date: string; time: string }[]> {
+    return this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiUrl}/applications/booked-slots`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(map(r => r.data || []), catchError(err => { throw err; }));
+  }
+
+  scheduleInterview(applicationId: string, payload: { interviewDate: string; interviewTime: string; interviewNotes?: string }): Observable<any> {
+    return this.http.patch<{ success: boolean; data: any }>(
+      `${this.apiUrl}/applications/${applicationId}/interview`,
+      payload,
+      { headers: this.getAuthHeaders() }
+    ).pipe(map(r => r.data), catchError(err => { throw err; }));
+  }
+
+  // ── Post-internship evaluation ──────────────────────────────────────────────
+  evaluateApplication(applicationId: string, payload: { rating: string; outcome: string; comment: string }): Observable<any> {
+    return this.http.patch<{ success: boolean; data: any }>(
+      `${this.apiUrl}/applications/${applicationId}/evaluate`,
+      payload,
+      { headers: this.getAuthHeaders() }
+    ).pipe(map(r => r.data), catchError(err => { throw err; }));
+  }
+
   addNote(candidateId: string, note: any): void {
     const candidates = this.candidatesSubject.value;
     const index = candidates.findIndex(c => c.id === candidateId);

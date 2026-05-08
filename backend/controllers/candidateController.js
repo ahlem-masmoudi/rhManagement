@@ -76,7 +76,8 @@ function buildAssignmentLetterHtml({
   endDate,
   specialty,
   signatoryName,
-  signatoryTitle
+  signatoryTitle,
+  outcomeComment
 }) {
   const firstName = sanitize(candidate.userId?.firstName);
   const lastName = sanitize(candidate.userId?.lastName);
@@ -138,6 +139,8 @@ function buildAssignmentLetterHtml({
         <p>
           Par ailleurs, je me tiens à votre entière disposition pour tout autre renseignement concernant les stages.
         </p>
+
+        ${outcomeComment ? `<p><em>${sanitize(outcomeComment)}</em></p>` : ''}
 
         <p>Veuillez croire, Madame, Monsieur, à l'expression de ma haute considération.</p>
 
@@ -303,25 +306,36 @@ exports.getCandidate = async (req, res) => {
 // @access  Public
 exports.getCandidateByTrackingToken = async (req, res) => {
   try {
-    const candidate = await Candidate.findOne({ trackingToken: req.params.token }).populate('userId', '-password');
+    const candidate = await Candidate.findOne({ trackingToken: req.params.token })
+      .populate('userId', '-password')
+      .lean();
 
     if (!candidate) {
-      return res.status(404).json({
-        success: false,
-        message: 'Candidate not found'
+      return res.status(404).json({ success: false, message: 'Candidate not found' });
+    }
+
+    // Strip document content from listing (download endpoint handles full content)
+    if (Array.isArray(candidate.documents)) {
+      candidate.documents = candidate.documents.map(doc => {
+        const { content, ...rest } = doc;
+        return { ...rest, hasContent: !!content };
       });
     }
 
+    // Attach latest interview info from Application model
+    const Application = require('../models/Application');
+    const latestApp = await Application.findOne({ candidate: candidate._id })
+      .sort({ createdAt: -1 })
+      .select('interviewDate interviewTime interviewNotes status offer evaluation')
+      .populate('offer', 'title')
+      .lean();
+
     res.status(200).json({
       success: true,
-      data: candidate
+      data: { ...candidate, application: latestApp || null }
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching candidate tracking',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error fetching candidate tracking', error: error.message });
   }
 };
 
@@ -595,6 +609,13 @@ exports.generateAssignmentLetter = async (req, res) => {
       });
     }
 
+    const outcomeCommentMap = {
+      embauche: 'À l\'issue de ce stage, l\'étudiant(e) a reçu une proposition d\'embauche. Nous tenons à vous remercier chaleureusement pour votre accueil et l\'opportunité offerte.',
+      stage_suivant: 'Les compétences démontrées durant ce stage ouvrent la voie à une collaboration renouvelée l\'année suivante. Nous vous remercions pour votre investissement dans la formation de nos étudiants.',
+      aucun: ''
+    };
+    const outcomeComment = req.body.outcomeComment || (req.body.outcome ? outcomeCommentMap[req.body.outcome] || '' : '');
+
     const html = buildAssignmentLetterHtml({
       candidate,
       companyName: req.body.companyName,
@@ -607,7 +628,8 @@ exports.generateAssignmentLetter = async (req, res) => {
       endDate: req.body.endDate,
       specialty: req.body.specialty,
       signatoryName: req.body.signatoryName,
-      signatoryTitle: req.body.signatoryTitle
+      signatoryTitle: req.body.signatoryTitle,
+      outcomeComment
     });
 
     const assignmentDoc = {

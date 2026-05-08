@@ -2,6 +2,7 @@ const Application = require('../models/Application');
 const Candidate = require('../models/Candidate');
 const Offer = require('../models/Offer');
 const User = require('../models/User');
+const { sendInterviewEmail, sendAcceptanceEmail } = require('../services/emailService');
 
 function normalizeSkill(value) {
   return String(value || '')
@@ -384,28 +385,119 @@ exports.updateApplicationStatus = async (req, res) => {
       });
     }
 
-    const application = await Application.findById(applicationId);
+    const application = await Application.findById(applicationId)
+      .populate({ path: 'candidate', populate: { path: 'userId', select: 'email firstName lastName' } })
+      .populate('offer', 'title');
 
     if (!application) {
-      return res.status(404).json({
-        success: false,
-        message: 'Application not found'
-      });
+      return res.status(404).json({ success: false, message: 'Application not found' });
     }
 
     application.status = status;
     await application.save();
 
-    res.status(200).json({
-      success: true,
-      data: application
-    });
+    // Send email when candidate is accepted
+    if (status === 'offre_acceptee') {
+      const cand = application.candidate;
+      const user = cand?.userId;
+      if (user?.email && cand?.trackingToken) {
+        const baseUrl = process.env.FRONTEND_URL || 'https://rhmanagement.netlify.app';
+        sendAcceptanceEmail({
+          to: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          offerTitle: application.offer?.title,
+          trackingUrl: `${baseUrl}/candidat/suivi/${cand.trackingToken}`
+        }).catch(e => console.error('[EMAIL ERROR]', e.message));
+      }
+    }
+
+    res.status(200).json({ success: true, data: application });
   } catch (error) {
     console.error('Error updating application:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating application',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error updating application', error: error.message });
+  }
+};
+
+// @desc    Get all booked interview slots (date + time combinations already taken)
+// @route   GET /api/applications/booked-slots
+// @access  Private (Recruiter)
+exports.getBookedSlots = async (req, res) => {
+  try {
+    const booked = await Application.find(
+      { interviewDate: { $exists: true, $ne: null } },
+      { interviewDate: 1, interviewTime: 1 }
+    ).lean();
+    res.json({ success: true, data: booked.map(b => ({ date: b.interviewDate, time: b.interviewTime })) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Schedule interview for an application
+// @route   PATCH /api/applications/:applicationId/interview
+// @access  Private (Recruiter)
+exports.scheduleInterview = async (req, res) => {
+  try {
+    const { interviewDate, interviewTime, interviewNotes } = req.body;
+    if (!interviewDate || !interviewTime) {
+      return res.status(400).json({ success: false, message: 'interviewDate and interviewTime are required' });
+    }
+
+    const application = await Application.findById(req.params.applicationId)
+      .populate({ path: 'candidate', populate: { path: 'userId', select: 'email firstName lastName' } })
+      .populate('offer', 'title');
+
+    if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
+
+    application.interviewDate = interviewDate;
+    application.interviewTime = interviewTime;
+    if (interviewNotes !== undefined) application.interviewNotes = interviewNotes;
+    application.status = 'entretien_programme';
+    await application.save();
+
+    // Send interview email
+    const cand = application.candidate;
+    const user = cand?.userId;
+    if (user?.email && cand?.trackingToken) {
+      const baseUrl = process.env.FRONTEND_URL || 'https://rhmanagement.netlify.app';
+      sendInterviewEmail({
+        to: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        interviewDate,
+        interviewTime,
+        offerTitle: application.offer?.title,
+        trackingUrl: `${baseUrl}/candidat/suivi/${cand.trackingToken}`
+      }).catch(e => console.error('[EMAIL ERROR]', e.message));
+    }
+
+    res.json({ success: true, data: application });
+  } catch (error) {
+    console.error('Error scheduling interview:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Evaluate a candidate after internship
+// @route   PATCH /api/applications/:applicationId/evaluate
+// @access  Private (Recruiter)
+exports.evaluateApplication = async (req, res) => {
+  try {
+    const { rating, outcome, comment } = req.body;
+    const validRatings = ['insuffisant', 'bien', 'tres_bien', 'excellent'];
+    const validOutcomes = ['aucun', 'stage_suivant', 'embauche'];
+    if (rating && !validRatings.includes(rating)) return res.status(400).json({ success: false, message: 'Invalid rating' });
+    if (outcome && !validOutcomes.includes(outcome)) return res.status(400).json({ success: false, message: 'Invalid outcome' });
+
+    const application = await Application.findByIdAndUpdate(
+      req.params.applicationId,
+      { $set: { evaluation: { rating, outcome, comment, evaluatedAt: new Date() } } },
+      { new: true }
+    );
+    if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
+    res.json({ success: true, data: application });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

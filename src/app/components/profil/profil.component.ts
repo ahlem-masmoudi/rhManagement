@@ -212,6 +212,98 @@ import { Candidate, CandidateStatus, Application } from '../../models';
               </ng-container>
             </div>
 
+            <!-- INTERVIEW TAB -->
+            <div *ngIf="activeTab === 'interview'">
+              <h3>Programmer l'entretien</h3>
+              <div *ngIf="currentInterview()" class="interview-current">
+                <div class="interview-badge">
+                  <span>📅 Entretien planifié :</span>
+                  <strong>{{ formatInterviewDate(currentInterview()?.interviewDate) }} à {{ currentInterview()?.interviewTime }}</strong>
+                </div>
+                <p *ngIf="currentInterview()?.interviewNotes" class="text-muted" style="margin:6px 0 0">{{ currentInterview()?.interviewNotes }}</p>
+              </div>
+              <div class="interview-form">
+                <div class="form-grid">
+                  <label class="field">
+                    <span>Date *</span>
+                    <input type="date" [(ngModel)]="interviewForm.date" [min]="todayIso"
+                           [class.booked-warning]="isSlotBooked(interviewForm.date, interviewForm.time)">
+                  </label>
+                  <label class="field">
+                    <span>Heure *</span>
+                    <select [(ngModel)]="interviewForm.time">
+                      <option value="">-- Choisir --</option>
+                      <option *ngFor="let slot of timeSlots" [value]="slot"
+                              [disabled]="isSlotBooked(interviewForm.date, slot)">
+                        {{ slot }}{{ isSlotBooked(interviewForm.date, slot) ? ' (déjà pris)' : '' }}
+                      </option>
+                    </select>
+                  </label>
+                  <label class="field field-full">
+                    <span>Notes / Instructions</span>
+                    <input type="text" [(ngModel)]="interviewForm.notes" placeholder="Ex: Apportez votre CV, entretien en visioconférence...">
+                  </label>
+                </div>
+                <div *ngIf="isSlotBooked(interviewForm.date, interviewForm.time)" class="slot-warning">
+                  ⚠️ Ce créneau est déjà réservé pour un autre candidat.
+                </div>
+                <div *ngIf="interviewError" class="alert-error-inline">{{ interviewError }}</div>
+                <div *ngIf="interviewSuccess" class="alert-success-inline">{{ interviewSuccess }}</div>
+                <div style="margin-top:16px">
+                  <button class="btn btn-primary"
+                          [disabled]="interviewLoading || !interviewForm.date || !interviewForm.time || isSlotBooked(interviewForm.date, interviewForm.time)"
+                          (click)="saveInterview()">
+                    <span *ngIf="!interviewLoading">{{ currentInterview() ? 'Modifier l\'entretien' : 'Programmer l\'entretien' }}</span>
+                    <span *ngIf="interviewLoading">Enregistrement...</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- EVALUATION TAB -->
+            <div *ngIf="activeTab === 'evaluation'">
+              <h3>Évaluation post-stage</h3>
+              <p class="text-muted">À remplir après la fin du stage du candidat.</p>
+              <div *ngIf="currentEvaluation()" class="eval-current">
+                <span class="eval-badge-saved">Évaluation enregistrée ✓</span>
+              </div>
+              <div class="form-grid" style="margin-top:16px">
+                <label class="field">
+                  <span>Note globale *</span>
+                  <select [(ngModel)]="evalForm.rating">
+                    <option value="">-- Choisir --</option>
+                    <option value="insuffisant">Insuffisant</option>
+                    <option value="bien">Bien</option>
+                    <option value="tres_bien">Très bien</option>
+                    <option value="excellent">Excellent</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Suite envisagée *</span>
+                  <select [(ngModel)]="evalForm.outcome">
+                    <option value="">-- Choisir --</option>
+                    <option value="aucun">Aucune suite</option>
+                    <option value="stage_suivant">Nouveau stage l'année suivante</option>
+                    <option value="embauche">Proposition d'embauche</option>
+                  </select>
+                </label>
+                <label class="field field-full">
+                  <span>Commentaire</span>
+                  <textarea [(ngModel)]="evalForm.comment" rows="4"
+                    placeholder="Observations sur le travail du stagiaire..."></textarea>
+                </label>
+              </div>
+              <div *ngIf="evalError" class="alert-error-inline">{{ evalError }}</div>
+              <div *ngIf="evalSuccess" class="alert-success-inline">{{ evalSuccess }}</div>
+              <div style="margin-top:16px">
+                <button class="btn btn-primary"
+                        [disabled]="evalLoading || !evalForm.rating || !evalForm.outcome"
+                        (click)="saveEvaluation()">
+                  {{ evalLoading ? 'Enregistrement...' : 'Sauvegarder l\'évaluation' }}
+                </button>
+              </div>
+            </div>
+
             <!-- NOTES TAB -->
             <div *ngIf="activeTab === 'notes'">
               <h3>Notes internes</h3>
@@ -337,6 +429,14 @@ import { Candidate, CandidateStatus, Application } from '../../models';
                 <label class="field">
                   <span>Fonction</span>
                   <input [(ngModel)]="assignmentForm.signatoryTitle" />
+                </label>
+                <label class="field field-full">
+                  <span>Suite du stage <span style="font-weight:400;color:#9ca3af">(optionnel — ajoute un commentaire professionnel)</span></span>
+                  <select [(ngModel)]="assignmentForm.outcome">
+                    <option value="">-- Aucune mention --</option>
+                    <option value="stage_suivant">Nouveau stage l'année suivante</option>
+                    <option value="embauche">Proposition d'embauche</option>
+                  </select>
                 </label>
               </div>
             </div>
@@ -912,6 +1012,17 @@ import { Candidate, CandidateStatus, Application } from '../../models';
       font-size: 14px;
     }
 
+    /* Interview / Evaluation tabs */
+    .interview-current { background:#ecfeff; border:1px solid #a5f3fc; border-radius:10px; padding:12px 16px; margin-bottom:16px; }
+    .interview-badge { display:flex; align-items:center; gap:8px; font-size:14px; }
+    .interview-form .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .slot-warning { color:#b45309; background:#fef3c7; border:1px solid #fcd34d; border-radius:8px; padding:8px 12px; font-size:13px; margin-top:6px; }
+    .booked-warning { border-color:#ef4444 !important; }
+    .alert-error-inline { color:#dc2626; background:#fee2e2; border-radius:8px; padding:8px 12px; font-size:13px; margin-top:8px; }
+    .alert-success-inline { color:#065f46; background:#d1fae5; border-radius:8px; padding:8px 12px; font-size:13px; margin-top:8px; }
+    .eval-current { margin-bottom:12px; }
+    .eval-badge-saved { display:inline-block; padding:4px 12px; background:#d1fae5; color:#065f46; border-radius:999px; font-size:12px; font-weight:700; }
+
     /* Modal */
     .modal-overlay {
       position: fixed;
@@ -1148,14 +1259,17 @@ export class ProfilComponent implements OnInit {
     startDate: '',
     endDate: '',
     signatoryName: 'Direction des stages',
-    signatoryTitle: 'La Direction des Stages'
+    signatoryTitle: 'La Direction des Stages',
+    outcome: ''
   };
 
   tabs = [
     { id: 'resume',    label: 'Résumé' },
     { id: 'skills',    label: 'Compétences' },
+    { id: 'interview', label: '📅 Entretien' },
+    { id: 'evaluation', label: '⭐ Évaluation' },
     { id: 'documents', label: 'Documents RH' },
-    { id: 'notes',       label: 'Notes' },
+    { id: 'notes',     label: 'Notes' },
   ];
 
   candidateApplications: Application[] = [];
@@ -1172,6 +1286,7 @@ export class ProfilComponent implements OnInit {
     if (id) {
       this.loadCandidate(id);
     }
+    this.loadBookedSlots();
   }
 
   loadCandidate(id: string): void {
@@ -1205,6 +1320,17 @@ export class ProfilComponent implements OnInit {
 
       this.matchingService.getApplications().subscribe(apps => {
         this.candidateApplications = apps.filter(a => a.candidateId === id);
+        const firstApp = this.candidateApplications[0] as any;
+        if (firstApp?.interviewDate) {
+          this.interviewForm.date = firstApp.interviewDate;
+          this.interviewForm.time = firstApp.interviewTime || '';
+          this.interviewForm.notes = firstApp.interviewNotes || '';
+        }
+        if (firstApp?.evaluation?.rating) {
+          this.evalForm.rating = firstApp.evaluation.rating;
+          this.evalForm.outcome = firstApp.evaluation.outcome || '';
+          this.evalForm.comment = firstApp.evaluation.comment || '';
+        }
       });
     });
   }
@@ -1217,7 +1343,12 @@ export class ProfilComponent implements OnInit {
   }
 
   visibleTabs() {
-    return this.tabs.filter(t => t.id !== 'documents' || !this.shouldHideRhDocuments());
+    return this.tabs.filter(t => {
+      if (t.id === 'documents') return !this.shouldHideRhDocuments();
+      if (t.id === 'interview') return !['nouveau', 'offre_acceptee', 'offre_refusee', 'rejete', 'abandonne'].includes(this.candidate?.status || '');
+      if (t.id === 'evaluation') return ['offre_acceptee', 'entretien_realise', 'validation_finale', 'offre_envoyee'].includes(this.candidate?.status || '');
+      return true;
+    });
   }
 
   getReversedHistory(): any[] {
@@ -1454,6 +1585,7 @@ export class ProfilComponent implements OnInit {
 
   openAssignmentLetterModal(): void {
     if (!this.candidate || !this.canGenerateAssignmentLetter()) return;
+    const existingEval = (this.candidateApplications[0] as any)?.evaluation;
     this.assignmentForm = {
       instituteNameFr: 'Institut Supérieur de Gestion Industrielle de Sfax',
       instituteNameAr: 'المعهد العالي للتصرف الصناعي بصفاقس',
@@ -1466,7 +1598,8 @@ export class ProfilComponent implements OnInit {
       startDate: '',
       endDate: '',
       signatoryName: 'Direction des stages',
-      signatoryTitle: 'La Direction des Stages'
+      signatoryTitle: 'La Direction des Stages',
+      outcome: existingEval?.outcome || ''
     };
     this.showAssignmentModal = true;
   }
@@ -1475,7 +1608,10 @@ export class ProfilComponent implements OnInit {
 
   submitAssignmentLetter(): void {
     if (!this.candidate || !this.canGenerateAssignmentLetter()) return;
-    this.candidateService.generateAssignmentLetter(this.candidate.id, this.assignmentForm).subscribe(() => {
+    this.candidateService.generateAssignmentLetter(this.candidate.id, {
+      ...this.assignmentForm,
+      outcome: this.assignmentForm.outcome || undefined
+    }).subscribe(() => {
       this.loadCandidate(this.candidate!.id);
       this.closeAssignmentLetterModal();
     });
@@ -1490,5 +1626,106 @@ export class ProfilComponent implements OnInit {
   shouldHideRhDocuments(): boolean {
     if (!this.candidate) return true;
     return this.candidate.status === 'nouveau';
+  }
+
+  // ── Interview scheduling ────────────────────────────────────────────────────
+  bookedSlots: { date: string; time: string }[] = [];
+  interviewForm = { date: '', time: '', notes: '' };
+  interviewLoading = false;
+  interviewError = '';
+  interviewSuccess = '';
+  get todayIso(): string { return new Date().toISOString().split('T')[0]; }
+
+  timeSlots = [
+    '08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
+    '12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
+    '16:00','16:30','17:00','17:30'
+  ];
+
+  currentInterview(): any {
+    return this.candidateApplications[0]?.interviewDate ? this.candidateApplications[0] : null;
+  }
+
+  formatInterviewDate(dateStr: string): string {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  isSlotBooked(date: string, time: string): boolean {
+    if (!date || !time) return false;
+    return this.bookedSlots.some(s => s.date === date && s.time === time);
+  }
+
+  loadBookedSlots(): void {
+    this.candidateService.getBookedSlots().subscribe({
+      next: slots => { this.bookedSlots = slots; },
+      error: () => {}
+    });
+  }
+
+  saveInterview(): void {
+    const appId = this.candidateApplications[0]?.id;
+    if (!appId || !this.interviewForm.date || !this.interviewForm.time) return;
+    this.interviewLoading = true;
+    this.interviewError = '';
+    this.interviewSuccess = '';
+    this.candidateService.scheduleInterview(appId, {
+      interviewDate: this.interviewForm.date,
+      interviewTime: this.interviewForm.time,
+      interviewNotes: this.interviewForm.notes
+    }).subscribe({
+      next: (app) => {
+        this.interviewLoading = false;
+        this.interviewSuccess = `Entretien programmé le ${this.formatInterviewDate(this.interviewForm.date)} à ${this.interviewForm.time}. Email envoyé au candidat.`;
+        if (this.candidateApplications[0]) {
+          (this.candidateApplications[0] as any).interviewDate = this.interviewForm.date;
+          (this.candidateApplications[0] as any).interviewTime = this.interviewForm.time;
+        }
+        if (this.candidate) {
+          this.candidate.status = 'entretien_programme' as any;
+          this.selectedStatus = 'entretien_programme';
+        }
+        this.bookedSlots = [...this.bookedSlots, { date: this.interviewForm.date, time: this.interviewForm.time }];
+      },
+      error: (err) => {
+        this.interviewLoading = false;
+        this.interviewError = err?.error?.message || 'Erreur lors de la programmation.';
+      }
+    });
+  }
+
+  // ── Post-internship evaluation ──────────────────────────────────────────────
+  evalForm = { rating: '', outcome: '', comment: '' };
+  evalLoading = false;
+  evalError = '';
+  evalSuccess = '';
+
+  currentEvaluation(): any {
+    return (this.candidateApplications[0] as any)?.evaluation || null;
+  }
+
+  saveEvaluation(): void {
+    const appId = this.candidateApplications[0]?.id;
+    if (!appId) return;
+    this.evalLoading = true;
+    this.evalError = '';
+    this.evalSuccess = '';
+    this.candidateService.evaluateApplication(appId, {
+      rating: this.evalForm.rating,
+      outcome: this.evalForm.outcome,
+      comment: this.evalForm.comment
+    }).subscribe({
+      next: (app) => {
+        this.evalLoading = false;
+        this.evalSuccess = 'Évaluation enregistrée avec succès.';
+        if (this.candidateApplications[0]) {
+          (this.candidateApplications[0] as any).evaluation = app.evaluation;
+        }
+      },
+      error: (err) => {
+        this.evalLoading = false;
+        this.evalError = err?.error?.message || 'Erreur lors de l\'enregistrement.';
+      }
+    });
   }
 }

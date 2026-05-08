@@ -28,6 +28,9 @@ interface DossierEntry {
   stageEndDate: string;
   projectTitle: string;
   projectObjectives: string;
+  reuploadLoading: boolean;
+  reuploadSuccess: string;
+  reuploadError: string;
 }
 
 @Component({
@@ -156,7 +159,18 @@ interface DossierEntry {
                         class="btn-sign" (click)="toggleSignForm(entry)">
                   Signer
                 </button>
+                <label *ngIf="doc.isSigned || doc.type === 'demande_stage' || doc.type === 'convention_stage'"
+                       class="btn-reupload" [class.loading]="entry.reuploadLoading" title="Uploader la version physiquement signée et tamponnée">
+                  <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  {{ entry.reuploadLoading ? '...' : 'Uploader signé' }}
+                  <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none"
+                         (change)="reuploadSignedDoc(entry, doc, $event)">
+                </label>
               </div>
+              <div *ngIf="entry.reuploadSuccess" class="alert alert-success" style="margin-top:6px">{{ entry.reuploadSuccess }}</div>
+              <div *ngIf="entry.reuploadError" class="alert alert-error" style="margin-top:6px">{{ entry.reuploadError }}</div>
             </div>
 
             <!-- Sign form -->
@@ -558,6 +572,19 @@ interface DossierEntry {
     .form-group input:focus, .form-group textarea:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(5,150,105,0.12); outline: none; }
     .form-group textarea { resize: vertical; font-family: inherit; }
 
+    .btn-reupload {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px;
+      background: #eff6ff; color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      border-radius: 7px;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-reupload:hover { background: #dbeafe; }
+    .btn-reupload.loading { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
+
     .sign-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
     .btn-secondary {
       padding: 8px 18px;
@@ -695,7 +722,10 @@ export class DossiersComponent implements OnInit {
         stageStartDate: '',
         stageEndDate: '',
         projectTitle: '',
-        projectObjectives: ''
+        projectObjectives: '',
+        reuploadLoading: false,
+        reuploadSuccess: '',
+        reuploadError: ''
       }));
       this.loading = false;
       this.loadAllDocuments();
@@ -726,7 +756,10 @@ export class DossiersComponent implements OnInit {
         stageStartDate: '',
         stageEndDate: '',
         projectTitle: '',
-        projectObjectives: ''
+        projectObjectives: '',
+        reuploadLoading: false,
+        reuploadSuccess: '',
+        reuploadError: ''
       }));
       this.loading = false;
       this.loadAllDocuments();
@@ -841,6 +874,38 @@ export class DossiersComponent implements OnInit {
         entry.signError = err?.error?.message || err?.message || 'Erreur lors de la signature.';
       }
     });
+  }
+
+  reuploadSignedDoc(entry: DossierEntry, doc: any, event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    entry.reuploadLoading = true;
+    entry.reuploadSuccess = '';
+    entry.reuploadError = '';
+    const reader = new FileReader();
+    reader.onload = () => {
+      const raw = reader.result as string;
+      const content = raw.includes(',') ? raw.split(',')[1] : raw;
+      const candidateId = entry.application.candidateId;
+      this.candidateService.uploadCandidateDocument(candidateId, {
+        name: `${doc.name.replace(/\.[^.]+$/, '')}_signe_cachet.pdf`,
+        content,
+        type: 'convention_signee'
+      }).subscribe({
+        next: () => {
+          entry.reuploadLoading = false;
+          entry.reuploadSuccess = 'Version signée uploadée avec succès.';
+          this.refreshEntry(entry);
+          (event.target as HTMLInputElement).value = '';
+        },
+        error: (err: any) => {
+          entry.reuploadLoading = false;
+          entry.reuploadError = err?.error?.message || 'Erreur lors de l\'upload.';
+          (event.target as HTMLInputElement).value = '';
+        }
+      });
+    };
+    reader.readAsDataURL(file);
   }
 
   previewDoc(entry: DossierEntry, doc: any): void {
