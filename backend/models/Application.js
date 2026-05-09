@@ -20,7 +20,6 @@ const ApplicationSchema = new mongoose.Schema({
       'documents_recus',
       'entretien_programme',
       'entretien_realise',
-      'test_technique',
       'validation_finale',
       'offre_envoyee',
       'offre_acceptee',

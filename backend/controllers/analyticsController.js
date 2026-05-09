@@ -18,6 +18,7 @@ exports.getAnalytics = async (req, res) => {
       acceptedCount,
       finalCount,
       pendingDocs,
+      departmentsRaw,
     ] = await Promise.all([
       Candidate.countDocuments(),
       Application.countDocuments(),
@@ -96,6 +97,23 @@ exports.getAnalytics = async (req, res) => {
       Candidate.countDocuments({ status: 'offre_acceptee' }),
       Candidate.countDocuments({ status: { $in: ['offre_acceptee', 'rejete', 'abandonne'] } }),
       Candidate.countDocuments({ status: 'en_attente_documents' }),
+
+      // Departments — applications grouped by offer department
+      Application.aggregate([
+        {
+          $lookup: {
+            from: 'offers',
+            localField: 'offer',
+            foreignField: '_id',
+            as: 'offerData',
+          },
+        },
+        { $unwind: '$offerData' },
+        { $match: { 'offerData.department': { $exists: true, $ne: null, $ne: '' } } },
+        { $group: { _id: '$offerData.department', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+      ]),
     ]);
 
     const avgScore = scoredApps.length > 0 ? Math.round(scoredApps[0].avg * 10) / 10 : 0;
@@ -123,6 +141,7 @@ exports.getAnalytics = async (req, res) => {
         scores:    scoresRaw
           .filter(d => d._id !== 'other')
           .map(d => ({ range: `${d._id}–${d._id + 9}%`, count: d.count })),
+        departments: departmentsRaw.map(d => ({ name: d._id, count: d.count })),
       },
     });
   } catch (err) {

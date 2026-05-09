@@ -701,7 +701,6 @@ export class CandidaturesComponent implements OnInit {
     { status: 'en_attente_documents' as CandidateStatus, title: 'En attente de documents' },
     { status: 'documents_recus' as CandidateStatus, title: 'Documents reçus' },
     { status: 'entretien_programme' as CandidateStatus, title: 'Entretien' },
-    { status: 'test_technique' as CandidateStatus, title: 'Test technique' },
     { status: 'offre_envoyee' as CandidateStatus, title: 'Offre envoyée' },
     { status: 'rejete' as CandidateStatus, title: 'Rejeté' }
   ];
@@ -712,7 +711,6 @@ export class CandidaturesComponent implements OnInit {
     { status: 'en_attente_documents' as CandidateStatus, title: 'En attente de documents' },
     { status: 'documents_recus' as CandidateStatus, title: 'Documents reçus' },
     { status: 'entretien_programme' as CandidateStatus, title: 'Entretien' },
-    { status: 'test_technique' as CandidateStatus, title: 'Test technique' },
     { status: 'offre_envoyee' as CandidateStatus, title: 'Offre envoyée' },
     { status: 'offre_acceptee' as CandidateStatus, title: 'Accepté ✓' },
     { status: 'rejete' as CandidateStatus, title: 'Rejeté' }

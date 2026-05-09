@@ -27,8 +27,7 @@ import { Candidate, CandidateStatus, BulkStatusChange } from '../../models';
             <option value="documents_recus">Documents reçus</option>
             <option value="entretien_programme">Entretien programmé</option>
             <option value="entretien_realise">Entretien réalisé</option>
-            <option value="test_technique">Test technique</option>
-            <option value="validation_finale">Validation finale</option>
+<option value="validation_finale">Validation finale</option>
             <option value="offre_envoyee">Offre envoyée</option>
             <option value="offre_acceptee">Offre acceptée</option>
             <option value="offre_refusee">Offre refusée</option>

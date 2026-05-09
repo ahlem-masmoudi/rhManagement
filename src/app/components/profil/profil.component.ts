@@ -1229,7 +1229,6 @@ export class ProfilComponent implements OnInit {
     { value: 'documents_recus',      label: 'Documents reçus' },
     { value: 'entretien_programme',  label: 'Entretien programmé' },
     { value: 'entretien_realise',    label: 'Entretien réalisé' },
-    { value: 'test_technique',       label: 'Test technique' },
     { value: 'validation_finale',    label: 'Validation finale' },
     { value: 'offre_envoyee',        label: 'Offre envoyée' },
     { value: 'offre_acceptee',       label: 'Offre acceptée' },
@@ -1241,8 +1240,7 @@ export class ProfilComponent implements OnInit {
     'nouveau':              'preselectionne',
     'preselectionne':       'entretien_programme',
     'entretien_programme':  'entretien_realise',
-    'entretien_realise':    'test_technique',
-    'test_technique':       'validation_finale',
+    'entretien_realise':    'validation_finale',
     'validation_finale':    'offre_envoyee',
     'offre_envoyee':        'offre_acceptee',
   };
@@ -1377,7 +1375,6 @@ export class ProfilComponent implements OnInit {
       'documents_recus':      'Documents reçus',
       'entretien_programme':  'Entretien programmé',
       'entretien_realise':    'Entretien réalisé',
-      'test_technique':       'Test technique',
       'validation_finale':    'Validation finale',
       'offre_envoyee':        'Offre envoyée',
       'offre_acceptee':       'Offre acceptée',
@@ -1396,7 +1393,6 @@ export class ProfilComponent implements OnInit {
       'documents_recus':      '#8b5cf6',
       'entretien_programme':  '#06b6d4',
       'entretien_realise':    '#0ea5e9',
-      'test_technique':       '#8b5cf6',
       'validation_finale':    '#6366f1',
       'offre_envoyee':        '#10b981',
       'offre_acceptee':       '#059669',
@@ -1620,7 +1616,7 @@ export class ProfilComponent implements OnInit {
   canGenerateAssignmentLetter(): boolean {
     if (!this.candidate) return false;
     return ['preselectionne', 'offre_acceptee', 'entretien_programme', 'entretien_realise',
-            'test_technique', 'validation_finale', 'offre_envoyee'].includes(this.candidate.status as string);
+            'validation_finale', 'offre_envoyee'].includes(this.candidate.status as string);
   }
 
   shouldHideRhDocuments(): boolean {

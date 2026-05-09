@@ -3,6 +3,7 @@ const Candidate = require('../models/Candidate');
 const User = require('../models/User');
 const Application = require('../models/Application');
 const { scoreResumeAgainstOffer } = require('../utils/scoring');
+const { sendAcceptanceEmail } = require('../services/emailService');
 
 function sanitize(value) {
   return String(value || '').trim();
@@ -391,23 +392,37 @@ exports.bulkUpdateStatus = async (req, res) => {
 
       if (sendEmail && candidate.userId && candidate.userId.email) {
         // Prepare an email payload for background sending
+        const baseUrl = process.env.FRONTEND_URL || 'https://rh-management-97bu.vercel.app';
         emails.push({
           to: candidate.userId.email,
           candidateName: `${candidate.userId.firstName} ${candidate.userId.lastName}`,
           previousStatus: previous,
           newStatus,
-          trackingUrl: candidate.trackingToken ? `${req.protocol}://${req.get('host')}/candidat/suivi/${candidate.trackingToken}` : undefined,
+          trackingUrl: candidate.trackingToken ? `${baseUrl}/candidat/suivi/${candidate.trackingToken}` : undefined,
           comment,
           documents: candidate.documents || []
         });
       }
     }
 
-    // Simulate sending emails in background (could push to job queue)
+    // Send acceptance emails for offre_acceptee
     if (emails.length > 0) {
-      // For demo we simply log and pretend they were sent
-      console.log(`Sending ${emails.length} bulk status emails (background)`);
-      emails.forEach(e => console.log(` -> ${e.to} status: ${e.previousStatus} -> ${e.newStatus}`));
+      for (const e of emails) {
+        if (e.newStatus === 'offre_acceptee') {
+          const nameParts = e.candidateName.split(' ');
+          const firstName = nameParts[0] || '';
+          const lastName = nameParts.slice(1).join(' ') || '';
+          sendAcceptanceEmail({
+            to: e.to,
+            firstName,
+            lastName,
+            offerTitle: '',
+            trackingUrl: e.trackingUrl || ''
+          }).catch(err => console.error(`[EMAIL ERROR] Acceptance email to ${e.to}:`, err.message));
+        } else {
+          console.log(`[EMAIL] ${e.to}: ${e.previousStatus} → ${e.newStatus}`);
+        }
+      }
     }
 
     res.status(200).json({ success: true, data: { success, failed, emailsSent: emails.length } });

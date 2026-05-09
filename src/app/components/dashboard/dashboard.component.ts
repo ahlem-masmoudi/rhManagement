@@ -13,7 +13,6 @@ const STATUS_LABELS: Record<string, string> = {
   documents_recus:      'Docs reçus',
   entretien_programme:  'Entretien prévu',
   entretien_realise:    'Entretien réalisé',
-  test_technique:       'Test technique',
   validation_finale:    'Validation finale',
   offre_envoyee:        'Offre envoyée',
   offre_acceptee:       'Accepté ✓',
@@ -28,7 +27,6 @@ const STATUS_COLORS: Record<string, string> = {
   documents_recus:      '#8B5CF6',
   entretien_programme:  '#06B6D4',
   entretien_realise:    '#0EA5E9',
-  test_technique:       '#8B5CF6',
   validation_finale:    '#6366F1',
   offre_envoyee:        '#10B981',
   offre_acceptee:       '#059669',
@@ -38,7 +36,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 const PIPELINE_ORDER = [
   'nouveau', 'preselectionne', 'en_attente_documents', 'documents_recus',
-  'entretien_programme', 'entretien_realise', 'test_technique',
+  'entretien_programme', 'entretien_realise',
   'validation_finale', 'offre_envoyee', 'offre_acceptee', 'rejete', 'abandonne',
 ];
 
@@ -211,17 +209,48 @@ const PIPELINE_ORDER = [
           <div id="chart-skills" class="chart-body"></div>
         </div>
 
-        <!-- Locations -->
+        <!-- Répartition par période -->
         <div class="chart-card chart-span-12">
+          <div class="chart-header">
+            <div class="chart-title-wrap">
+              <div class="chart-icon" style="background:#4F46E5">
+                <svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+              </div>
+              <span>Répartition par période</span>
+            </div>
+            <div class="period-filter">
+              <button class="period-btn" [class.active]="periodMode==='year'"     (click)="setPeriodMode('year')">Par an</button>
+              <button class="period-btn" [class.active]="periodMode==='semester'" (click)="setPeriodMode('semester')">Par semestre</button>
+              <button class="period-btn" [class.active]="periodMode==='quarter'"  (click)="setPeriodMode('quarter')">Par trimestre</button>
+            </div>
+          </div>
+          <div id="chart-period" class="chart-body"></div>
+        </div>
+
+        <!-- Répartition par ville -->
+        <div class="chart-card chart-span-6">
           <div class="chart-header">
             <div class="chart-title-wrap">
               <div class="chart-icon" style="background:#EC4899">
                 <svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
               </div>
-              <span>Répartition géographique des candidats</span>
+              <span>Répartition par ville</span>
             </div>
           </div>
-          <div id="chart-locations" class="chart-body"></div>
+          <div id="chart-cities" class="chart-body"></div>
+        </div>
+
+        <!-- Département avec le plus de candidats -->
+        <div class="chart-card chart-span-6">
+          <div class="chart-header">
+            <div class="chart-title-wrap">
+              <div class="chart-icon" style="background:#0EA5E9">
+                <svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"/></svg>
+              </div>
+              <span>Candidatures par département</span>
+            </div>
+          </div>
+          <div id="chart-departments" class="chart-body"></div>
         </div>
 
       </div>
@@ -326,6 +355,16 @@ const PIPELINE_ORDER = [
     }
     .chart-body { padding: 4px 4px 8px; }
 
+    /* Period filter */
+    .period-filter { display: flex; gap: 6px; }
+    .period-btn {
+      font-size: 11px; font-weight: 600; padding: 4px 12px;
+      border-radius: 20px; border: 1px solid #E5E7EB;
+      background: white; color: #6B7280; cursor: pointer; transition: all .15s;
+    }
+    .period-btn:hover { background: #EEF2FF; color: #4F46E5; border-color: #C7D2FE; }
+    .period-btn.active { background: #4F46E5; color: white; border-color: #4F46E5; }
+
     /* Responsive */
     @media (max-width: 1200px) {
       .kpi-grid { grid-template-columns: repeat(3, 1fr); }
@@ -344,12 +383,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
 
-  today    = new Date();
-  firstName = '';
-  loading   = false;
-  dataReady = false;
-  error     = '';
-  kpi: any  = null;
+  today      = new Date();
+  firstName  = '';
+  loading    = false;
+  dataReady  = false;
+  error      = '';
+  kpi: any   = null;
+  periodMode: 'year' | 'semester' | 'quarter' = 'year';
 
   private analyticsData: any = null;
 
@@ -360,7 +400,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    ['pipeline','donut','monthly','schools','scores','skills','locations'].forEach(id => {
+    ['pipeline','donut','monthly','schools','scores','skills','period','cities','departments'].forEach(id => {
       const el = document.getElementById(`chart-${id}`);
       if (el && (window as any)['Plotly']) Plotly.purge(el);
     });
@@ -406,7 +446,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.renderSchools(d.schools);
     this.renderScores(d.scores);
     this.renderSkills(d.skills);
-    this.renderLocations(d.locations);
+    this.renderPeriod(d.monthly);
+    this.renderCities(d.locations);
+    this.renderDepartments(d.departments);
+  }
+
+  setPeriodMode(mode: 'year' | 'semester' | 'quarter'): void {
+    this.periodMode = mode;
+    this.renderPeriod(this.analyticsData?.monthly);
   }
 
   private cfg = { displayModeBar: false, responsive: true };
@@ -576,6 +623,99 @@ export class DashboardComponent implements OnInit, OnDestroy {
       height: 240,
       margin: { t: 10, b: 60, l: 40, r: 16 },
       xaxis: { ...this.baseLayout().xaxis, tickangle: -30 },
+    }, this.cfg);
+  }
+
+  private aggregateByPeriod(monthly: any[]): { label: string; total: number; accepted: number }[] {
+    const map = new Map<string, { total: number; accepted: number }>();
+
+    for (const m of monthly) {
+      const parts = m.label.split('/');
+      const month = parseInt(parts[0], 10);
+      const year  = parseInt(parts[1], 10);
+      let key: string;
+
+      if (this.periodMode === 'year') {
+        key = `${year}`;
+      } else if (this.periodMode === 'semester') {
+        key = month <= 6 ? `H1 ${year}` : `H2 ${year}`;
+      } else {
+        const q = Math.ceil(month / 3);
+        key = `T${q} ${year}`;
+      }
+
+      const prev = map.get(key) ?? { total: 0, accepted: 0 };
+      map.set(key, { total: prev.total + m.total, accepted: prev.accepted + m.accepted });
+    }
+
+    return Array.from(map.entries()).map(([label, v]) => ({ label, ...v }));
+  }
+
+  private renderPeriod(monthly: any[]): void {
+    if (!monthly?.length) return;
+    const data = this.aggregateByPeriod(monthly);
+
+    Plotly.newPlot('chart-period', [
+      {
+        type: 'bar', name: 'Candidatures',
+        x: data.map(d => d.label), y: data.map(d => d.total),
+        marker: { color: '#4F46E5' },
+        text: data.map(d => d.total.toString()), textposition: 'outside',
+        hovertemplate: '<b>%{x}</b><br>%{y} candidatures<extra></extra>',
+      },
+      {
+        type: 'bar', name: 'Acceptées',
+        x: data.map(d => d.label), y: data.map(d => d.accepted),
+        marker: { color: '#10B981' },
+        text: data.map(d => d.accepted.toString()), textposition: 'outside',
+        hovertemplate: '<b>%{x}</b><br>%{y} acceptées<extra></extra>',
+      },
+    ], {
+      ...this.baseLayout(),
+      barmode: 'group',
+      height: 260,
+      legend: { orientation: 'h', y: 1.15, x: 0, font: { size: 10 } },
+      margin: { t: 16, b: 50, l: 40, r: 16 },
+    }, this.cfg);
+  }
+
+  private renderCities(locations: any[]): void {
+    if (!locations?.length) return;
+    const top = locations.slice(0, 10).reverse();
+    const palette = ['#818CF8','#6366F1','#4F46E5','#4338CA','#3730A3','#312E81','#EC4899','#DB2777','#BE185D','#9D174D'];
+
+    Plotly.newPlot('chart-cities', [{
+      type: 'bar', orientation: 'h',
+      y: top.map((l: any) => l.city),
+      x: top.map((l: any) => l.count),
+      marker: { color: palette.slice(0, top.length) },
+      text: top.map((l: any) => l.count.toString()),
+      textposition: 'outside',
+      hovertemplate: '<b>%{y}</b><br>%{x} candidats<extra></extra>',
+    }], {
+      ...this.baseLayout(top.length * 8),
+      margin: { t: 10, b: 20, l: 120, r: 50 },
+      yaxis: { ...this.baseLayout().yaxis, automargin: true },
+    }, this.cfg);
+  }
+
+  private renderDepartments(departments: any[]): void {
+    if (!departments?.length) return;
+    const top = departments.slice(0, 10).reverse();
+    const palette = ['#BAE6FD','#7DD3FC','#38BDF8','#0EA5E9','#0284C7','#0369A1','#075985','#0C4A6E','#082F49','#0369A1'];
+
+    Plotly.newPlot('chart-departments', [{
+      type: 'bar', orientation: 'h',
+      y: top.map((d: any) => d.name),
+      x: top.map((d: any) => d.count),
+      marker: { color: palette.slice(0, top.length) },
+      text: top.map((d: any) => d.count.toString()),
+      textposition: 'outside',
+      hovertemplate: '<b>%{y}</b><br>%{x} candidatures<extra></extra>',
+    }], {
+      ...this.baseLayout(top.length * 8),
+      margin: { t: 10, b: 20, l: 140, r: 50 },
+      yaxis: { ...this.baseLayout().yaxis, automargin: true },
     }, this.cfg);
   }
 }

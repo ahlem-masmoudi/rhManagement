@@ -1,10 +1,11 @@
 const nodemailer = require('nodemailer');
 
 function createTransport() {
+  const port = parseInt(process.env.SMTP_PORT || '587');
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false,
+    port,
+    secure: port === 465,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
@@ -96,6 +97,19 @@ exports.sendAcceptanceEmail = async ({ to, firstName, lastName, offerTitle, trac
         <p style="color:#6b7280;font-size:13px">
           Après dépôt, le service RH traitera votre document dans les meilleurs délais.
         </p>
+        <div style="background:#5865f2;border-radius:8px;padding:20px 24px;margin:24px 0">
+          <p style="margin:0;font-weight:700;color:#fff;font-size:15px">💬 Groupe Discord d'encadrement</p>
+          <p style="margin:10px 0;color:#e0e7ff;line-height:1.6;font-size:14px">
+            Afin de faciliter la communication durant votre encadrement, nous avons créé un groupe Discord.<br/>
+            N'hésitez pas à rejoindre ce groupe pour échanger avec votre encadrant.
+          </p>
+          <div style="text-align:center;margin-top:16px">
+            <a href="https://discord.gg/MMyjmtNA"
+               style="background:#fff;color:#5865f2;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block">
+              Rejoindre le Discord
+            </a>
+          </div>
+        </div>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
         <p style="color:#9ca3af;font-size:12px;text-align:center">${APP_NAME} — Institut National d'Études Technologiques</p>
       </div>
