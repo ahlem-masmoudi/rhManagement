@@ -348,7 +348,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
     .auth-left {
       position: relative;
       overflow: hidden;
-      background: linear-gradient(145deg, #130e3a 0%, #1e1660 35%, #2b2080 70%, #120d3a 100%);
+      background: linear-gradient(145deg, #1e3a8a 0%, #3730a3 35%, #6d28d9 65%, #4c1d95 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -364,19 +364,19 @@ type AuthView = 'login' | 'forgot' | 'reset';
     }
     .orb-1 {
       width: 420px; height: 420px;
-      background: radial-gradient(circle, rgba(107,94,197,0.45) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(37,99,235,0.5) 0%, transparent 70%);
       top: -120px; left: -100px;
       animation: drift1 12s ease-in-out infinite;
     }
     .orb-2 {
       width: 320px; height: 320px;
-      background: radial-gradient(circle, rgba(155,149,224,0.3) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(124,58,237,0.45) 0%, transparent 70%);
       bottom: -80px; right: -60px;
       animation: drift2 15s ease-in-out infinite;
     }
     .orb-3 {
       width: 260px; height: 260px;
-      background: radial-gradient(circle, rgba(155,149,224,0.35) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(79,70,229,0.4) 0%, transparent 70%);
       top: 50%; left: 50%;
       transform: translate(-50%,-50%);
       animation: drift3 10s ease-in-out infinite;
@@ -439,17 +439,17 @@ type AuthView = 'login' | 'forgot' | 'reset';
 
     .brand-icon {
       width: 80px; height: 80px;
-      background: linear-gradient(135deg, rgba(107,94,197,0.3), rgba(155,149,224,0.2));
+      background: linear-gradient(135deg, rgba(37,99,235,0.35), rgba(109,40,217,0.25));
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 22px;
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 28px;
-      box-shadow: 0 0 40px rgba(107,94,197,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+      box-shadow: 0 0 40px rgba(67,56,202,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
       animation: iconPulse 3s ease-in-out infinite;
     }
     @keyframes iconPulse {
-      0%,100% { box-shadow: 0 0 40px rgba(107,94,197,0.3), inset 0 1px 0 rgba(255,255,255,0.1); }
-      50% { box-shadow: 0 0 60px rgba(107,94,197,0.5), 0 0 100px rgba(155,149,224,0.15), inset 0 1px 0 rgba(255,255,255,0.1); }
+      0%,100% { box-shadow: 0 0 40px rgba(67,56,202,0.4), inset 0 1px 0 rgba(255,255,255,0.1); }
+      50% { box-shadow: 0 0 60px rgba(67,56,202,0.6), 0 0 100px rgba(109,40,217,0.2), inset 0 1px 0 rgba(255,255,255,0.1); }
     }
 
     .brand-text { margin-bottom: 20px; }
@@ -458,7 +458,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
       color: white; letter-spacing: -2px; margin: 0; line-height: 1;
       text-shadow: 0 0 60px rgba(107,94,197,0.4);
     }
-    .brand-dot { color: #9B95E0; }
+    .brand-dot { color: #60a5fa; }
     .brand-tagline {
       font-size: 14px; color: rgba(255,255,255,0.5);
       letter-spacing: 2px; text-transform: uppercase;
@@ -467,7 +467,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
 
     .brand-divider {
       width: 48px; height: 3px;
-      background: linear-gradient(90deg, #7B6FD0, #9B95E0);
+      background: linear-gradient(90deg, #2563eb, #7c3aed);
       border-radius: 2px;
       margin: 20px 0;
     }
@@ -540,7 +540,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
       padding: 7px 12px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
-    .back-home:hover { color: #6B5EC5; border-color: #d4d0f5; }
+    .back-home:hover { color: #4338ca; border-color: #d4d0f5; }
 
     .form-wrap {
       width: 100%; max-width: 400px; position: relative; z-index: 1;
@@ -556,11 +556,11 @@ type AuthView = 'login' | 'forgot' | 'reset';
 
     .form-icon-badge {
       width: 52px; height: 52px;
-      background: linear-gradient(135deg, #2b2080 0%, #1e1660 100%);
+      background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
       border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 20px;
-      box-shadow: 0 8px 24px rgba(43,32,128,0.4);
+      box-shadow: 0 8px 24px rgba(67,56,202,0.4);
       color: white;
     }
 
@@ -630,7 +630,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
     input::placeholder { color: #9ca3af !important; }
     input:focus {
       outline: none !important;
-      border-color: #6B5EC5 !important;
+      border-color: #4338ca !important;
       box-shadow: 0 0 0 3px rgba(107,94,197,0.15) !important;
     }
     input:disabled { opacity: 0.45 !important; cursor: not-allowed !important; }
@@ -656,7 +656,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
       stroke: currentColor; fill: none; stroke-width: 1.8;
       stroke-linecap: round; stroke-linejoin: round;
     }
-    .password-toggle:hover { color: #6B5EC5; }
+    .password-toggle:hover { color: #4338ca; }
     .password-toggle:disabled { cursor: not-allowed; opacity: 0.4; }
 
     /* ── Help text ── */
@@ -666,10 +666,10 @@ type AuthView = 'login' | 'forgot' | 'reset';
     /* ── Forgot link ── */
     .link-button {
       background: none; border: none; padding: 0;
-      color: #6B5EC5; font-size: 12px; font-weight: 600; cursor: pointer;
+      color: #4338ca; font-size: 12px; font-weight: 600; cursor: pointer;
       transition: color 0.2s;
     }
-    .link-button:hover { color: #4A40A0; text-decoration: underline; }
+    .link-button:hover { color: #3730a3; text-decoration: underline; }
     .link-button:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ── Buttons ── */
@@ -677,12 +677,12 @@ type AuthView = 'login' | 'forgot' | 'reset';
 
     .btn-primary {
       display: flex; align-items: center; justify-content: center; gap: 8px;
-      background: linear-gradient(135deg, #2b2080 0%, #1e1660 100%) !important;
+      background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%) !important;
       color: white !important; border: none !important;
       border-radius: 11px !important; padding: 14px 20px !important;
       font-size: 15px !important; font-weight: 700 !important;
       letter-spacing: 0.1px !important;
-      box-shadow: 0 6px 20px rgba(43,32,128,0.45), 0 2px 6px rgba(43,32,128,0.3) !important;
+      box-shadow: 0 6px 20px rgba(67,56,202,0.45), 0 2px 6px rgba(67,56,202,0.3) !important;
       transition: all 0.25s !important; cursor: pointer;
       position: relative; overflow: hidden;
     }
@@ -693,7 +693,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
     }
     .btn-primary:hover:not(:disabled) {
       transform: translateY(-2px) !important;
-      box-shadow: 0 10px 28px rgba(43,32,128,0.55), 0 4px 10px rgba(43,32,128,0.4) !important;
+      box-shadow: 0 10px 28px rgba(67,56,202,0.55), 0 4px 10px rgba(67,56,202,0.4) !important;
     }
     .btn-primary:active:not(:disabled) { transform: translateY(0) !important; }
     .btn-primary:disabled { opacity: 0.55 !important; cursor: not-allowed !important; transform: none !important; }
@@ -720,8 +720,8 @@ type AuthView = 'login' | 'forgot' | 'reset';
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
     .btn-biometric:hover:not(:disabled) {
-      border-color: #6B5EC5 !important;
-      color: #6B5EC5;
+      border-color: #4338ca !important;
+      color: #4338ca;
       box-shadow: 0 4px 12px rgba(107,94,197,0.12);
     }
     .btn-biometric:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -739,8 +739,8 @@ type AuthView = 'login' | 'forgot' | 'reset';
     /* ── Footer ── */
     .login-footer { text-align: center; }
     .login-footer p { color: #6b7280; font-size: 13px; margin: 0; }
-    .login-footer a { color: #6B5EC5; font-weight: 600; text-decoration: none; }
-    .login-footer a:hover { color: #4A40A0; text-decoration: underline; }
+    .login-footer a { color: #4338ca; font-weight: 600; text-decoration: none; }
+    .login-footer a:hover { color: #3730a3; text-decoration: underline; }
     .dev-link a { color: inherit; font-weight: 600; text-decoration: underline; }
 
     /* ══════════════════════════════════════════
