@@ -1323,6 +1323,7 @@ export class ProfilComponent implements OnInit {
           this.interviewForm.date = firstApp.interviewDate;
           this.interviewForm.time = firstApp.interviewTime || '';
           this.interviewForm.notes = firstApp.interviewNotes || '';
+          this.ownSlot = { date: firstApp.interviewDate, time: firstApp.interviewTime || '' };
         }
         if (firstApp?.evaluation?.rating) {
           this.evalForm.rating = firstApp.evaluation.rating;
@@ -1627,6 +1628,7 @@ export class ProfilComponent implements OnInit {
   // ── Interview scheduling ────────────────────────────────────────────────────
   bookedSlots: { date: string; time: string }[] = [];
   interviewForm = { date: '', time: '', notes: '' };
+  private ownSlot: { date: string; time: string } | null = null;
   interviewLoading = false;
   interviewError = '';
   interviewSuccess = '';
@@ -1653,6 +1655,7 @@ export class ProfilComponent implements OnInit {
 
   isSlotBooked(date: string, time: string): boolean {
     if (!date || !time) return false;
+    if (this.ownSlot && this.ownSlot.date === date && this.ownSlot.time === time) return false;
     return this.bookedSlots.some(s => s.date === date && s.time === time);
   }
 
@@ -1694,6 +1697,7 @@ export class ProfilComponent implements OnInit {
           slots = slots.filter(s => !(s.date === oldDate && s.time === oldTime));
         }
         this.bookedSlots = [...slots, { date: this.interviewForm.date, time: this.interviewForm.time }];
+        this.ownSlot = { date: this.interviewForm.date, time: this.interviewForm.time };
       },
       error: (err) => {
         this.interviewLoading = false;
