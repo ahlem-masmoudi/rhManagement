@@ -41,7 +41,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
           </div>
           <div class="brand-text">
             <h1 class="brand-name">INET<span class="brand-dot">.</span></h1>
-            <p class="brand-tagline">Gestion des Ressources Humaines</p>
+            <p class="brand-tagline">Gestion des candidatures de stage</p>
           </div>
           <div class="brand-divider"></div>
           <p class="brand-desc">
