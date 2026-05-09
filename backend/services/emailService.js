@@ -1,35 +1,47 @@
-const nodemailer = require('nodemailer');
+const https = require('https');
 
-function createTransport() {
-  const port = parseInt(process.env.SMTP_PORT || '587');
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port,
-    secure: port === 465,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000
+const APP_NAME = 'INET – Gestion des Stages';
+const FROM     = `${APP_NAME} <onboarding@resend.dev>`;
+
+async function resendPost(payload) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify(payload);
+    const req  = https.request({
+      hostname: 'api.resend.com',
+      path:     '/emails',
+      method:   'POST',
+      headers:  {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type':  'application/json',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    }, (res) => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (res.statusCode >= 200 && res.statusCode < 300) resolve(json);
+          else reject(new Error(json.message || `Resend error ${res.statusCode}`));
+        } catch (e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
   });
 }
 
-const FROM = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@inet.tn';
-const APP_NAME = 'INET – Gestion des Stages';
-
 // ── Interview scheduled ──────────────────────────────────────────────────────
 exports.sendInterviewEmail = async ({ to, firstName, lastName, interviewDate, interviewTime, offerTitle, trackingUrl }) => {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.log(`[EMAIL SKIP] Interview email to ${to} — SMTP not configured`);
+  if (!process.env.RESEND_API_KEY) {
+    console.log(`[EMAIL SKIP] Interview email to ${to} — RESEND_API_KEY not configured`);
     return;
   }
-  const transporter = createTransport();
   const dateStr = new Date(interviewDate).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  await transporter.sendMail({
-    from: `"${APP_NAME}" <${FROM}>`,
-    to,
+  await resendPost({
+    from: FROM,
+    to:   [to],
     subject: `Convocation à l'entretien – ${offerTitle || 'Stage'}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;background:#f9fafb;border-radius:12px">
@@ -45,9 +57,6 @@ exports.sendInterviewEmail = async ({ to, firstName, lastName, interviewDate, in
           <p style="margin:0;font-weight:700;color:#1e40af">📅 Date de l'entretien : ${dateStr}</p>
           <p style="margin:8px 0 0;font-weight:700;color:#1e40af">🕐 Heure : ${interviewTime}</p>
         </div>
-        <p style="color:#374151;line-height:1.6">
-          Vous pouvez suivre l'évolution de votre dossier en temps réel via votre espace personnel :
-        </p>
         <div style="text-align:center;margin:24px 0">
           <a href="${trackingUrl}" style="background:#1d4ed8;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px">
             Accéder à mon espace de suivi
@@ -59,21 +68,20 @@ exports.sendInterviewEmail = async ({ to, firstName, lastName, interviewDate, in
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
         <p style="color:#9ca3af;font-size:12px;text-align:center">${APP_NAME} — Institut National d'Études Technologiques</p>
       </div>
-    `
+    `,
   });
   console.log(`[EMAIL SENT] Interview email → ${to}`);
 };
 
-// ── Offer accepted — with document upload link ───────────────────────────────
+// ── Offer accepted ───────────────────────────────────────────────────────────
 exports.sendAcceptanceEmail = async ({ to, firstName, lastName, offerTitle, trackingUrl }) => {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.log(`[EMAIL SKIP] Acceptance email to ${to} — SMTP not configured`);
+  if (!process.env.RESEND_API_KEY) {
+    console.log(`[EMAIL SKIP] Acceptance email to ${to} — RESEND_API_KEY not configured`);
     return;
   }
-  const transporter = createTransport();
-  await transporter.sendMail({
-    from: `"${APP_NAME}" <${FROM}>`,
-    to,
+  await resendPost({
+    from: FROM,
+    to:   [to],
     subject: `Félicitations ! Votre candidature a été acceptée – ${offerTitle || 'Stage'}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;background:#f9fafb;border-radius:12px">
@@ -116,7 +124,7 @@ exports.sendAcceptanceEmail = async ({ to, firstName, lastName, offerTitle, trac
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
         <p style="color:#9ca3af;font-size:12px;text-align:center">${APP_NAME} — Institut National d'Études Technologiques</p>
       </div>
-    `
+    `,
   });
   console.log(`[EMAIL SENT] Acceptance email → ${to}`);
 };
