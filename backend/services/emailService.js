@@ -115,7 +115,7 @@ exports.sendAcceptanceEmail = async ({ to, firstName, lastName, offerTitle, trac
             N'hésitez pas à rejoindre ce groupe pour échanger avec votre encadrant.
           </p>
           <div style="text-align:center;margin-top:16px">
-            <a href="https://discord.gg/MMyjmtNA"
+            <a href="https://discord.gg/aeFTt2AgpA"
                style="background:#fff;color:#5865f2;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block">
               Rejoindre le Discord
             </a>

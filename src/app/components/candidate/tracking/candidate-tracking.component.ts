@@ -44,7 +44,7 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
             <div class="discord-body">
               <h3>Rejoignez notre groupe Discord</h3>
               <p>Afin de faciliter la communication durant votre encadrement, nous avons créé un groupe Discord. N'hésitez pas à rejoindre ce groupe pour échanger avec votre encadrant.</p>
-              <a href="https://discord.gg/MMyjmtNA" target="_blank" class="discord-btn">
+              <a href="https://discord.gg/aeFTt2AgpA" target="_blank" class="discord-btn">
                 Rejoindre le Discord →
               </a>
             </div>

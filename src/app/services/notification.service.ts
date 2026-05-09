@@ -183,7 +183,7 @@ export class NotificationService {
       'entretien_realise': '<p>Merci d\'avoir participé à l\'entretien. Nous reviendrons vers vous très prochainement.</p>',
       'validation_finale': '<p>Votre candidature est en phase de validation finale auprès de la direction.</p>',
       'offre_envoyee': '<p>🎉 Une offre de stage vous a été envoyée ! Consultez votre espace candidat pour les détails.</p>',
-      'offre_acceptee': '<p>🎊 Bienvenue dans l\'équipe ! Vous trouverez les documents signés dans votre espace candidat.</p><p>💬 Rejoignez notre groupe Discord d\'encadrement : <a href="https://discord.gg/MMyjmtNA">https://discord.gg/MMyjmtNA</a></p>',
+      'offre_acceptee': '<p>🎊 Bienvenue dans l\'équipe ! Vous trouverez les documents signés dans votre espace candidat.</p><p>💬 Rejoignez notre groupe Discord d\'encadrement : <a href="https://discord.gg/aeFTt2AgpA">https://discord.gg/aeFTt2AgpA</a></p>',
       'offre_refusee': '<p>Nous prenons note de votre refus. Nous vous souhaitons le meilleur pour la suite de votre parcours.</p>',
       'rejete': '<p>Après étude de votre candidature, nous sommes au regret de vous informer que nous ne pouvons pas donner suite pour le moment.</p>',
       'abandonne': '<p>Nous constatons que vous n\'avez pas donné suite. N\'hésitez pas à nous recontacter si vous êtes toujours intéressé.</p>'
