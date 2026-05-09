@@ -11,124 +11,168 @@ type AuthView = 'login' | 'forgot' | 'reset';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="login-page">
-      <!-- Animated background blobs -->
-      <div class="bg-blob blob-1"></div>
-      <div class="bg-blob blob-2"></div>
-      <div class="bg-blob blob-3"></div>
+    <div class="auth-page">
 
-      <!-- Back to home -->
-      <a class="back-home" (click)="goHome()" href="javascript:void(0)">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-        </svg>
-        Accueil
-      </a>
+      <!-- ══ LEFT PANEL ══ -->
+      <div class="auth-left">
+        <!-- Animated orbs -->
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
 
-      <div class="login-container">
-        <div class="login-card">
-          <div class="login-header">
-            <div class="logo-wrap">
-              <div class="logo-ring">
-                <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
-                  <rect width="32" height="32" rx="8" fill="white" fill-opacity="0.15"/>
-                  <path d="M16 8a5 5 0 0 1 5 5v1h1.5A1.5 1.5 0 0 1 24 15.5v7A1.5 1.5 0 0 1 22.5 24h-13A1.5 1.5 0 0 1 8 22.5v-7A1.5 1.5 0 0 1 9.5 14H11v-1a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v1h6v-1a3 3 0 0 0-3-3zm0 6a2 2 0 0 1 1 3.73V21h-2v-1.27A2 2 0 0 1 16 16z" fill="white"/>
-                </svg>
-              </div>
+        <!-- Floating particles -->
+        <div class="particle p1"></div>
+        <div class="particle p2"></div>
+        <div class="particle p3"></div>
+        <div class="particle p4"></div>
+        <div class="particle p5"></div>
+        <div class="particle p6"></div>
+
+        <!-- Grid overlay -->
+        <div class="grid-overlay"></div>
+
+        <!-- Brand -->
+        <div class="brand-wrap">
+          <div class="brand-icon">
+            <svg width="44" height="44" viewBox="0 0 48 48" fill="none">
+              <rect width="48" height="48" rx="14" fill="rgba(255,255,255,0.12)"/>
+              <path d="M24 12a7 7 0 0 1 7 7v2h2.5A2.5 2.5 0 0 1 36 23.5v11A2.5 2.5 0 0 1 33.5 37h-19A2.5 2.5 0 0 1 12 34.5v-11A2.5 2.5 0 0 1 14.5 21H17v-2a7 7 0 0 1 7-7zm0 3a4 4 0 0 0-4 4v2h8v-2a4 4 0 0 0-4-4zm0 9a3 3 0 0 1 1.5 5.6V32h-3v-2.4A3 3 0 0 1 24 24z" fill="white"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <h1 class="brand-name">INET<span class="brand-dot">.</span></h1>
+            <p class="brand-tagline">Gestion des Ressources Humaines</p>
+          </div>
+          <div class="brand-divider"></div>
+          <p class="brand-desc">
+            Plateforme sécurisée de gestion des candidatures et des stages universitaires.
+          </p>
+
+          <!-- Feature pills -->
+          <div class="feature-pills">
+            <div class="pill">
+              <span class="pill-icon">🎓</span>
+              <span>Gestion des stages</span>
             </div>
-            <h1>{{ getTitle() }}</h1>
-            <p class="login-subtitle" *ngIf="currentView === 'login' && !showRegister && loginStep === 'credentials'">Espace sécurisé Ressources Humaines</p>
+            <div class="pill">
+              <span class="pill-icon">📋</span>
+              <span>Suivi des candidatures</span>
+            </div>
+            <div class="pill">
+              <span class="pill-icon">🔒</span>
+              <span>Espace sécurisé</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom wave -->
+        <svg class="left-wave" viewBox="0 0 200 40" preserveAspectRatio="none">
+          <path d="M0 20 Q50 0 100 20 Q150 40 200 20 L200 40 L0 40 Z" fill="rgba(255,255,255,0.04)"/>
+          <path d="M0 28 Q50 12 100 28 Q150 44 200 28 L200 40 L0 40 Z" fill="rgba(255,255,255,0.04)"/>
+        </svg>
+      </div>
+
+      <!-- ══ RIGHT PANEL ══ -->
+      <div class="auth-right">
+        <!-- Back to home -->
+        <a class="back-home" (click)="goHome()" href="javascript:void(0)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Accueil
+        </a>
+
+        <div class="form-wrap">
+
+          <!-- Form header -->
+          <div class="form-header">
+            <div class="form-icon-badge">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <h2 class="form-title">{{ getTitle() }}</h2>
+            <p class="form-subtitle" *ngIf="currentView === 'login' && !showRegister && loginStep === 'credentials'">
+              Connectez-vous à votre espace RH
+            </p>
           </div>
 
+          <!-- ── Login form ── -->
           <form *ngIf="!showRegister && currentView === 'login' && loginStep === 'credentials'" (ngSubmit)="onLogin()" class="login-form">
-            <div *ngIf="successMessage" class="alert alert-success">
-              {{ successMessage }}
-            </div>
-
-            <div *ngIf="infoMessage" class="alert alert-info">
-              {{ infoMessage }}
-            </div>
-
+            <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+            <div *ngIf="infoMessage" class="alert alert-info">{{ infoMessage }}</div>
             <div *ngIf="errorMessage" class="alert alert-error">
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
               </svg>
               {{ errorMessage }}
             </div>
 
             <div class="form-group">
-              <label for="email">Email</label>
+              <label for="email">Adresse email</label>
               <div class="field-input-row">
                 <div class="input-with-icon">
+                  <span class="input-prefix-icon">
+                    <svg viewBox="0 0 24 24"><rect x="4" y="6.5" width="16" height="11" rx="2"/><path d="M5.5 8 12 13l6.5-5"/></svg>
+                  </span>
                   <input
                     type="email"
                     id="email"
                     [(ngModel)]="credentials.email"
                     name="email"
-                    placeholder="exemple@email.com"
+                    placeholder="exemple@inet.tn"
                     required
                     autocomplete="email"
                     [class.input-invalid]="errorField === 'email'"
                     [disabled]="isAccountTemporarilyLocked()">
-                  <span class="input-icon svg-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <rect x="4" y="6.5" width="16" height="11" rx="2"></rect>
-                      <path d="M5.5 8 12 13l6.5-5"></path>
-                    </svg>
-                  </span>
                 </div>
-                <span class="field-error-marker" *ngIf="errorField === 'email'" aria-hidden="true">!</span>
+                <span class="field-error-marker" *ngIf="errorField === 'email'">!</span>
               </div>
             </div>
 
             <div class="form-group">
-              <label for="password">Mot de passe</label>
+              <div class="label-row">
+                <label for="password">Mot de passe</label>
+                <button type="button" class="link-button" (click)="openForgotPassword()" [disabled]="isAccountTemporarilyLocked()">
+                  Mot de passe oublié ?
+                </button>
+              </div>
               <div class="field-input-row">
-                <div class="input-with-icon">
+                <div class="input-with-icon has-toggle">
+                  <span class="input-prefix-icon">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  </span>
                   <input
                     [type]="showLoginPassword ? 'text' : 'password'"
                     id="password"
                     [(ngModel)]="credentials.password"
                     name="password"
-                    placeholder="........"
+                    placeholder="••••••••"
                     required
                     autocomplete="current-password"
                     [class.input-invalid]="errorField === 'password'"
                     [disabled]="isAccountTemporarilyLocked()">
-                  <button type="button" class="password-toggle inside-input" (click)="showLoginPassword = !showLoginPassword" [attr.aria-label]="showLoginPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [title]="showLoginPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
-                    <svg *ngIf="!showLoginPassword" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path>
-                      <circle cx="12" cy="12" r="3.2"></circle>
-                    </svg>
-                    <svg *ngIf="showLoginPassword" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M3 3l18 18"></path>
-                      <path d="M10.6 10.7a2.9 2.9 0 0 0 4 4"></path>
-                      <path d="M9.9 5.2A12 12 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-4 4.8"></path>
-                      <path d="M6.6 6.7C3.8 8.5 2 12 2 12a17.8 17.8 0 0 0 6.2 5.4"></path>
-                    </svg>
+                  <button type="button" class="password-toggle inside-input"
+                    (click)="showLoginPassword = !showLoginPassword"
+                    [attr.aria-label]="showLoginPassword ? 'Masquer' : 'Afficher'">
+                    <svg *ngIf="!showLoginPassword" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                    <svg *ngIf="showLoginPassword" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 10.7a2.9 2.9 0 0 0 4 4"/><path d="M9.9 5.2A12 12 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-4 4.8"/><path d="M6.6 6.7C3.8 8.5 2 12 2 12a17.8 17.8 0 0 0 6.2 5.4"/></svg>
                   </button>
                 </div>
-                <span class="field-error-marker" *ngIf="errorField === 'password'" aria-hidden="true">!</span>
+                <span class="field-error-marker" *ngIf="errorField === 'password'">!</span>
               </div>
-              <small class="help-text lockout-help" *ngIf="lockoutCountdownLabel">
-                Nouveau test possible dans {{ lockoutCountdownLabel }}.
-              </small>
+              <small class="lockout-help" *ngIf="lockoutCountdownLabel">Nouveau test dans {{ lockoutCountdownLabel }}</small>
             </div>
-
-            <button type="button" class="link-button align-right" (click)="openForgotPassword()" [disabled]="isAccountTemporarilyLocked()">
-              Mot de passe oublié ?
-            </button>
 
             <button type="submit" class="btn btn-primary btn-block" [disabled]="isLoading || isAccountTemporarilyLocked()">
-              <span *ngIf="!isLoading">Se connecter</span>
-              <span *ngIf="isLoading">Connexion...</span>
+              <span class="btn-spinner" *ngIf="isLoading"></span>
+              <span>{{ isLoading ? 'Connexion...' : 'Se connecter' }}</span>
             </button>
 
-            <div *ngIf="isFingerprintSupported" class="divider-or">
-              <span>ou</span>
-            </div>
+            <div *ngIf="isFingerprintSupported" class="divider-or"><span>ou</span></div>
 
-            <button *ngIf="isFingerprintSupported" type="button" class="btn btn-fingerprint btn-block"
+            <button *ngIf="isFingerprintSupported" type="button" class="btn btn-biometric btn-block"
               [disabled]="isLoading || isAccountTemporarilyLocked() || !credentials.email"
               (click)="onFingerprintLogin()">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -142,473 +186,575 @@ type AuthView = 'login' | 'forgot' | 'reset';
                 <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
                 <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
               </svg>
-              <span>Empreinte digitale</span>
+              Empreinte digitale
             </button>
-
           </form>
 
+          <!-- ── Forgot password ── -->
           <form *ngIf="!showRegister && currentView === 'forgot'" (ngSubmit)="onForgotPassword()" class="login-form">
             <div *ngIf="successMessage" class="alert alert-success">
               {{ successMessage }}
-              <span *ngIf="devResetUrl" class="dev-link">
-                <a [href]="devResetUrl">Ouvrir le lien de réinitialisation</a>
-              </span>
+              <span *ngIf="devResetUrl" class="dev-link"><a [href]="devResetUrl">Ouvrir le lien</a></span>
             </div>
-
-            <div *ngIf="errorMessage" class="alert alert-error">
-              {{ errorMessage }}
-            </div>
-
+            <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
             <div class="form-group">
-              <label for="forgotEmail">Email</label>
-              <input
-                type="email"
-                id="forgotEmail"
-                [(ngModel)]="forgotPasswordData.email"
-                name="forgotEmail"
-                placeholder="exemple@email.com"
-                required
-                autocomplete="email">
-              <small class="help-text">Nous vous enverrons un lien pour choisir un nouveau mot de passe.</small>
+              <label for="forgotEmail">Votre email</label>
+              <div class="input-with-icon">
+                <span class="input-prefix-icon">
+                  <svg viewBox="0 0 24 24"><rect x="4" y="6.5" width="16" height="11" rx="2"/><path d="M5.5 8 12 13l6.5-5"/></svg>
+                </span>
+                <input type="email" id="forgotEmail" [(ngModel)]="forgotPasswordData.email" name="forgotEmail"
+                  placeholder="exemple@inet.tn" required autocomplete="email">
+              </div>
+              <small class="help-text">Un lien de réinitialisation vous sera envoyé.</small>
             </div>
-
             <button type="submit" class="btn btn-primary btn-block" [disabled]="isLoading">
-              <span *ngIf="!isLoading">Envoyer le lien</span>
-              <span *ngIf="isLoading">Envoi...</span>
+              <span class="btn-spinner" *ngIf="isLoading"></span>
+              <span>{{ isLoading ? 'Envoi...' : 'Envoyer le lien' }}</span>
             </button>
-
-            <div class="login-footer">
-              <p><a href="javascript:void(0)" (click)="backToLogin()">Retour à la connexion</a></p>
-            </div>
+            <div class="login-footer"><p><a href="javascript:void(0)" (click)="backToLogin()">← Retour à la connexion</a></p></div>
           </form>
 
+          <!-- ── Reset password ── -->
           <form *ngIf="!showRegister && currentView === 'reset'" (ngSubmit)="onResetPassword()" class="login-form">
-            <div *ngIf="successMessage" class="alert alert-success">
-              {{ successMessage }}
-            </div>
-
-            <div *ngIf="errorMessage" class="alert alert-error">
-              {{ errorMessage }}
-            </div>
-
+            <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+            <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
             <div class="form-group">
               <label for="newPassword">Nouveau mot de passe</label>
               <div class="field-input-row password-row">
-                <input
-                  [type]="showResetPassword ? 'text' : 'password'"
-                  id="newPassword"
-                  [(ngModel)]="resetPasswordData.password"
-                  name="newPassword"
-                  placeholder="Minimum 6 caractères"
-                  required
-                  autocomplete="new-password">
-                <button type="button" class="password-toggle" (click)="showResetPassword = !showResetPassword" [attr.aria-label]="showResetPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [title]="showResetPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
-                  <svg *ngIf="!showResetPassword" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path>
-                    <circle cx="12" cy="12" r="3.2"></circle>
-                  </svg>
-                  <svg *ngIf="showResetPassword" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M3 3l18 18"></path>
-                    <path d="M10.6 10.7a2.9 2.9 0 0 0 4 4"></path>
-                    <path d="M9.9 5.2A12 12 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-4 4.8"></path>
-                    <path d="M6.6 6.7C3.8 8.5 2 12 2 12a17.8 17.8 0 0 0 6.2 5.4"></path>
-                  </svg>
-                </button>
+                <div class="input-with-icon has-toggle">
+                  <span class="input-prefix-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                  <input [type]="showResetPassword ? 'text' : 'password'" id="newPassword" [(ngModel)]="resetPasswordData.password"
+                    name="newPassword" placeholder="Minimum 6 caractères" required autocomplete="new-password">
+                  <button type="button" class="password-toggle inside-input" (click)="showResetPassword = !showResetPassword">
+                    <svg *ngIf="!showResetPassword" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                    <svg *ngIf="showResetPassword" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 10.7a2.9 2.9 0 0 0 4 4"/><path d="M9.9 5.2A12 12 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-4 4.8"/><path d="M6.6 6.7C3.8 8.5 2 12 2 12a17.8 17.8 0 0 0 6.2 5.4"/></svg>
+                  </button>
+                </div>
               </div>
             </div>
-
             <div class="form-group">
               <label for="confirmPassword">Confirmer le mot de passe</label>
               <div class="field-input-row password-row">
-                <input
-                  [type]="showResetConfirmPassword ? 'text' : 'password'"
-                  id="confirmPassword"
-                  [(ngModel)]="resetPasswordData.confirmPassword"
-                  name="confirmPassword"
-                  placeholder="Retapez le mot de passe"
-                  required
-                  autocomplete="new-password">
-                <button type="button" class="password-toggle" (click)="showResetConfirmPassword = !showResetConfirmPassword" [attr.aria-label]="showResetConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [title]="showResetConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
-                  <svg *ngIf="!showResetConfirmPassword" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path>
-                    <circle cx="12" cy="12" r="3.2"></circle>
-                  </svg>
-                  <svg *ngIf="showResetConfirmPassword" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M3 3l18 18"></path>
-                    <path d="M10.6 10.7a2.9 2.9 0 0 0 4 4"></path>
-                    <path d="M9.9 5.2A12 12 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-4 4.8"></path>
-                    <path d="M6.6 6.7C3.8 8.5 2 12 2 12a17.8 17.8 0 0 0 6.2 5.4"></path>
-                  </svg>
-                </button>
+                <div class="input-with-icon has-toggle">
+                  <span class="input-prefix-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                  <input [type]="showResetConfirmPassword ? 'text' : 'password'" id="confirmPassword" [(ngModel)]="resetPasswordData.confirmPassword"
+                    name="confirmPassword" placeholder="Retapez le mot de passe" required autocomplete="new-password">
+                  <button type="button" class="password-toggle inside-input" (click)="showResetConfirmPassword = !showResetConfirmPassword">
+                    <svg *ngIf="!showResetConfirmPassword" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                    <svg *ngIf="showResetConfirmPassword" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 10.7a2.9 2.9 0 0 0 4 4"/><path d="M9.9 5.2A12 12 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-4 4.8"/><path d="M6.6 6.7C3.8 8.5 2 12 2 12a17.8 17.8 0 0 0 6.2 5.4"/></svg>
+                  </button>
+                </div>
               </div>
             </div>
-
             <button type="submit" class="btn btn-primary btn-block" [disabled]="isLoading || !resetToken">
-              <span *ngIf="!isLoading">Réinitialiser le mot de passe</span>
-              <span *ngIf="isLoading">Réinitialisation...</span>
+              <span class="btn-spinner" *ngIf="isLoading"></span>
+              <span>{{ isLoading ? 'Réinitialisation...' : 'Réinitialiser le mot de passe' }}</span>
             </button>
-
-            <div class="login-footer">
-              <p><a href="javascript:void(0)" (click)="backToLogin()">Retour à la connexion</a></p>
-            </div>
+            <div class="login-footer"><p><a href="javascript:void(0)" (click)="backToLogin()">← Retour à la connexion</a></p></div>
           </form>
 
+          <!-- ── OTP step ── -->
           <form *ngIf="!showRegister && currentView === 'login' && loginStep === 'otp'" (ngSubmit)="onVerifyOtp()" class="login-form">
             <div *ngIf="errorMessage" class="alert alert-error">
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
               </svg>
               {{ errorMessage }}
             </div>
-
             <div class="form-group">
               <label for="otp">Code de vérification</label>
-              <input
-                type="text"
-                id="otp"
-                [(ngModel)]="otpCode"
-                name="otp"
-                placeholder="123456"
-                inputmode="numeric"
-                autocomplete="one-time-code"
-                required>
+              <div class="input-with-icon">
+                <span class="input-prefix-icon">
+                  <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4"/><path d="M9 21H5a2 2 0 0 1-2-2v-4"/><path d="M15 3h4a2 2 0 0 1 2 2v4"/><path d="M15 21h4a2 2 0 0 0 2-2v-4"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                </span>
+                <input type="text" id="otp" [(ngModel)]="otpCode" name="otp"
+                  placeholder="123456" inputmode="numeric" autocomplete="one-time-code" required>
+              </div>
               <small class="help-text">{{ otpHint }}</small>
             </div>
-
             <button type="submit" class="btn btn-primary btn-block" [disabled]="isLoading">
-              <span *ngIf="!isLoading">Vérifier</span>
-              <span *ngIf="isLoading">Vérification...</span>
+              <span class="btn-spinner" *ngIf="isLoading"></span>
+              <span>{{ isLoading ? 'Vérification...' : 'Vérifier' }}</span>
             </button>
-
-            <div class="login-footer">
-              <p>
-                <a href="javascript:void(0)" (click)="restartLogin()">Revenir</a>
-              </p>
-            </div>
+            <div class="login-footer"><p><a href="javascript:void(0)" (click)="restartLogin()">← Revenir</a></p></div>
           </form>
 
+          <!-- ── Register ── -->
           <form *ngIf="showRegister" (ngSubmit)="onRegister()" class="login-form">
             <div *ngIf="errorMessage" class="alert alert-error">
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
               </svg>
               {{ errorMessage }}
             </div>
-
-            <div class="form-group">
-              <label for="firstName">Prénom</label>
-              <input
-                type="text"
-                id="firstName"
-                [(ngModel)]="registerData.firstName"
-                name="firstName"
-                placeholder="Jean"
-                required>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="firstName">Prénom</label>
+                <input type="text" id="firstName" [(ngModel)]="registerData.firstName" name="firstName" placeholder="Jean" required>
+              </div>
+              <div class="form-group">
+                <label for="lastName">Nom</label>
+                <input type="text" id="lastName" [(ngModel)]="registerData.lastName" name="lastName" placeholder="Dupont" required>
+              </div>
             </div>
-
-            <div class="form-group">
-              <label for="lastName">Nom</label>
-              <input
-                type="text"
-                id="lastName"
-                [(ngModel)]="registerData.lastName"
-                name="lastName"
-                placeholder="Dupont"
-                required>
-            </div>
-
             <div class="form-group">
               <label for="registerEmail">Email</label>
-              <input
-                type="email"
-                id="registerEmail"
-                [(ngModel)]="registerData.email"
-                name="registerEmail"
-                placeholder="jean.dupont@email.com"
-                required>
+              <div class="input-with-icon">
+                <span class="input-prefix-icon"><svg viewBox="0 0 24 24"><rect x="4" y="6.5" width="16" height="11" rx="2"/><path d="M5.5 8 12 13l6.5-5"/></svg></span>
+                <input type="email" id="registerEmail" [(ngModel)]="registerData.email" name="registerEmail" placeholder="jean.dupont@email.com" required>
+              </div>
             </div>
-
             <div class="form-group">
               <label for="registerPassword">Mot de passe</label>
-              <div class="field-input-row password-row">
-                <input
-                  [type]="showRegisterPassword ? 'text' : 'password'"
-                  id="registerPassword"
-                  [(ngModel)]="registerData.password"
-                  name="registerPassword"
-                  placeholder="........"
-                  required>
-                <button type="button" class="password-toggle" (click)="showRegisterPassword = !showRegisterPassword" [attr.aria-label]="showRegisterPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [title]="showRegisterPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
-                  <svg *ngIf="!showRegisterPassword" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path>
-                    <circle cx="12" cy="12" r="3.2"></circle>
-                  </svg>
-                  <svg *ngIf="showRegisterPassword" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M3 3l18 18"></path>
-                    <path d="M10.6 10.7a2.9 2.9 0 0 0 4 4"></path>
-                    <path d="M9.9 5.2A12 12 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-4 4.8"></path>
-                    <path d="M6.6 6.7C3.8 8.5 2 12 2 12a17.8 17.8 0 0 0 6.2 5.4"></path>
-                  </svg>
+              <div class="input-with-icon has-toggle">
+                <span class="input-prefix-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <input [type]="showRegisterPassword ? 'text' : 'password'" id="registerPassword" [(ngModel)]="registerData.password"
+                  name="registerPassword" placeholder="••••••••" required>
+                <button type="button" class="password-toggle inside-input" (click)="showRegisterPassword = !showRegisterPassword">
+                  <svg *ngIf="!showRegisterPassword" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                  <svg *ngIf="showRegisterPassword" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 10.7a2.9 2.9 0 0 0 4 4"/><path d="M9.9 5.2A12 12 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-4 4.8"/><path d="M6.6 6.7C3.8 8.5 2 12 2 12a17.8 17.8 0 0 0 6.2 5.4"/></svg>
                 </button>
               </div>
             </div>
-
             <button type="submit" class="btn btn-primary btn-block" [disabled]="isLoading">
-              <span *ngIf="!isLoading">Créer mon compte</span>
-              <span *ngIf="isLoading">Création...</span>
+              <span class="btn-spinner" *ngIf="isLoading"></span>
+              <span>{{ isLoading ? 'Création...' : 'Créer mon compte' }}</span>
             </button>
-
             <div class="login-footer">
-              <p>Déjà un compte ?
-                <a href="javascript:void(0)" (click)="showRegister = false; resetMessages(); setView('login')">Se connecter</a>
-              </p>
+              <p>Déjà un compte ? <a href="javascript:void(0)" (click)="showRegister = false; resetMessages(); setView('login')">Se connecter</a></p>
             </div>
-
           </form>
+
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .back-home {
-      position: fixed; top: 24px; left: 28px; z-index: 10;
-      display: flex; align-items: center; gap: 8px;
-      color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 500;
-      text-decoration: none; transition: color 0.2s;
-    }
-    .back-home:hover { color: white; }
+    /* ══════════════════════════════════════════
+       ROOT LAYOUT
+    ══════════════════════════════════════════ */
+    :host { display: block; }
 
-    /* ── Page & background ── */
-    .login-page {
+    .auth-page {
       min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* ══════════════════════════════════════════
+       LEFT PANEL
+    ══════════════════════════════════════════ */
+    .auth-left {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(145deg, #130e3a 0%, #1e1660 35%, #2b2080 70%, #120d3a 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #0f0c29;
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-      padding: 20px;
+      padding: 60px 56px;
+    }
+
+    /* Animated orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      pointer-events: none;
+    }
+    .orb-1 {
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, rgba(107,94,197,0.45) 0%, transparent 70%);
+      top: -120px; left: -100px;
+      animation: drift1 12s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(155,149,224,0.3) 0%, transparent 70%);
+      bottom: -80px; right: -60px;
+      animation: drift2 15s ease-in-out infinite;
+    }
+    .orb-3 {
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(155,149,224,0.35) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      animation: drift3 10s ease-in-out infinite;
+    }
+
+    @keyframes drift1 {
+      0%,100% { transform: translate(0,0); }
+      50% { transform: translate(40px, 30px); }
+    }
+    @keyframes drift2 {
+      0%,100% { transform: translate(0,0); }
+      50% { transform: translate(-30px,-40px); }
+    }
+    @keyframes drift3 {
+      0%,100% { transform: translate(-50%,-50%) scale(1); }
+      50% { transform: translate(-50%,-50%) scale(1.2); }
+    }
+
+    /* Floating particles */
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      animation: floatUp linear infinite;
+      pointer-events: none;
+    }
+    .p1 { width: 6px; height: 6px; background: rgba(107,94,197,0.6); left: 15%; bottom: -10px; animation-duration: 8s; animation-delay: 0s; }
+    .p2 { width: 4px; height: 4px; background: rgba(155,149,224,0.5); left: 30%; bottom: -10px; animation-duration: 11s; animation-delay: 2s; }
+    .p3 { width: 8px; height: 8px; background: rgba(155,149,224,0.4); left: 50%; bottom: -10px; animation-duration: 9s; animation-delay: 4s; }
+    .p4 { width: 5px; height: 5px; background: rgba(107,94,197,0.5); left: 65%; bottom: -10px; animation-duration: 13s; animation-delay: 1s; }
+    .p5 { width: 7px; height: 7px; background: rgba(155,149,224,0.6); left: 80%; bottom: -10px; animation-duration: 7s; animation-delay: 3s; }
+    .p6 { width: 4px; height: 4px; background: rgba(255,255,255,0.3); left: 92%; bottom: -10px; animation-duration: 10s; animation-delay: 5s; }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 0.5; }
+      100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* Grid overlay */
+    .grid-overlay {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    /* Brand content */
+    .brand-wrap {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 0;
+      animation: slideInLeft 0.8s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .brand-icon {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, rgba(107,94,197,0.3), rgba(155,149,224,0.2));
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 22px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 28px;
+      box-shadow: 0 0 40px rgba(107,94,197,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+      animation: iconPulse 3s ease-in-out infinite;
+    }
+    @keyframes iconPulse {
+      0%,100% { box-shadow: 0 0 40px rgba(107,94,197,0.3), inset 0 1px 0 rgba(255,255,255,0.1); }
+      50% { box-shadow: 0 0 60px rgba(107,94,197,0.5), 0 0 100px rgba(155,149,224,0.15), inset 0 1px 0 rgba(255,255,255,0.1); }
+    }
+
+    .brand-text { margin-bottom: 20px; }
+    .brand-name {
+      font-size: 52px; font-weight: 900;
+      color: white; letter-spacing: -2px; margin: 0; line-height: 1;
+      text-shadow: 0 0 60px rgba(107,94,197,0.4);
+    }
+    .brand-dot { color: #9B95E0; }
+    .brand-tagline {
+      font-size: 14px; color: rgba(255,255,255,0.5);
+      letter-spacing: 2px; text-transform: uppercase;
+      margin: 8px 0 0 2px; font-weight: 500;
+    }
+
+    .brand-divider {
+      width: 48px; height: 3px;
+      background: linear-gradient(90deg, #7B6FD0, #9B95E0);
+      border-radius: 2px;
+      margin: 20px 0;
+    }
+
+    .brand-desc {
+      font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.7;
+      margin: 0 0 32px 0; max-width: 320px;
+    }
+
+    /* Feature pills */
+    .feature-pills { display: flex; flex-direction: column; gap: 12px; }
+    .pill {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: rgba(255,255,255,0.75);
+      font-size: 14px; font-weight: 500;
+      backdrop-filter: blur(8px);
+      transition: all 0.3s;
+      animation: fadeSlideIn 0.6s ease both;
+    }
+    .pill:nth-child(1) { animation-delay: 0.3s; }
+    .pill:nth-child(2) { animation-delay: 0.45s; }
+    .pill:nth-child(3) { animation-delay: 0.6s; }
+    .pill:hover { background: rgba(255,255,255,0.09); border-color: rgba(107,94,197,0.3); color: white; transform: translateX(4px); }
+    .pill-icon { font-size: 18px; }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Wave bottom */
+    .left-wave {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      width: 100%; height: 40px; pointer-events: none;
+    }
+
+    /* ══════════════════════════════════════════
+       RIGHT PANEL
+    ══════════════════════════════════════════ */
+    .auth-right {
+      background: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
       position: relative;
       overflow: hidden;
     }
 
-    .bg-blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.35;
-      animation: float 8s ease-in-out infinite;
-    }
-    .blob-1 { width: 400px; height: 400px; background: #4F46E5; top: -100px; left: -100px; animation-delay: 0s; }
-    .blob-2 { width: 300px; height: 300px; background: #7C3AED; bottom: -80px; right: -60px; animation-delay: 3s; }
-    .blob-3 { width: 250px; height: 250px; background: #2563EB; top: 40%; left: 60%; animation-delay: 5s; }
-
-    @keyframes float {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(20px, -20px) scale(1.05); }
+    .auth-right::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle at 20% 80%, rgba(107,94,197,0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(107,94,197,0.04) 0%, transparent 50%);
+      pointer-events: none;
     }
 
-    /* ── Card ── */
-    .login-container { width: 100%; max-width: 420px; position: relative; z-index: 1; }
+    .back-home {
+      position: absolute; top: 24px; left: 24px;
+      display: flex; align-items: center; gap: 6px;
+      color: #6b7280; font-size: 13px; font-weight: 500;
+      text-decoration: none; transition: all 0.2s;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 7px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .back-home:hover { color: #6B5EC5; border-color: #d4d0f5; }
 
-    .login-card {
-      background: rgba(255, 255, 255, 0.07);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 24px;
-      padding: 44px 40px;
-      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    .form-wrap {
+      width: 100%; max-width: 400px; position: relative; z-index: 1;
+      animation: slideInRight 0.7s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to   { opacity: 1; transform: translateX(0); }
     }
 
-    /* ── Header ── */
-    .login-header { text-align: center; margin-bottom: 36px; }
+    /* Form header */
+    .form-header { margin-bottom: 32px; }
 
-    .logo-wrap { display: flex; justify-content: center; margin-bottom: 20px; }
-
-    .logo-ring {
-      width: 72px; height: 72px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    .form-icon-badge {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #2b2080 0%, #1e1660 100%);
+      border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 0 8px rgba(79, 70, 229, 0.2), 0 0 32px rgba(79, 70, 229, 0.4);
-      animation: pulse-ring 3s ease-in-out infinite;
-    }
-
-    @keyframes pulse-ring {
-      0%, 100% { box-shadow: 0 0 0 8px rgba(79,70,229,0.2), 0 0 32px rgba(79,70,229,0.4); }
-      50% { box-shadow: 0 0 0 14px rgba(79,70,229,0.1), 0 0 48px rgba(79,70,229,0.6); }
-    }
-
-    .login-header h1 {
-      font-size: 26px;
-      font-weight: 700;
-      margin: 0 0 8px 0;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(43,32,128,0.4);
       color: white;
-      letter-spacing: -0.3px;
     }
 
-    .login-subtitle {
-      font-size: 13px;
-      color: rgba(255,255,255,0.5);
-      margin: 0;
-      letter-spacing: 0.3px;
+    .form-title {
+      font-size: 28px; font-weight: 800;
+      color: #111827; letter-spacing: -0.5px;
+      margin: 0 0 6px 0;
     }
+    .form-subtitle { font-size: 14px; color: #6b7280; margin: 0; }
 
     /* ── Form ── */
-    .login-form { display: flex; flex-direction: column; gap: 18px; }
+    .login-form { display: flex; flex-direction: column; gap: 20px; }
 
     /* ── Alerts ── */
     .alert {
-      display: flex;
-      gap: 10px;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 13px;
-      line-height: 1.5;
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px 14px; border-radius: 10px; font-size: 13px; line-height: 1.5;
     }
-    .alert-error  { background: rgba(239,68,68,0.15);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
-    .alert-success{ background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); flex-direction: column; }
-    .alert-info   { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+    .alert-error  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .alert-success{ background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; flex-direction: column; }
+    .alert-info   { background: #f5f3ff; color: #5b21b6; border: 1px solid #ddd6fe; }
 
     /* ── Labels ── */
     label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.6);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
+      display: block; font-size: 13px; font-weight: 600;
+      color: #374151; margin-bottom: 6px;
     }
+    .label-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .label-row label { margin-bottom: 0; }
 
     /* ── Inputs ── */
-    .field-input-row { display: flex; align-items: center; gap: 8px; width: 100%; }
-    .field-input-row > .input-with-icon,
-    .field-input-row > input { flex: 1 1 auto; min-width: 0; }
+    .form-group { display: flex; flex-direction: column; }
 
-    .input-with-icon { position: relative; width: 100%; }
-    .input-with-icon input { width: 100%; padding-right: 48px; }
+    .field-input-row { display: flex; align-items: center; gap: 8px; }
+    .field-input-row > .input-with-icon { flex: 1; }
+
+    .input-with-icon { position: relative; }
+    .input-with-icon input { padding-left: 44px !important; }
+    .input-with-icon.has-toggle input { padding-right: 44px !important; }
+
+    .input-prefix-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      pointer-events: none; width: 18px; height: 18px;
+    }
+    .input-prefix-icon svg {
+      width: 18px; height: 18px; stroke: #9ca3af; fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
 
     input[type="email"],
     input[type="password"],
     input[type="text"],
     input[type="number"] {
+      width: 100%;
       background: white !important;
-      border: 1px solid rgba(255,255,255,0.25) !important;
-      color: #1f2937 !important;
-      border-radius: 12px !important;
+      border: 1.5px solid #e5e7eb !important;
+      color: #111827 !important;
+      border-radius: 11px !important;
       padding: 13px 16px !important;
       font-size: 14px !important;
-      transition: all 0.25s !important;
+      transition: all 0.2s !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
     }
     input::placeholder { color: #9ca3af !important; }
     input:focus {
       outline: none !important;
-      border-color: #4F46E5 !important;
-      background: white !important;
-      box-shadow: 0 0 0 3px rgba(79,70,229,0.25) !important;
+      border-color: #6B5EC5 !important;
+      box-shadow: 0 0 0 3px rgba(107,94,197,0.15) !important;
     }
-    input:disabled { opacity: 0.4 !important; cursor: not-allowed !important; }
-    input.input-invalid { border-color: rgba(239,68,68,0.7) !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important; }
+    input:disabled { opacity: 0.45 !important; cursor: not-allowed !important; }
+    input.input-invalid { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.1) !important; }
 
-    .input-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
-    .svg-icon svg { width: 18px; height: 18px; display: block; stroke: #4F46E5; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-
-    .field-error-marker { flex: 0 0 auto; width: 18px; text-align: center; font-size: 20px; font-weight: 800; color: #f87171; }
+    .field-error-marker {
+      flex-shrink: 0; width: 22px; height: 22px;
+      background: #ef4444; color: white;
+      border-radius: 50%; font-size: 12px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
 
     /* ── Password toggle ── */
     .password-toggle {
-      border: none; background: transparent; color: #4F46E5;
-      border-radius: 999px; min-width: 34px; height: 34px;
-      padding: 0; cursor: pointer; white-space: nowrap; transition: color 0.2s;
+      border: none; background: transparent; cursor: pointer;
+      color: #9ca3af; padding: 0; transition: color 0.2s;
     }
-    .inside-input { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); z-index: 1; }
-    .password-toggle svg { width: 18px; height: 18px; display: block; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; margin: 0 auto; }
-    .password-toggle:hover { color: #4338CA; }
+    .inside-input {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%); z-index: 1;
+    }
+    .password-toggle svg {
+      width: 18px; height: 18px; display: block;
+      stroke: currentColor; fill: none; stroke-width: 1.8;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    .password-toggle:hover { color: #6B5EC5; }
     .password-toggle:disabled { cursor: not-allowed; opacity: 0.4; }
 
-    /* ── Help / lockout ── */
-    .help-text { display: block; margin-top: 6px; color: rgba(255,255,255,0.4); font-size: 12px; }
-    .lockout-help { color: #fbbf24; font-weight: 600; }
+    /* ── Help text ── */
+    .help-text { margin-top: 6px; color: #9ca3af; font-size: 12px; }
+    .lockout-help { margin-top: 6px; color: #d97706; font-size: 12px; font-weight: 600; }
 
-    /* ── Forgot button ── */
+    /* ── Forgot link ── */
     .link-button {
       background: none; border: none; padding: 0;
-      color: rgba(255,255,255,0.5); font-weight: 500;
-      font-size: 13px; cursor: pointer; transition: color 0.2s;
+      color: #6B5EC5; font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: color 0.2s;
     }
-    .link-button:hover { color: white; }
-    .align-right { align-self: center; margin-top: -6px; }
+    .link-button:hover { color: #4A40A0; text-decoration: underline; }
     .link-button:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* ── Primary button ── */
-    .btn-block { width: 100%; justify-content: center; }
+    /* ── Buttons ── */
+    .btn-block { width: 100%; }
 
     .btn-primary {
-      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%) !important;
-      color: white !important;
-      border: none !important;
-      border-radius: 12px !important;
-      padding: 14px 20px !important;
-      font-size: 15px !important;
-      font-weight: 600 !important;
-      letter-spacing: 0.2px !important;
-      box-shadow: 0 8px 24px rgba(79,70,229,0.4) !important;
-      transition: all 0.25s !important;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: linear-gradient(135deg, #2b2080 0%, #1e1660 100%) !important;
+      color: white !important; border: none !important;
+      border-radius: 11px !important; padding: 14px 20px !important;
+      font-size: 15px !important; font-weight: 700 !important;
+      letter-spacing: 0.1px !important;
+      box-shadow: 0 6px 20px rgba(43,32,128,0.45), 0 2px 6px rgba(43,32,128,0.3) !important;
+      transition: all 0.25s !important; cursor: pointer;
+      position: relative; overflow: hidden;
+    }
+    .btn-primary::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      pointer-events: none;
     }
     .btn-primary:hover:not(:disabled) {
       transform: translateY(-2px) !important;
-      box-shadow: 0 12px 32px rgba(79,70,229,0.55) !important;
+      box-shadow: 0 10px 28px rgba(43,32,128,0.55), 0 4px 10px rgba(43,32,128,0.4) !important;
     }
-    .btn-primary:disabled { opacity: 0.5 !important; cursor: not-allowed !important; transform: none !important; }
+    .btn-primary:active:not(:disabled) { transform: translateY(0) !important; }
+    .btn-primary:disabled { opacity: 0.55 !important; cursor: not-allowed !important; transform: none !important; }
+
+    /* Spinner */
+    .btn-spinner {
+      width: 16px; height: 16px; flex-shrink: 0;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Biometric */
+    .btn-biometric {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: white;
+      border: 1.5px solid #e5e7eb !important;
+      color: #374151;
+      font-size: 14px; font-weight: 500;
+      padding: 13px 20px; border-radius: 11px;
+      cursor: pointer; transition: all 0.25s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .btn-biometric:hover:not(:disabled) {
+      border-color: #6B5EC5 !important;
+      color: #6B5EC5;
+      box-shadow: 0 4px 12px rgba(107,94,197,0.12);
+    }
+    .btn-biometric:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ── Divider ── */
-    .divider-or { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.25); font-size: 12px; }
-    .divider-or::before, .divider-or::after { content: ''; flex: 1; border-top: 1px solid rgba(255,255,255,0.1); }
+    .divider-or {
+      display: flex; align-items: center; gap: 12px;
+      color: #d1d5db; font-size: 12px; font-weight: 500;
+    }
+    .divider-or::before, .divider-or::after { content: ''; flex: 1; border-top: 1px solid #e5e7eb; }
 
-    /* ── Fingerprint button ── */
-    .btn-fingerprint {
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      background: rgba(255,255,255,0.05);
-      border: 1.5px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.7);
-      font-weight: 500;
-      padding: 13px 20px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.25s;
-      font-size: 14px;
-    }
-    .btn-fingerprint:hover:not(:disabled) {
-      border-color: #4F46E5;
-      color: white;
-      background: rgba(79,70,229,0.15);
-      box-shadow: 0 0 20px rgba(79,70,229,0.2);
-    }
-    .btn-fingerprint:disabled { opacity: 0.35; cursor: not-allowed; }
-    .btn-fingerprint svg { flex-shrink: 0; }
+    /* ── Register 2-col ── */
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     /* ── Footer ── */
-    .login-footer { text-align: center; padding-top: 4px; }
-    .login-footer p { color: rgba(255,255,255,0.4); font-size: 13px; margin: 0; }
-    .login-footer a { color: #818CF8; font-weight: 600; text-decoration: none; }
-    .login-footer a:hover { color: white; text-decoration: underline; }
-
+    .login-footer { text-align: center; }
+    .login-footer p { color: #6b7280; font-size: 13px; margin: 0; }
+    .login-footer a { color: #6B5EC5; font-weight: 600; text-decoration: none; }
+    .login-footer a:hover { color: #4A40A0; text-decoration: underline; }
     .dev-link a { color: inherit; font-weight: 600; text-decoration: underline; }
 
-    /* ── Mobile ── */
-    @media (max-width: 480px) {
-      .login-card { padding: 28px 20px; border-radius: 20px; max-width: 100%; }
-      .login-header h1 { font-size: 22px; }
-      .logo-ring { width: 60px; height: 60px; }
-      .login-page { padding: 16px; align-items: flex-start; padding-top: 48px; }
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .auth-page { grid-template-columns: 1fr; }
+      .auth-left { display: none; }
+      .auth-right { min-height: 100vh; background: #f8fafc; }
     }
 
-    @media (max-width: 360px) {
-      .login-card { padding: 24px 16px; }
-      .login-header h1 { font-size: 19px; }
-      .logo-ring { width: 52px; height: 52px; }
-      .login-page { padding: 12px; padding-top: 32px; }
+    @media (max-width: 480px) {
+      .auth-right { padding: 48px 20px 32px; }
+      .form-row-2 { grid-template-columns: 1fr; }
     }
   `]
 })
