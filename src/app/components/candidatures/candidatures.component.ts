@@ -838,7 +838,7 @@ export class CandidaturesComponent implements OnInit {
     this.candidateService.bulkUpdateStatus({
       candidateIds: [application.candidateId],
       newStatus: newStatus as any,
-      sendEmail: false
+      sendEmail: true
     }).subscribe(() => this.onStatusUpdated());
   }
 
