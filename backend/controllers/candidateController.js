@@ -390,8 +390,8 @@ exports.bulkUpdateStatus = async (req, res) => {
 
       success++;
 
+      console.log(`[BULK] candidate=${candidate._id} sendEmail=${sendEmail} hasUserId=${!!candidate.userId} email=${candidate.userId?.email || 'none'}`);
       if (sendEmail && candidate.userId && candidate.userId.email) {
-        // Prepare an email payload for background sending
         const baseUrl = process.env.FRONTEND_URL || 'https://rh-management-97bu.vercel.app';
         emails.push({
           to: candidate.userId.email,
@@ -402,6 +402,8 @@ exports.bulkUpdateStatus = async (req, res) => {
           comment,
           documents: candidate.documents || []
         });
+      } else if (sendEmail) {
+        console.log(`[BULK] Email skipped — no userId or email for candidate ${candidate._id}`);
       }
     }
 

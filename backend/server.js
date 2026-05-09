@@ -61,6 +61,24 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// SMTP test route — send a test email to verify config
+app.get('/api/test-email', async (req, res) => {
+  const { sendAcceptanceEmail } = require('./services/emailService');
+  const to = req.query.to || process.env.SMTP_USER;
+  try {
+    await sendAcceptanceEmail({
+      to,
+      firstName: 'Test',
+      lastName: 'SMTP',
+      offerTitle: 'Stage Test',
+      trackingUrl: process.env.FRONTEND_URL || 'https://rh-management-97bu.vercel.app'
+    });
+    res.json({ success: true, message: `Email envoyé à ${to}` });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Scoring service diagnostic — returns URL and pings the service
 app.get('/api/scoring-status', async (req, res) => {
   const url = process.env.SCORING_SERVICE_URL || '(not set — default: http://127.0.0.1:8000/score)';
