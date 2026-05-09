@@ -460,7 +460,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
     }
     .brand-dot { color: #60a5fa; }
     .brand-tagline {
-      font-size: 14px; color: rgba(255,255,255,0.5);
+      font-size: 14px; color: rgba(255,255,255,0.9);
       letter-spacing: 2px; text-transform: uppercase;
       margin: 8px 0 0 2px; font-weight: 500;
     }
@@ -473,7 +473,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
     }
 
     .brand-desc {
-      font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.7;
+      font-size: 15px; color: rgba(255,255,255,0.88); line-height: 1.7;
       margin: 0 0 32px 0; max-width: 320px;
     }
 
@@ -485,7 +485,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px;
       padding: 12px 16px;
-      color: rgba(255,255,255,0.75);
+      color: white;
       font-size: 14px; font-weight: 500;
       backdrop-filter: blur(8px);
       transition: all 0.3s;
