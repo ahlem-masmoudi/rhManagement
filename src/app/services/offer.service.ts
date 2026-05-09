@@ -112,7 +112,7 @@ export class OfferService {
     const offerData = {
       title: offer.title,
       department: offer.department,  // ✅ CORRIGÉ !
-      company: 'INET',  // Entreprise fixe
+      company: 'I.NET',  // Entreprise fixe
       location: offer.location,
       type: offer.type,
       duration: offer.duration,

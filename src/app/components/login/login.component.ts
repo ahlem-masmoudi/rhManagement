@@ -40,12 +40,12 @@ type AuthView = 'login' | 'forgot' | 'reset';
             </svg>
           </div>
           <div class="brand-text">
-            <h1 class="brand-name">INET<span class="brand-dot">.</span></h1>
+            <h1 class="brand-name">I.NET</h1>
             <p class="brand-tagline">Gestion des candidatures de stage</p>
           </div>
           <div class="brand-divider"></div>
           <p class="brand-desc">
-            Plateforme sécurisée de gestion des candidatures et des stages universitaires.
+            Plateforme de gestion des candidatures et des stages universitaires.
           </p>
 
           <!-- Feature pills -->

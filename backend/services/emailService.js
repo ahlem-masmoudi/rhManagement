@@ -1,6 +1,6 @@
 const https = require('https');
 
-const APP_NAME = 'INET – Gestion des Stages';
+const APP_NAME = 'I.NET – Gestion des Stages';
 const FROM     = `${APP_NAME} <onboarding@resend.dev>`;
 
 async function resendPost(payload) {

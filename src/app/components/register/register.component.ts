@@ -19,7 +19,7 @@ import { AuthService } from '../../services/auth.service';
           </div>
 
           <div class="register-header">
-            <img src="assets/logo-inet.png" alt="INET" class="logo">
+            <img src="assets/logo-inet.png" alt="I.NET" class="logo">
             <h1>Créer un compte candidat</h1>
             <p>Rejoignez notre plateforme de stages</p>
           </div>

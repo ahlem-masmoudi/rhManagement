@@ -38,8 +38,8 @@ interface Department {
       <header class="navbar">
         <div class="container">
           <div class="nav-brand">
-            <img src="assets/logo-inet.png" alt="INET" class="logo logo-animate">
-            <span class="brand-name">INET</span>
+            <img src="assets/logo-inet.png" alt="I.NET" class="logo logo-animate">
+            <span class="brand-name">I.NET</span>
           </div>
           <div class="nav-actions">
             <button class="btn btn-outline btn-animated" type="button" (click)="showLoginModal()">
@@ -101,7 +101,7 @@ interface Department {
         <div class="container hero-container">
           <div class="hero-content fade-in-up">
             <h1 class="hero-title gradient-text">
-              Rejoignez l'équipe INET — Trouvez le stage qui correspond à votre profil
+              Rejoignez l'équipe I.NET — Trouvez le stage qui correspond à votre profil
             </h1>
             <p class="hero-subtitle">
               Déposez votre candidature en quelques minutes et découvrez les offres adaptées à vos compétences
@@ -112,7 +112,7 @@ interface Department {
             </button>
           </div>
           <div class="hero-image fade-in-up">
-            <img src="assets/hero-image.png" alt="Candidat INET" class="hero-img">
+            <img src="assets/hero-image.png" alt="Candidat I.NET" class="hero-img">
           </div>
         </div>
       </section>
@@ -178,7 +178,7 @@ interface Department {
         <div class="container footer-container">
           <div class="footer-content">
             <div class="footer-section">
-              <h4>🏢 INET</h4>
+              <h4>🏢 I.NET</h4>
               <p>Plateforme de gestion des stages</p>
             </div>
             <div class="footer-section">
@@ -188,7 +188,7 @@ interface Department {
             </div>
           </div>
           <div class="footer-bottom">
-            <p>&copy; 2026 INET. Tous droits réservés.</p>
+            <p>&copy; 2026 I.NET. Tous droits réservés.</p>
           </div>
         </div>
       </footer>
