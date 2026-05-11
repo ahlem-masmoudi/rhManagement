@@ -85,7 +85,7 @@ interface DossierEntry {
               <div class="meta">{{ entry.application.candidate?.email }}</div>
               <div class="meta">{{ entry.application.offer?.title }}</div>
             </div>
-            <div class="status-chip accepted">Accepté</div>
+            <div class="status-chip accepted">Accepté(e)</div>
           </div>
 
           <!-- Card actions -->
