@@ -197,15 +197,12 @@ import { Candidate, CandidateStatus, Application } from '../../models';
                   </div>
                 </div>
 
-                <div class="project-card assignment-card">
+                <div class="project-card assignment-card" *ngIf="candidate?.status === 'offre_acceptee'">
                   <h4>Lettre d'affectation</h4>
                   <p class="project-description">
-                    Disponible uniquement pour les candidats présélectionnés ou acceptés.
+                    Disponible pour les candidats dont l'offre a été acceptée.
                   </p>
-                  <p *ngIf="candidate && !canGenerateAssignmentLetter()" class="text-muted" style="margin-top:8px;">
-                    Non disponible pour ce statut.
-                  </p>
-                  <button class="btn btn-success btn-sm" [disabled]="!canGenerateAssignmentLetter()" (click)="openAssignmentLetterModal()">
+                  <button class="btn btn-success btn-sm" (click)="openAssignmentLetterModal()">
                     Générer la lettre d'affectation
                   </button>
                 </div>
@@ -1616,8 +1613,7 @@ export class ProfilComponent implements OnInit {
 
   canGenerateAssignmentLetter(): boolean {
     if (!this.candidate) return false;
-    return ['preselectionne', 'offre_acceptee', 'entretien_programme', 'entretien_realise',
-            'validation_finale', 'offre_envoyee'].includes(this.candidate.status as string);
+    return this.candidate.status === 'offre_acceptee';
   }
 
   shouldHideRhDocuments(): boolean {
