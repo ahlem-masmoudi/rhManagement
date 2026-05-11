@@ -156,7 +156,23 @@ interface RhUser {
 
         <div class="form-group">
           <label>{{ editingUser ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe' }}</label>
-          <input type="password" [(ngModel)]="form.password" [placeholder]="editingUser ? 'Laisser vide pour conserver' : 'Minimum 6 caractères'">
+          <div class="input-pw-wrap">
+            <input [type]="showPw ? 'text' : 'password'" [(ngModel)]="form.password"
+                   [placeholder]="editingUser ? 'Laisser vide pour conserver' : 'Minimum 6 caractères'">
+            <button type="button" class="btn-pw-toggle" (click)="showPw = !showPw" tabindex="-1">
+              <svg *ngIf="!showPw" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showPw" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div class="form-group">
@@ -377,6 +393,16 @@ interface RhUser {
       cursor: pointer; transition: all 0.2s;
     }
     .btn-cancel:hover { background: #f8fafc; }
+
+    .input-pw-wrap { position: relative; display: flex; align-items: center; }
+    .input-pw-wrap input { width: 100%; padding-right: 42px; }
+    .btn-pw-toggle {
+      position: absolute; right: 10px;
+      background: none; border: none; cursor: pointer;
+      color: #94a3b8; display: flex; align-items: center;
+      padding: 4px; border-radius: 6px; transition: color 0.2s;
+    }
+    .btn-pw-toggle:hover { color: #6366f1; }
     .btn-save {
       display: flex; align-items: center; gap: 8px;
       padding: 9px 20px; background: linear-gradient(135deg, #2563eb, #7c3aed);
@@ -411,6 +437,7 @@ export class AdminUsersComponent implements OnInit {
   modalError = '';
 
   form = { firstName: '', lastName: '', email: '', password: '', role: 'rh_offres' as string };
+  showPw = false;
 
   roleOptions = [
     { value: 'recruiter',       label: 'Recruteur',          desc: 'Accès complet à toute la plateforme' },
@@ -443,6 +470,7 @@ export class AdminUsersComponent implements OnInit {
     this.editingUser = null;
     this.form = { firstName: '', lastName: '', email: '', password: '', role: 'rh_offres' };
     this.modalError = '';
+    this.showPw = false;
     this.showModal = true;
   }
 
@@ -450,6 +478,7 @@ export class AdminUsersComponent implements OnInit {
     this.editingUser = u;
     this.form = { firstName: u.firstName, lastName: u.lastName, email: u.email, password: '', role: u.role };
     this.modalError = '';
+    this.showPw = false;
     this.showModal = true;
   }
 
