@@ -13,11 +13,12 @@ const STATUS_LABELS: Record<string, string> = {
   documents_recus:      'Docs reçus',
   entretien_programme:  'Entretien prévu',
   entretien_realise:    'Entretien réalisé',
-  validation_finale:    'Validation finale',
-  offre_envoyee:        'Offre envoyée',
   offre_acceptee:       'Accepté(e) ✓',
-  rejete:               'Rejeté',
-  abandonne:            'Abandonné',
+  offre_refusee:        'Refusé(e)',
+  rejete:               'Refusé(e)',
+  abandonne:            'Refusé(e)',
+  validation_finale:    'Accepté(e) ✓',
+  offre_envoyee:        'Accepté(e) ✓',
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -27,17 +28,17 @@ const STATUS_COLORS: Record<string, string> = {
   documents_recus:      '#8B5CF6',
   entretien_programme:  '#06B6D4',
   entretien_realise:    '#0EA5E9',
-  validation_finale:    '#6366F1',
-  offre_envoyee:        '#10B981',
   offre_acceptee:       '#059669',
+  offre_refusee:        '#DC2626',
   rejete:               '#DC2626',
   abandonne:            '#9CA3AF',
+  validation_finale:    '#059669',
+  offre_envoyee:        '#059669',
 };
 
 const PIPELINE_ORDER = [
   'nouveau', 'preselectionne', 'en_attente_documents', 'documents_recus',
-  'entretien_programme', 'entretien_realise',
-  'validation_finale', 'offre_envoyee', 'offre_acceptee', 'rejete', 'abandonne',
+  'entretien_programme', 'entretien_realise', 'offre_acceptee', 'offre_refusee',
 ];
 
 @Component({
@@ -490,9 +491,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private renderDonut(pipeline: any[]): void {
     if (!pipeline?.length) return;
-    const labels = pipeline.map((p: any) => STATUS_LABELS[p.status] || p.status);
-    const values = pipeline.map((p: any) => p.count);
-    const colors = pipeline.map((p: any) => STATUS_COLORS[p.status] || '#6B7280');
+    const filtered = pipeline.filter((p: any) => p.status && STATUS_LABELS[p.status]);
+    if (!filtered.length) return;
+    const labels = filtered.map((p: any) => STATUS_LABELS[p.status]);
+    const values = filtered.map((p: any) => p.count);
+    const colors = filtered.map((p: any) => STATUS_COLORS[p.status] || '#6B7280');
 
     Plotly.newPlot('chart-donut', [{
       type: 'pie', labels, values, hole: 0.55,
