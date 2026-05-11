@@ -1647,8 +1647,8 @@ export class ProfilComponent implements OnInit {
   isInternshipRequest(doc: any): boolean { return this.getDocumentType(doc) === 'demande_stage'; }
 
   getAppScore(): number | null {
-    const score = (this.candidateApplications[0] as any)?.matchingScore;
-    return score != null ? +score : null;
+    const ms = (this.candidateApplications[0] as any)?.matchingScore;
+    return (ms?.global != null) ? ms.global : null;
   }
 
   getAppBreakdown(): any {
