@@ -172,12 +172,42 @@ import { AuthService } from '../services/auth.service';
           </div>
 
           <div class="topbar-actions">
-            <button class="icon-btn" title="Notifications">
-              <svg width="19" height="19" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
-              </svg>
-              <span class="badge-notification">3</span>
-            </button>
+            <div class="notif-wrap">
+              <button class="icon-btn" title="Notifications" (click)="toggleNotifications()">
+                <svg width="19" height="19" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                </svg>
+                <span class="badge-notification" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+              </button>
+
+              <!-- Backdrop -->
+              <div class="notif-backdrop" *ngIf="showNotifications" (click)="closeNotifications()"></div>
+
+              <!-- Dropdown -->
+              <div class="notif-panel" *ngIf="showNotifications">
+                <div class="notif-header">
+                  <span class="notif-title">Notifications</span>
+                  <button class="notif-mark-all" (click)="markAllRead()">Tout marquer lu</button>
+                </div>
+                <div class="notif-list">
+                  <div *ngFor="let n of notifications" class="notif-item" [class.unread]="!n.read" (click)="readNotif(n)">
+                    <div class="notif-icon" [ngClass]="'notif-icon-' + n.type">
+                      <svg *ngIf="n.type === 'new'" width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z"/></svg>
+                      <svg *ngIf="n.type === 'doc'" width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
+                      <svg *ngIf="n.type === 'status'" width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <div class="notif-body">
+                      <p class="notif-text" [innerHTML]="n.text"></p>
+                      <span class="notif-time">{{ n.time }}</span>
+                    </div>
+                    <div class="notif-dot" *ngIf="!n.read"></div>
+                  </div>
+                </div>
+                <div class="notif-footer">
+                  <a routerLink="/rh/candidatures" (click)="closeNotifications()">Voir toutes les candidatures →</a>
+                </div>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -732,6 +762,140 @@ import { AuthService } from '../services/auth.service';
       .topbar { padding: 0 12px; }
       .search-bar input { font-size: 13px; }
     }
+
+    /* ===================== NOTIFICATIONS ===================== */
+    .notif-wrap {
+      position: relative;
+    }
+
+    .notif-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 199;
+    }
+
+    .notif-panel {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 360px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
+      z-index: 200;
+      overflow: hidden;
+      animation: notifSlideIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes notifSlideIn {
+      from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .notif-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .notif-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .notif-mark-all {
+      font-size: 12px;
+      font-weight: 500;
+      color: #6366f1;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.2s;
+    }
+
+    .notif-mark-all:hover { color: #4f46e5; }
+
+    .notif-list {
+      max-height: 320px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #e2e8f0 transparent;
+    }
+
+    .notif-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 18px;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+      border-bottom: 1px solid #f8fafc;
+    }
+
+    .notif-item:hover { background: #f8fafc; }
+
+    .notif-item.unread { background: #f0f4ff; }
+    .notif-item.unread:hover { background: #e8eeff; }
+
+    .notif-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .notif-icon-new  { background: #dbeafe; color: #2563eb; }
+    .notif-icon-doc  { background: #d1fae5; color: #059669; }
+    .notif-icon-status { background: #fef3c7; color: #d97706; }
+
+    .notif-body { flex: 1; min-width: 0; }
+
+    .notif-text {
+      font-size: 13px;
+      color: #374151;
+      line-height: 1.45;
+      margin: 0 0 4px;
+    }
+
+    .notif-time {
+      font-size: 11.5px;
+      color: #94a3b8;
+    }
+
+    .notif-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #6366f1;
+      flex-shrink: 0;
+      margin-top: 6px;
+    }
+
+    .notif-footer {
+      padding: 12px 18px;
+      border-top: 1px solid #f1f5f9;
+      text-align: center;
+    }
+
+    .notif-footer a {
+      font-size: 13px;
+      font-weight: 600;
+      color: #6366f1;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .notif-footer a:hover { color: #4f46e5; }
   `]
 })
 export class RhLayoutComponent implements OnInit {
@@ -741,6 +905,34 @@ export class RhLayoutComponent implements OnInit {
   fpLoading = false;
   fingerprintMessage = '';
   fingerprintError = false;
+
+  showNotifications = false;
+  notifications: { id: number; type: string; text: string; time: string; read: boolean }[] = [
+    { id: 1, type: 'new', text: '<strong>Nouvelle candidature</strong> reçue pour <strong>Développeur Full Stack</strong>', time: 'Il y a 5 min', read: false },
+    { id: 2, type: 'doc', text: '<strong>Demande de stage</strong> déposée par Ahmed Bensalem', time: 'Il y a 1h', read: false },
+    { id: 3, type: 'status', text: 'Entretien confirmé avec <strong>Sarah Ouali</strong> — demain à 10h', time: 'Il y a 3h', read: false },
+    { id: 4, type: 'new', text: '<strong>Nouvelle candidature</strong> reçue pour <strong>Data Analyst</strong>', time: 'Hier', read: true },
+  ];
+
+  get unreadCount(): number {
+    return this.notifications.filter(n => !n.read).length;
+  }
+
+  toggleNotifications(): void {
+    this.showNotifications = !this.showNotifications;
+  }
+
+  closeNotifications(): void {
+    this.showNotifications = false;
+  }
+
+  markAllRead(): void {
+    this.notifications.forEach(n => n.read = true);
+  }
+
+  readNotif(n: { read: boolean }): void {
+    n.read = true;
+  }
 
   constructor(
     private authService: AuthService,
