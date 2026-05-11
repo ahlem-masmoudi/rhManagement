@@ -40,12 +40,6 @@ import { Offer } from '../../models';
           <option value="Développement informatique">Développement informatique</option>
           <option value="Marketing & Commercial">Marketing & Commercial</option>
         </select>
-        <select [(ngModel)]="selectedStatus" (change)="filterOffers()">
-          <option value="">Tous les statuts</option>
-          <option value="published">Publiée</option>
-          <option value="draft">Brouillon</option>
-          <option value="closed">Fermée</option>
-        </select>
       </div>
 
       <!-- Offers Grid -->
@@ -62,9 +56,6 @@ import { Offer } from '../../models';
         <div *ngFor="let offer of offers; let i = index" class="card offer-card" [style]="'--i:' + i">
           <div class="offer-header">
             <h3 class="offer-title">{{ offer.title }}</h3>
-            <span class="badge badge-success" *ngIf="offer.status === 'publiee' || offer.status === 'published'">Publiée</span>
-            <span class="badge badge-gray" *ngIf="offer.status === 'brouillon' || offer.status === 'draft'">Brouillon</span>
-            <span class="badge badge-warning" *ngIf="offer.status === 'archivee' || offer.status === 'closed'">Fermée</span>
           </div>
 
           <div class="offer-meta">
@@ -750,12 +741,6 @@ export class OffresComponent implements OnInit {
         return match;
       });
       console.log('📊 Après filtre département:', filtered.length);
-    }
-
-    // Filtre par statut
-    if (this.selectedStatus) {
-      filtered = filtered.filter(offer => offer.status === this.selectedStatus);
-      console.log('📊 Après filtre statut:', filtered.length);
     }
 
     this.offers = filtered;
