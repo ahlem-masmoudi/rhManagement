@@ -209,7 +209,7 @@ import { AuthService } from '../services/auth.service';
     .sidebar {
       width: 260px;
       min-width: 260px;
-      background: linear-gradient(180deg, #1e3a8a 0%, #3730a3 40%, #6d28d9 80%, #4c1d95 100%);
+      background: linear-gradient(180deg, #0f1f4d 0%, #1e1a6e 40%, #3b1a7a 80%, #2a0f52 100%);
       display: flex;
       flex-direction: column;
       position: fixed;
