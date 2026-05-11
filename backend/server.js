@@ -50,6 +50,7 @@ app.use('/api/offers', require('./routes/offers'));
 app.use('/api/applications', require('./routes/applications'));
 app.use('/api/analytics',   require('./routes/analytics'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/admin',       require('./routes/admin'));
 // Scoring microservice health/config note (optional)
 // You can set SCORING_SERVICE_URL env var to point to the scoring FastAPI service
 

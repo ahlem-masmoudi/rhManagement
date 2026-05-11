@@ -81,6 +81,17 @@ import { NotificationService, AppNotification } from '../services/notification.s
             <span class="nav-label">Dossiers accept&eacute;s</span>
             <span class="nav-glow"></span>
           </a>
+
+          <a *ngIf="isAdmin()" routerLink="/rh/admin/users" routerLinkActive="active"
+             class="nav-item" (click)="closeSidebar()" style="--i:4">
+            <span class="nav-icon">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+              </svg>
+            </span>
+            <span class="nav-label">Utilisateurs RH</span>
+            <span class="nav-glow"></span>
+          </a>
         </nav>
 
         <!-- Footer -->
@@ -986,6 +997,11 @@ export class RhLayoutComponent implements OnInit {
     if (hour < 12) return 'Bonjour';
     if (hour < 18) return 'Bon après-midi';
     return 'Bonsoir';
+  }
+
+  isAdmin(): boolean {
+    const role = this.authService.getCurrentUser()?.role;
+    return ['recruiter', 'admin'].includes(role ?? '');
   }
 
   canAccessOffers(): boolean {

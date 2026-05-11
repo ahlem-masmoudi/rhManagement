@@ -69,6 +69,10 @@ export const routes: Routes = [
       {
         path: 'profil/:id',
         loadComponent: () => import('./components/profil/profil.component').then(m => m.ProfilComponent)
+      },
+      {
+        path: 'admin/users',
+        loadComponent: () => import('./components/admin/admin-users.component').then(m => m.AdminUsersComponent)
       }
     ]
   },

@@ -26,7 +26,7 @@ export class AuthService {
   }
 
   // Get auth headers with token
-  private getAuthHeaders(): HttpHeaders {
+  getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('authToken');
     return new HttpHeaders({
       'Content-Type': 'application/json',
