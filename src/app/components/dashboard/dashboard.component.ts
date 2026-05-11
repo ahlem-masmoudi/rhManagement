@@ -15,7 +15,7 @@ const STATUS_LABELS: Record<string, string> = {
   entretien_realise:    'Entretien réalisé',
   validation_finale:    'Validation finale',
   offre_envoyee:        'Offre envoyée',
-  offre_acceptee:       'Accepté ✓',
+  offre_acceptee:       'Accepté(e) ✓',
   rejete:               'Rejeté',
   abandonne:            'Abandonné',
 };

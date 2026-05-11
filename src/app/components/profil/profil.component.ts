@@ -1226,9 +1226,8 @@ export class ProfilComponent implements OnInit {
     { value: 'documents_recus',      label: 'Documents reçus' },
     { value: 'entretien_programme',  label: 'Entretien programmé' },
     { value: 'entretien_realise',    label: 'Entretien réalisé' },
-    { value: 'validation_finale',    label: 'Validation finale' },
-    { value: 'offre_envoyee',        label: 'Offre envoyée' },
-    { value: 'offre_acceptee',       label: 'Accepté' },
+    { value: 'offre_acceptee',       label: 'Accepté(e)' },
+    { value: 'offre_refusee',        label: 'Refusé(e)' },
     { value: 'rejete',               label: 'Rejeté' },
     { value: 'abandonne',            label: 'Abandonné' },
   ];
@@ -1375,8 +1374,8 @@ export class ProfilComponent implements OnInit {
       'entretien_realise':    'Entretien réalisé',
       'validation_finale':    'Validation finale',
       'offre_envoyee':        'Offre envoyée',
-      'offre_acceptee':       'Accepté',
-      'offre_refusee':        'Offre refusée',
+      'offre_acceptee':       'Accepté(e)',
+      'offre_refusee':        'Refusé(e)',
       'rejete':               'Rejeté',
       'abandonne':            'Abandonné',
     };
