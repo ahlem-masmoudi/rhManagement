@@ -87,12 +87,8 @@ import { Offer } from '../../models';
 
           <div class="offer-stats">
             <div class="stat">
-              <div class="stat-value">{{ offer.applicationsCount }}</div>
+              <div class="stat-value">{{ offer.applicationsCount || 0 }}</div>
               <div class="stat-label">Candidatures</div>
-            </div>
-            <div class="stat">
-              <div class="stat-value">{{ offer.viewsCount }}</div>
-              <div class="stat-label">Vues</div>
             </div>
           </div>
 

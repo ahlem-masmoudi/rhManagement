@@ -103,10 +103,24 @@ exports.getAllOffers = async (req, res) => {
 
     const offers = await Offer.find(filter).populate('createdBy', 'firstName lastName email').sort('-createdAt');
 
+    // Attach real application count per offer
+    const offerIds = offers.map(o => o._id);
+    const counts = await Application.aggregate([
+      { $match: { offer: { $in: offerIds } } },
+      { $group: { _id: '$offer', count: { $sum: 1 } } }
+    ]);
+    const countMap = {};
+    counts.forEach(c => { countMap[c._id.toString()] = c.count; });
+
+    const data = offers.map(o => ({
+      ...o.toObject(),
+      applicationsCount: countMap[o._id.toString()] || 0
+    }));
+
     res.status(200).json({
       success: true,
-      count: offers.length,
-      data: offers
+      count: data.length,
+      data
     });
   } catch (error) {
     res.status(500).json({
