@@ -1228,8 +1228,6 @@ export class ProfilComponent implements OnInit {
     { value: 'entretien_realise',    label: 'Entretien réalisé' },
     { value: 'offre_acceptee',       label: 'Accepté(e)' },
     { value: 'offre_refusee',        label: 'Refusé(e)' },
-    { value: 'rejete',               label: 'Rejeté' },
-    { value: 'abandonne',            label: 'Abandonné' },
   ];
 
   private readonly nextStatus: Record<string, string> = {

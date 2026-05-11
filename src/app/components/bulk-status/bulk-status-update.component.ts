@@ -29,8 +29,6 @@ import { Candidate, CandidateStatus, BulkStatusChange } from '../../models';
             <option value="entretien_realise">Entretien réalisé</option>
             <option value="offre_acceptee">Accepté(e)</option>
             <option value="offre_refusee">Refusé(e)</option>
-            <option value="rejete">Rejeté</option>
-            <option value="abandonne">Abandonné</option>
           </select>
 
           <label class="checkbox-label">
