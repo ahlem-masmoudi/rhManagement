@@ -150,6 +150,94 @@ import { Candidate, CandidateStatus, Application } from '../../models';
 
             <!-- SKILLS TAB -->
             <div *ngIf="activeTab === 'skills'">
+
+              <!-- SCORE MATCHING — visible uniquement pour les candidats acceptés -->
+              <div *ngIf="candidate?.status === 'offre_acceptee' && getAppScore() != null" class="score-section">
+                <h3 class="score-section-title">Score de matching</h3>
+
+                <!-- Score global -->
+                <div class="score-global-card">
+                  <div class="score-gauge">
+                    <svg viewBox="0 0 120 120" width="120" height="120">
+                      <circle cx="60" cy="60" r="50" fill="none" stroke="#e2e8f0" stroke-width="10"/>
+                      <circle cx="60" cy="60" r="50" fill="none"
+                        [attr.stroke]="getAppScore()! >= 70 ? '#059669' : getAppScore()! >= 45 ? '#f59e0b' : '#ef4444'"
+                        stroke-width="10"
+                        stroke-linecap="round"
+                        [attr.stroke-dasharray]="314"
+                        [attr.stroke-dashoffset]="314 - (314 * getAppScore()! / 100)"
+                        transform="rotate(-90 60 60)"/>
+                    </svg>
+                    <div class="score-gauge-label">
+                      <span class="score-number">{{ getAppScore()! | number:'1.0-0' }}</span>
+                      <span class="score-pct">/ 100</span>
+                    </div>
+                  </div>
+                  <div class="score-meta">
+                    <div class="score-badge"
+                      [class.score-badge-green]="getAppScore()! >= 70"
+                      [class.score-badge-yellow]="getAppScore()! >= 45 && getAppScore()! < 70"
+                      [class.score-badge-red]="getAppScore()! < 45">
+                      {{ getAppScore()! >= 70 ? 'Excellent profil' : getAppScore()! >= 45 ? 'Profil correct' : 'Profil faible' }}
+                    </div>
+                    <p class="score-offer">Pour l'offre : <strong>{{ candidateApplications[0]?.offer?.title || '—' }}</strong></p>
+                  </div>
+                </div>
+
+                <!-- Breakdown -->
+                <div *ngIf="getAppBreakdown()" class="score-breakdown">
+                  <h4>Détail par critère</h4>
+                  <div class="breakdown-list">
+                    <div *ngIf="getAppBreakdown().skills_score != null" class="breakdown-item">
+                      <span class="breakdown-label">Compétences</span>
+                      <div class="breakdown-bar-wrap">
+                        <div class="breakdown-bar" [style.width.%]="getAppBreakdown().skills_score"></div>
+                      </div>
+                      <span class="breakdown-val">{{ getAppBreakdown().skills_score | number:'1.0-0' }}%</span>
+                    </div>
+                    <div *ngIf="getAppBreakdown().experience_score != null" class="breakdown-item">
+                      <span class="breakdown-label">Expérience</span>
+                      <div class="breakdown-bar-wrap">
+                        <div class="breakdown-bar" [style.width.%]="getAppBreakdown().experience_score"></div>
+                      </div>
+                      <span class="breakdown-val">{{ getAppBreakdown().experience_score | number:'1.0-0' }}%</span>
+                    </div>
+                    <div *ngIf="getAppBreakdown().education_score != null" class="breakdown-item">
+                      <span class="breakdown-label">Formation</span>
+                      <div class="breakdown-bar-wrap">
+                        <div class="breakdown-bar" [style.width.%]="getAppBreakdown().education_score"></div>
+                      </div>
+                      <span class="breakdown-val">{{ getAppBreakdown().education_score | number:'1.0-0' }}%</span>
+                    </div>
+                    <div *ngIf="getAppBreakdown().semantic_score != null" class="breakdown-item">
+                      <span class="breakdown-label">Sémantique CV</span>
+                      <div class="breakdown-bar-wrap">
+                        <div class="breakdown-bar" [style.width.%]="getAppBreakdown().semantic_score"></div>
+                      </div>
+                      <span class="breakdown-val">{{ getAppBreakdown().semantic_score | number:'1.0-0' }}%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Compétences matchées / manquantes -->
+                <div class="score-skills-row">
+                  <div *ngIf="getMatchedSkills().length" class="score-skills-box score-skills-matched">
+                    <h4>✅ Compétences correspondantes</h4>
+                    <div class="score-chips">
+                      <span *ngFor="let s of getMatchedSkills()" class="chip chip-green">{{ s }}</span>
+                    </div>
+                  </div>
+                  <div *ngIf="getMissingSkills().length" class="score-skills-box score-skills-missing">
+                    <h4>⚠️ Compétences manquantes</h4>
+                    <div class="score-chips">
+                      <span *ngFor="let s of getMissingSkills()" class="chip chip-red">{{ s }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <hr class="section-divider"/>
+              </div>
+
               <h3>Compétences techniques</h3>
               <div *ngIf="!candidate.skills?.length" class="empty-message">Aucune compétence renseignée.</div>
               <div class="skills-grid" *ngIf="candidate.skills?.length">
@@ -863,6 +951,66 @@ import { Candidate, CandidateStatus, Application } from '../../models';
 
     .assignment-card { border: 1px dashed #c7d2fe; }
 
+    /* ── Score matching ── */
+    .score-section { margin-bottom: 24px; }
+    .score-section-title { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 16px; }
+
+    .score-global-card {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+
+    .score-gauge { position: relative; flex-shrink: 0; }
+    .score-gauge-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .score-number { font-size: 26px; font-weight: 800; color: #1e293b; line-height: 1; }
+    .score-pct { font-size: 11px; color: #94a3b8; }
+
+    .score-meta { display: flex; flex-direction: column; gap: 8px; }
+    .score-badge {
+      display: inline-block;
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .score-badge-green { background: #d1fae5; color: #065f46; }
+    .score-badge-yellow { background: #fef3c7; color: #92400e; }
+    .score-badge-red { background: #fee2e2; color: #991b1b; }
+    .score-offer { font-size: 13px; color: #64748b; margin: 0; }
+
+    .score-breakdown { margin-bottom: 20px; }
+    .score-breakdown h4 { font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+    .breakdown-list { display: flex; flex-direction: column; gap: 10px; }
+    .breakdown-item { display: flex; align-items: center; gap: 10px; }
+    .breakdown-label { width: 120px; font-size: 13px; color: #374151; flex-shrink: 0; }
+    .breakdown-bar-wrap { flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+    .breakdown-bar { height: 100%; background: linear-gradient(90deg, #2563eb, #7c3aed); border-radius: 4px; transition: width .4s ease; }
+    .breakdown-val { width: 40px; font-size: 12px; font-weight: 600; color: #1e293b; text-align: right; flex-shrink: 0; }
+
+    .score-skills-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+    .score-skills-box { flex: 1; min-width: 200px; background: #f8fafc; border-radius: 12px; padding: 14px 16px; border: 1px solid #e2e8f0; }
+    .score-skills-matched { border-color: #a7f3d0; }
+    .score-skills-missing { border-color: #fecaca; }
+    .score-skills-box h4 { font-size: 13px; font-weight: 600; color: #374151; margin: 0 0 10px; }
+    .score-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip-green { background: #d1fae5; color: #065f46; }
+    .chip-red { background: #fee2e2; color: #991b1b; }
+
+    .section-divider { border: none; border-top: 1px solid #e2e8f0; margin: 0 0 20px; }
+
     /* Notes tab */
     .notes-area {
       width: 100%;
@@ -1539,6 +1687,23 @@ export class ProfilComponent implements OnInit {
   getDocumentStatus(doc: any): string { return doc?.status || 'soumis'; }
 
   isInternshipRequest(doc: any): boolean { return this.getDocumentType(doc) === 'demande_stage'; }
+
+  getAppScore(): number | null {
+    const score = (this.candidateApplications[0] as any)?.matchingScore;
+    return score != null ? +score : null;
+  }
+
+  getAppBreakdown(): any {
+    return (this.candidateApplications[0] as any)?.matchingBreakdown || null;
+  }
+
+  getMatchedSkills(): string[] {
+    return (this.candidateApplications[0] as any)?.matchedSkills || [];
+  }
+
+  getMissingSkills(): string[] {
+    return (this.candidateApplications[0] as any)?.missingSkills || [];
+  }
 
   getDocumentStatusLabel(status: any): string {
     const labels: Record<string, string> = {
