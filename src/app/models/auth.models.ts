@@ -8,7 +8,7 @@ export interface User {
   createdAt: Date;
 }
 
-export type UserRole = 'candidate' | 'recruiter' | 'admin';
+export type UserRole = 'candidate' | 'recruiter' | 'admin' | 'rh_offres' | 'rh_candidatures';
 
 export interface LoginCredentials {
   email: string;

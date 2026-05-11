@@ -47,7 +47,7 @@ import { NotificationService, AppNotification } from '../services/notification.s
             <span class="nav-glow"></span>
           </a>
 
-          <a routerLink="/rh/offres" routerLinkActive="active"
+          <a *ngIf="canAccessOffers()" routerLink="/rh/offres" routerLinkActive="active"
              class="nav-item" (click)="closeSidebar()" style="--i:1">
             <span class="nav-icon">
               <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
@@ -59,7 +59,7 @@ import { NotificationService, AppNotification } from '../services/notification.s
             <span class="nav-glow"></span>
           </a>
 
-          <a routerLink="/rh/candidatures" routerLinkActive="active"
+          <a *ngIf="canAccessCandidatures()" routerLink="/rh/candidatures" routerLinkActive="active"
              class="nav-item" (click)="closeSidebar()" style="--i:2">
             <span class="nav-icon">
               <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
@@ -71,7 +71,7 @@ import { NotificationService, AppNotification } from '../services/notification.s
             <span class="nav-glow"></span>
           </a>
 
-          <a routerLink="/rh/dossiers" routerLinkActive="active"
+          <a *ngIf="canAccessCandidatures()" routerLink="/rh/dossiers" routerLinkActive="active"
              class="nav-item" (click)="closeSidebar()" style="--i:3">
             <span class="nav-icon">
               <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
@@ -92,7 +92,7 @@ import { NotificationService, AppNotification } from '../services/notification.s
             </div>
             <div class="user-info">
               <div class="user-name">{{ getUserName() }}</div>
-              <div class="user-role">Recruteur</div>
+              <div class="user-role">{{ getRoleLabel() }}</div>
             </div>
           </div>
 
@@ -986,6 +986,24 @@ export class RhLayoutComponent implements OnInit {
     if (hour < 12) return 'Bonjour';
     if (hour < 18) return 'Bon après-midi';
     return 'Bonsoir';
+  }
+
+  canAccessOffers(): boolean {
+    const role = this.authService.getCurrentUser()?.role;
+    return ['recruiter', 'admin', 'rh_offres'].includes(role ?? '');
+  }
+
+  canAccessCandidatures(): boolean {
+    const role = this.authService.getCurrentUser()?.role;
+    return ['recruiter', 'admin', 'rh_candidatures'].includes(role ?? '');
+  }
+
+  getRoleLabel(): string {
+    const role = this.authService.getCurrentUser()?.role;
+    if (role === 'rh_offres') return 'Resp. Offres';
+    if (role === 'rh_candidatures') return 'Resp. Candidatures';
+    if (role === 'admin') return 'Administrateur';
+    return 'Recruteur';
   }
 
   registerFingerprint(): void {

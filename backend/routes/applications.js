@@ -16,14 +16,14 @@ const { scoreApplication } = require('../controllers/scoreController');
 router.get('/my', protect, authorize('candidate'), getMyApplications);
 
 // Recruiter routes
-router.get('/', protect, authorize('recruiter', 'admin'), getAllApplications);
-router.get('/booked-slots', protect, authorize('recruiter', 'admin'), getBookedSlots);
-router.get('/offer/:offerId', protect, authorize('recruiter', 'admin'), getApplicationsByOffer);
-router.put('/:applicationId/status', protect, authorize('recruiter', 'admin'), updateApplicationStatus);
-router.patch('/:applicationId/interview', protect, authorize('recruiter', 'admin'), scheduleInterview);
-router.patch('/:applicationId/evaluate', protect, authorize('recruiter', 'admin'), evaluateApplication);
+router.get('/', protect, authorize('recruiter', 'admin', 'rh_candidatures'), getAllApplications);
+router.get('/booked-slots', protect, authorize('recruiter', 'admin', 'rh_candidatures'), getBookedSlots);
+router.get('/offer/:offerId', protect, authorize('recruiter', 'admin', 'rh_candidatures'), getApplicationsByOffer);
+router.put('/:applicationId/status', protect, authorize('recruiter', 'admin', 'rh_candidatures'), updateApplicationStatus);
+router.patch('/:applicationId/interview', protect, authorize('recruiter', 'admin', 'rh_candidatures'), scheduleInterview);
+router.patch('/:applicationId/evaluate', protect, authorize('recruiter', 'admin', 'rh_candidatures'), evaluateApplication);
 
 // Score an application (upload resume + job text) and persist matching result
-router.post('/:applicationId/score', protect, authorize('recruiter', 'admin'), scoreApplication);
+router.post('/:applicationId/score', protect, authorize('recruiter', 'admin', 'rh_candidatures'), scoreApplication);
 
 module.exports = router;

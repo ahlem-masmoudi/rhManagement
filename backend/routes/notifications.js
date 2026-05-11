@@ -4,7 +4,7 @@ const Application = require('../models/Application');
 const { protect, authorize } = require('../middleware/auth');
 
 // GET /api/notifications — recent activity for RH recruiter
-router.get('/', protect, authorize('recruiter', 'admin'), async (req, res) => {
+router.get('/', protect, authorize('recruiter', 'admin', 'rh_offres', 'rh_candidatures'), async (req, res) => {
   try {
     const applications = await Application.find()
       .sort({ updatedAt: -1 })

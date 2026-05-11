@@ -47,7 +47,7 @@ export const routes: Routes = [
   // RH routes (protected by auth + role guard) - wrapped in RH layout
   {
     path: 'rh',
-    canActivate: [authGuard, roleGuard(['recruiter', 'admin'])],
+    canActivate: [authGuard, roleGuard(['recruiter', 'admin', 'rh_offres', 'rh_candidatures'])],
     loadComponent: () => import('./components/rh-layout.component').then(m => m.RhLayoutComponent),
     children: [
       {

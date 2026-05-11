@@ -28,22 +28,22 @@ router.post('/tracking/:token/documents', uploadDocumentByTrackingToken);
 router.get('/tracking/:token/documents/:docId/download', downloadDocumentByTrackingToken);
 
 // Recruiter routes (for viewing candidates)
-router.get('/', protect, authorize('recruiter'), getAllCandidates);
-router.get('/:id', protect, authorize('recruiter'), getCandidate);
+router.get('/', protect, authorize('recruiter', 'rh_candidatures'), getAllCandidates);
+router.get('/:id', protect, authorize('recruiter', 'rh_candidatures'), getCandidate);
 
 // Bulk update statuses (recruiter)
-router.post('/bulk-status', protect, authorize('recruiter'), bulkUpdateStatus);
+router.post('/bulk-status', protect, authorize('recruiter', 'rh_candidatures'), bulkUpdateStatus);
 
 // Generate tracking token for candidate
-router.post('/:id/generate-tracking', protect, authorize('recruiter'), generateTrackingToken);
+router.post('/:id/generate-tracking', protect, authorize('recruiter', 'rh_candidatures'), generateTrackingToken);
 
 // Upload document for candidate (candidate or recruiter)
 router.post('/:id/documents', protect, uploadDocument);
-router.post('/:id/documents/:docId/sign-request', protect, authorize('recruiter', 'admin'), generateSignedInternshipRequest);
-router.post('/:id/documents/generate-assignment-letter', protect, authorize('recruiter'), generateAssignmentLetter);
+router.post('/:id/documents/:docId/sign-request', protect, authorize('recruiter', 'admin', 'rh_candidatures'), generateSignedInternshipRequest);
+router.post('/:id/documents/generate-assignment-letter', protect, authorize('recruiter', 'rh_candidatures'), generateAssignmentLetter);
 
 // Update recruiter notes for a candidate
-router.put('/:id/notes', protect, authorize('recruiter'), updateCandidateNotes);
+router.put('/:id/notes', protect, authorize('recruiter', 'rh_candidatures'), updateCandidateNotes);
 
 // Download document
 router.get('/:id/documents/:docId/download', protect, downloadDocument);

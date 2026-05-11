@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['recruiter', 'candidate'],
+    enum: ['recruiter', 'candidate', 'rh_offres', 'rh_candidatures'],
     default: 'candidate'
   },
   profileComplete: {

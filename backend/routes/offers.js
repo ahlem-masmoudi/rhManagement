@@ -20,8 +20,8 @@ router.get('/:id', getOffer);
 router.post('/:id/apply', protect, authorize('candidate'), applyToOffer);
 
 // Recruiter routes
-router.post('/', protect, authorize('recruiter'), createOffer);
-router.put('/:id', protect, authorize('recruiter'), updateOffer);
-router.delete('/:id', protect, authorize('recruiter'), deleteOffer);
+router.post('/', protect, authorize('recruiter', 'rh_offres'), createOffer);
+router.put('/:id', protect, authorize('recruiter', 'rh_offres'), updateOffer);
+router.delete('/:id', protect, authorize('recruiter', 'rh_offres'), deleteOffer);
 
 module.exports = router;
