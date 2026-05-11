@@ -67,6 +67,38 @@ import { Candidate, CandidateStatus, Application } from '../../models';
             </div>
           </div>
 
+          <!-- Score de matching — visible uniquement si score calculé -->
+          <div class="card score-card" *ngIf="getAppScore() != null">
+            <h3>Score de matching</h3>
+            <div class="score-card-body">
+              <div class="score-circle-wrap">
+                <svg viewBox="0 0 80 80" width="80" height="80">
+                  <circle cx="40" cy="40" r="32" fill="none" stroke="#e2e8f0" stroke-width="8"/>
+                  <circle cx="40" cy="40" r="32" fill="none"
+                    [attr.stroke]="getAppScore()! >= 70 ? '#059669' : getAppScore()! >= 45 ? '#f59e0b' : '#ef4444'"
+                    stroke-width="8"
+                    stroke-linecap="round"
+                    [attr.stroke-dasharray]="201"
+                    [attr.stroke-dashoffset]="201 - (201 * getAppScore()! / 100)"
+                    transform="rotate(-90 40 40)"/>
+                </svg>
+                <div class="score-circle-label">
+                  <span class="score-val">{{ getAppScore()! | number:'1.0-0' }}</span>
+                  <span class="score-max">/100</span>
+                </div>
+              </div>
+              <div class="score-card-meta">
+                <span class="score-pill"
+                  [class.score-pill-green]="getAppScore()! >= 70"
+                  [class.score-pill-yellow]="getAppScore()! >= 45 && getAppScore()! < 70"
+                  [class.score-pill-red]="getAppScore()! < 45">
+                  {{ getAppScore()! >= 70 ? 'Excellent' : getAppScore()! >= 45 ? 'Correct' : 'Faible' }}
+                </span>
+                <p class="score-offer-label">{{ candidateApplications[0]?.offer?.title || '—' }}</p>
+              </div>
+            </div>
+          </div>
+
           <!-- CV quick access -->
           <div class="card cv-card" *ngIf="getCvDocument()">
             <h3>CV</h3>
@@ -150,94 +182,6 @@ import { Candidate, CandidateStatus, Application } from '../../models';
 
             <!-- SKILLS TAB -->
             <div *ngIf="activeTab === 'skills'">
-
-              <!-- SCORE MATCHING — visible uniquement pour les candidats acceptés -->
-              <div *ngIf="candidate?.status === 'offre_acceptee' && getAppScore() != null" class="score-section">
-                <h3 class="score-section-title">Score de matching</h3>
-
-                <!-- Score global -->
-                <div class="score-global-card">
-                  <div class="score-gauge">
-                    <svg viewBox="0 0 120 120" width="120" height="120">
-                      <circle cx="60" cy="60" r="50" fill="none" stroke="#e2e8f0" stroke-width="10"/>
-                      <circle cx="60" cy="60" r="50" fill="none"
-                        [attr.stroke]="getAppScore()! >= 70 ? '#059669' : getAppScore()! >= 45 ? '#f59e0b' : '#ef4444'"
-                        stroke-width="10"
-                        stroke-linecap="round"
-                        [attr.stroke-dasharray]="314"
-                        [attr.stroke-dashoffset]="314 - (314 * getAppScore()! / 100)"
-                        transform="rotate(-90 60 60)"/>
-                    </svg>
-                    <div class="score-gauge-label">
-                      <span class="score-number">{{ getAppScore()! | number:'1.0-0' }}</span>
-                      <span class="score-pct">/ 100</span>
-                    </div>
-                  </div>
-                  <div class="score-meta">
-                    <div class="score-badge"
-                      [class.score-badge-green]="getAppScore()! >= 70"
-                      [class.score-badge-yellow]="getAppScore()! >= 45 && getAppScore()! < 70"
-                      [class.score-badge-red]="getAppScore()! < 45">
-                      {{ getAppScore()! >= 70 ? 'Excellent profil' : getAppScore()! >= 45 ? 'Profil correct' : 'Profil faible' }}
-                    </div>
-                    <p class="score-offer">Pour l'offre : <strong>{{ candidateApplications[0]?.offer?.title || '—' }}</strong></p>
-                  </div>
-                </div>
-
-                <!-- Breakdown -->
-                <div *ngIf="getAppBreakdown()" class="score-breakdown">
-                  <h4>Détail par critère</h4>
-                  <div class="breakdown-list">
-                    <div *ngIf="getAppBreakdown().skills_score != null" class="breakdown-item">
-                      <span class="breakdown-label">Compétences</span>
-                      <div class="breakdown-bar-wrap">
-                        <div class="breakdown-bar" [style.width.%]="getAppBreakdown().skills_score"></div>
-                      </div>
-                      <span class="breakdown-val">{{ getAppBreakdown().skills_score | number:'1.0-0' }}%</span>
-                    </div>
-                    <div *ngIf="getAppBreakdown().experience_score != null" class="breakdown-item">
-                      <span class="breakdown-label">Expérience</span>
-                      <div class="breakdown-bar-wrap">
-                        <div class="breakdown-bar" [style.width.%]="getAppBreakdown().experience_score"></div>
-                      </div>
-                      <span class="breakdown-val">{{ getAppBreakdown().experience_score | number:'1.0-0' }}%</span>
-                    </div>
-                    <div *ngIf="getAppBreakdown().education_score != null" class="breakdown-item">
-                      <span class="breakdown-label">Formation</span>
-                      <div class="breakdown-bar-wrap">
-                        <div class="breakdown-bar" [style.width.%]="getAppBreakdown().education_score"></div>
-                      </div>
-                      <span class="breakdown-val">{{ getAppBreakdown().education_score | number:'1.0-0' }}%</span>
-                    </div>
-                    <div *ngIf="getAppBreakdown().semantic_score != null" class="breakdown-item">
-                      <span class="breakdown-label">Sémantique CV</span>
-                      <div class="breakdown-bar-wrap">
-                        <div class="breakdown-bar" [style.width.%]="getAppBreakdown().semantic_score"></div>
-                      </div>
-                      <span class="breakdown-val">{{ getAppBreakdown().semantic_score | number:'1.0-0' }}%</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Compétences matchées / manquantes -->
-                <div class="score-skills-row">
-                  <div *ngIf="getMatchedSkills().length" class="score-skills-box score-skills-matched">
-                    <h4>✅ Compétences correspondantes</h4>
-                    <div class="score-chips">
-                      <span *ngFor="let s of getMatchedSkills()" class="chip chip-green">{{ s }}</span>
-                    </div>
-                  </div>
-                  <div *ngIf="getMissingSkills().length" class="score-skills-box score-skills-missing">
-                    <h4>⚠️ Compétences manquantes</h4>
-                    <div class="score-chips">
-                      <span *ngFor="let s of getMissingSkills()" class="chip chip-red">{{ s }}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <hr class="section-divider"/>
-              </div>
-
               <h3>Compétences techniques</h3>
               <div *ngIf="!candidate.skills?.length" class="empty-message">Aucune compétence renseignée.</div>
               <div class="skills-grid" *ngIf="candidate.skills?.length">
@@ -711,6 +655,20 @@ import { Candidate, CandidateStatus, Application } from '../../models';
 
     .cv-card { text-align: center; }
     .cv-name { font-size: 13px; color: var(--gray-600); margin-bottom: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Score card (left panel) */
+    .score-card h3 { font-size: 14px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+    .score-card-body { display: flex; align-items: center; gap: 14px; }
+    .score-circle-wrap { position: relative; flex-shrink: 0; }
+    .score-circle-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .score-val { font-size: 18px; font-weight: 800; color: #1e293b; line-height: 1; }
+    .score-max { font-size: 10px; color: #94a3b8; }
+    .score-card-meta { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .score-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .score-pill-green { background: #d1fae5; color: #065f46; }
+    .score-pill-yellow { background: #fef3c7; color: #92400e; }
+    .score-pill-red { background: #fee2e2; color: #991b1b; }
+    .score-offer-label { font-size: 11.5px; color: #64748b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
 
     /* Tabs */
     .tabs {
