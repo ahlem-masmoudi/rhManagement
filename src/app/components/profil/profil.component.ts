@@ -1618,7 +1618,7 @@ export class ProfilComponent implements OnInit {
 
   shouldHideRhDocuments(): boolean {
     if (!this.candidate) return true;
-    return this.candidate.status === 'nouveau';
+    return this.candidate.status !== 'offre_acceptee';
   }
 
   // ── Interview scheduling ────────────────────────────────────────────────────
