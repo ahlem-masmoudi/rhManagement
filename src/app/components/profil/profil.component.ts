@@ -1228,7 +1228,7 @@ export class ProfilComponent implements OnInit {
     { value: 'entretien_realise',    label: 'Entretien réalisé' },
     { value: 'validation_finale',    label: 'Validation finale' },
     { value: 'offre_envoyee',        label: 'Offre envoyée' },
-    { value: 'offre_acceptee',       label: 'Offre acceptée' },
+    { value: 'offre_acceptee',       label: 'Accepté' },
     { value: 'rejete',               label: 'Rejeté' },
     { value: 'abandonne',            label: 'Abandonné' },
   ];
@@ -1375,7 +1375,7 @@ export class ProfilComponent implements OnInit {
       'entretien_realise':    'Entretien réalisé',
       'validation_finale':    'Validation finale',
       'offre_envoyee':        'Offre envoyée',
-      'offre_acceptee':       'Offre acceptée',
+      'offre_acceptee':       'Accepté',
       'offre_refusee':        'Offre refusée',
       'rejete':               'Rejeté',
       'abandonne':            'Abandonné',

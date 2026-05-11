@@ -200,7 +200,7 @@ export class NotificationService {
       'entretien_realise': 'Entretien réalisé',
       'validation_finale': 'Validation finale',
       'offre_envoyee': 'Offre envoyée',
-      'offre_acceptee': 'Offre acceptée',
+      'offre_acceptee': 'Accepté',
       'offre_refusee': 'Offre refusée',
       'rejete': 'Rejeté',
       'abandonne': 'Abandonné'

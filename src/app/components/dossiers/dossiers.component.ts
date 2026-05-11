@@ -66,7 +66,7 @@ interface DossierEntry {
           <path d="M20 20h8M20 25h6" stroke="#059669" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
         <h3>Aucun dossier pour le moment</h3>
-        <p style="color:var(--gray-500)">Les candidats dont le statut est "Offre acceptée" apparaîtront ici avec leurs documents.</p>
+        <p style="color:var(--gray-500)">Les candidats dont le statut est "Accepté" apparaîtront ici avec leurs documents.</p>
       </div>
 
       <div *ngIf="loading" class="loading-state card">
@@ -85,7 +85,7 @@ interface DossierEntry {
               <div class="meta">{{ entry.application.candidate?.email }}</div>
               <div class="meta">{{ entry.application.offer?.title }}</div>
             </div>
-            <div class="status-chip accepted">Offre acceptée</div>
+            <div class="status-chip accepted">Accepté</div>
           </div>
 
           <!-- Card actions -->
