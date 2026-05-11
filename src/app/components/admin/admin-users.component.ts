@@ -478,12 +478,17 @@ export class AdminUsersComponent implements OnInit {
 
     this.saving = true;
     if (this.editingUser) {
+      const roleChanged = this.editingUser.role !== this.form.role;
       this.http.put<any>(`${environment.apiUrl}/admin/users/${this.editingUser._id}`, payload, this.headers).subscribe({
         next: r => {
           const idx = this.users.findIndex(u => u._id === this.editingUser!._id);
           if (idx > -1) this.users[idx] = r.data;
           this.saving = false;
           this.showModal = false;
+          if (roleChanged) {
+            this.error = `Rôle modifié. L'utilisateur doit se reconnecter pour que le changement prenne effet.`;
+            setTimeout(() => this.error = '', 6000);
+          }
         },
         error: e => { this.modalError = e?.error?.message || 'Erreur.'; this.saving = false; }
       });

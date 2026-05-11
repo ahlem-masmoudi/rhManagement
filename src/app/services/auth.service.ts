@@ -16,12 +16,29 @@ export class AuthService {
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
 
   constructor() {
-    // Check if user is already logged in (from localStorage)
     const savedUser = localStorage.getItem('currentUser');
     const savedToken = localStorage.getItem('authToken');
-    
+
     if (savedUser && savedToken) {
       this.currentUserSubject.next(JSON.parse(savedUser));
+      // Refresh user from API to pick up role changes made by admin
+      this.http.get<{ success: boolean; data: User }>(
+        `${environment.apiUrl}/auth/me`,
+        { headers: new HttpHeaders({ Authorization: `Bearer ${savedToken}` }) }
+      ).subscribe({
+        next: res => {
+          if (res?.data) {
+            localStorage.setItem('currentUser', JSON.stringify(res.data));
+            this.currentUserSubject.next(res.data);
+          }
+        },
+        error: () => {
+          // Token invalid or expired — force logout
+          localStorage.removeItem('currentUser');
+          localStorage.removeItem('authToken');
+          this.currentUserSubject.next(null);
+        }
+      });
     }
   }
 
