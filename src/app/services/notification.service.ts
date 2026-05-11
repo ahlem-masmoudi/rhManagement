@@ -1,15 +1,76 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { map, catchError, delay } from 'rxjs/operators';
 import { StatusChangeEmail, CandidateStatus, CandidateDocument } from '../models';
+import { environment } from '../../environments/environment';
+
+export interface AppNotification {
+  id: string;
+  type: 'new' | 'doc' | 'status';
+  text: string;
+  time: string;
+  updatedAt: string;
+  read: boolean;
+}
+
+const READ_KEY = 'rh_notif_read_ids';
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationService {
+  private http = inject(HttpClient);
+  private apiUrl = environment.apiUrl;
   private emailQueue: StatusChangeEmail[] = [];
 
   constructor() {}
+
+  // ── Real-time notifications from backend ────────────────────────────────
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('authToken');
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    });
+  }
+
+  private getReadIds(): Set<string> {
+    try {
+      const raw = localStorage.getItem(READ_KEY);
+      return new Set(raw ? JSON.parse(raw) : []);
+    } catch { return new Set(); }
+  }
+
+  private saveReadIds(ids: Set<string>): void {
+    localStorage.setItem(READ_KEY, JSON.stringify([...ids]));
+  }
+
+  getNotifications(): Observable<AppNotification[]> {
+    return this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiUrl}/notifications`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => {
+        const readIds = this.getReadIds();
+        return response.data.map(n => ({ ...n, read: readIds.has(n.id) }));
+      }),
+      catchError(() => of([]))
+    );
+  }
+
+  markRead(id: string): void {
+    const ids = this.getReadIds();
+    ids.add(id);
+    this.saveReadIds(ids);
+  }
+
+  markAllReadIds(ids: string[]): void {
+    const set = this.getReadIds();
+    ids.forEach(id => set.add(id));
+    this.saveReadIds(set);
+  }
 
   /**
    * Envoie un email de notification de changement de statut

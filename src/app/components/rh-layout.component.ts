@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { NotificationService, AppNotification } from '../services/notification.service';
 
 @Component({
   selector: 'app-rh-layout',
@@ -907,12 +908,8 @@ export class RhLayoutComponent implements OnInit {
   fingerprintError = false;
 
   showNotifications = false;
-  notifications: { id: number; type: string; text: string; time: string; read: boolean }[] = [
-    { id: 1, type: 'new', text: '<strong>Nouvelle candidature</strong> reçue pour <strong>Développeur Full Stack</strong>', time: 'Il y a 5 min', read: false },
-    { id: 2, type: 'doc', text: '<strong>Demande de stage</strong> déposée par Ahmed Bensalem', time: 'Il y a 1h', read: false },
-    { id: 3, type: 'status', text: 'Entretien confirmé avec <strong>Sarah Ouali</strong> — demain à 10h', time: 'Il y a 3h', read: false },
-    { id: 4, type: 'new', text: '<strong>Nouvelle candidature</strong> reçue pour <strong>Data Analyst</strong>', time: 'Hier', read: true },
-  ];
+  notifications: AppNotification[] = [];
+  notifLoading = false;
 
   get unreadCount(): number {
     return this.notifications.filter(n => !n.read).length;
@@ -920,6 +917,9 @@ export class RhLayoutComponent implements OnInit {
 
   toggleNotifications(): void {
     this.showNotifications = !this.showNotifications;
+    if (this.showNotifications) {
+      this.loadNotifications();
+    }
   }
 
   closeNotifications(): void {
@@ -928,15 +928,29 @@ export class RhLayoutComponent implements OnInit {
 
   markAllRead(): void {
     this.notifications.forEach(n => n.read = true);
+    this.notifService.markAllReadIds(this.notifications.map(n => n.id));
   }
 
-  readNotif(n: { read: boolean }): void {
+  readNotif(n: AppNotification): void {
     n.read = true;
+    this.notifService.markRead(n.id);
+  }
+
+  private loadNotifications(): void {
+    this.notifLoading = true;
+    this.notifService.getNotifications().subscribe({
+      next: data => {
+        this.notifications = data;
+        this.notifLoading = false;
+      },
+      error: () => { this.notifLoading = false; }
+    });
   }
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private notifService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -946,6 +960,7 @@ export class RhLayoutComponent implements OnInit {
         error: () => {}
       });
     }
+    this.loadNotifications();
   }
 
   toggleSidebar(): void {
