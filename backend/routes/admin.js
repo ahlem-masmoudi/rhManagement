@@ -48,25 +48,39 @@ router.post('/users', protect, authorize('recruiter', 'admin'), async (req, res)
   }
 });
 
-// PUT /api/admin/users/:id — update role or name
+// PUT /api/admin/users/:id — update role, name, email, password
 router.put('/users/:id', protect, authorize('recruiter', 'admin'), async (req, res) => {
   try {
-    const { role, firstName, lastName } = req.body;
-    const update = {};
+    const { role, firstName, lastName, email, password } = req.body;
+
+    const user = await User.findById(req.params.id).select('+password');
+    if (!user) return res.status(404).json({ success: false, message: 'Utilisateur introuvable.' });
+
     if (role) {
       if (!RH_ROLES.includes(role)) {
         return res.status(400).json({ success: false, message: 'Rôle invalide.' });
       }
-      update.role = role;
+      user.role = role;
     }
-    if (firstName) update.firstName = firstName;
-    if (lastName)  update.lastName  = lastName;
+    if (firstName) user.firstName = firstName;
+    if (lastName)  user.lastName  = lastName;
+    if (email) {
+      const taken = await User.findOne({ email: email.toLowerCase(), _id: { $ne: req.params.id } });
+      if (taken) return res.status(409).json({ success: false, message: 'Cet email est déjà utilisé.' });
+      user.email = email.toLowerCase();
+    }
+    if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({ success: false, message: 'Mot de passe minimum 6 caractères.' });
+      }
+      user.password = password;
+    }
 
-    const user = await User.findByIdAndUpdate(req.params.id, update, { new: true })
-      .select('firstName lastName email role createdAt');
-    if (!user) return res.status(404).json({ success: false, message: 'Utilisateur introuvable.' });
-
-    res.json({ success: true, data: user });
+    await user.save();
+    res.json({
+      success: true,
+      data: { _id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role, createdAt: user.createdAt }
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

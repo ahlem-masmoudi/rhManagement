@@ -129,7 +129,7 @@ interface RhUser {
     <!-- Create / Edit Modal -->
     <div class="modal" *ngIf="showModal">
       <div class="modal-header">
-        <h2 class="modal-title">{{ editingUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur RH' }}</h2>
+        <h2 class="modal-title">{{ modalTitle }}</h2>
         <button class="modal-close" (click)="closeModal()">
           <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
         </button>
@@ -138,7 +138,7 @@ interface RhUser {
       <div class="modal-body">
         <div class="modal-error" *ngIf="modalError">{{ modalError }}</div>
 
-        <div class="form-row" *ngIf="!editingUser">
+        <div class="form-row">
           <div class="form-group">
             <label>Prénom</label>
             <input type="text" [(ngModel)]="form.firstName" placeholder="Prénom">
@@ -149,14 +149,14 @@ interface RhUser {
           </div>
         </div>
 
-        <div class="form-group" *ngIf="!editingUser">
+        <div class="form-group">
           <label>Email</label>
           <input type="email" [(ngModel)]="form.email" placeholder="email@example.com">
         </div>
 
-        <div class="form-group" *ngIf="!editingUser">
-          <label>Mot de passe</label>
-          <input type="password" [(ngModel)]="form.password" placeholder="Minimum 6 caractères">
+        <div class="form-group">
+          <label>{{ editingUser ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe' }}</label>
+          <input type="password" [(ngModel)]="form.password" [placeholder]="editingUser ? 'Laisser vide pour conserver' : 'Minimum 6 caractères'">
         </div>
 
         <div class="form-group">
@@ -418,6 +418,10 @@ export class AdminUsersComponent implements OnInit {
     { value: 'rh_candidatures', label: 'Resp. Candidatures',  desc: 'Gestion des candidatures et dossiers' },
   ];
 
+  get modalTitle(): string {
+    return this.editingUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur RH';
+  }
+
   constructor(private http: HttpClient, private auth: AuthService) {}
 
   ngOnInit() { this.load(); }
@@ -457,9 +461,24 @@ export class AdminUsersComponent implements OnInit {
 
   save() {
     this.modalError = '';
+    if (!this.form.firstName || !this.form.lastName || !this.form.email) {
+      this.modalError = 'Prénom, nom et email sont requis.'; return;
+    }
+    if (!this.editingUser && !this.form.password) {
+      this.modalError = 'Le mot de passe est requis pour un nouveau compte.'; return;
+    }
+
+    const payload: any = {
+      firstName: this.form.firstName,
+      lastName:  this.form.lastName,
+      email:     this.form.email,
+      role:      this.form.role,
+    };
+    if (this.form.password) payload.password = this.form.password;
+
+    this.saving = true;
     if (this.editingUser) {
-      this.saving = true;
-      this.http.put<any>(`${environment.apiUrl}/admin/users/${this.editingUser._id}`, { role: this.form.role }, this.headers).subscribe({
+      this.http.put<any>(`${environment.apiUrl}/admin/users/${this.editingUser._id}`, payload, this.headers).subscribe({
         next: r => {
           const idx = this.users.findIndex(u => u._id === this.editingUser!._id);
           if (idx > -1) this.users[idx] = r.data;
@@ -469,11 +488,7 @@ export class AdminUsersComponent implements OnInit {
         error: e => { this.modalError = e?.error?.message || 'Erreur.'; this.saving = false; }
       });
     } else {
-      if (!this.form.firstName || !this.form.lastName || !this.form.email || !this.form.password) {
-        this.modalError = 'Tous les champs sont requis.'; return;
-      }
-      this.saving = true;
-      this.http.post<any>(`${environment.apiUrl}/admin/users`, this.form, this.headers).subscribe({
+      this.http.post<any>(`${environment.apiUrl}/admin/users`, payload, this.headers).subscribe({
         next: r => { this.users.unshift(r.data); this.saving = false; this.showModal = false; },
         error: e => { this.modalError = e?.error?.message || 'Erreur.'; this.saving = false; }
       });
