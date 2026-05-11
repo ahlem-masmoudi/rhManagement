@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatchingService } from '../../services/matching.service';
 import { CandidateService } from '../../services/candidate.service';
 import { Application } from '../../models';
@@ -291,14 +292,13 @@ interface DossierEntry {
             <button class="btn-secondary" (click)="closePreview()">Fermer</button>
           </div>
           <div class="modal-body">
-            <object *ngIf="preview.mime === 'application/pdf'"
-                    [data]="getDataUrl()" type="application/pdf" width="100%" height="600">
-              Votre navigateur ne peut pas afficher ce PDF.
-            </object>
             <img *ngIf="preview.mime && preview.mime.startsWith('image/')"
-                 [src]="getDataUrl()" style="max-width:100%;max-height:600px;display:block;margin:auto"/>
-            <pre *ngIf="preview.mime === 'text/html' || preview.mime === 'text/plain'"
-                 style="white-space:pre-wrap;max-height:600px;overflow:auto;font-size:13px">{{ preview.content }}</pre>
+                 [src]="preview.blobUrl" style="max-width:100%;max-height:600px;display:block;margin:auto"/>
+            <iframe *ngIf="!preview.mime?.startsWith('image/')"
+                    [src]="preview.blobUrl"
+                    width="100%" height="620"
+                    style="border:none;display:block">
+            </iframe>
           </div>
         </div>
       </div>
@@ -753,9 +753,10 @@ export class DossiersComponent implements OnInit {
   dossiers: DossierEntry[] = [];
   loading = true;
 
-  preview: { visible: boolean; name: string; content: string; mime: string } = {
-    visible: false, name: '', content: '', mime: ''
+  preview: { visible: boolean; name: string; content: string; mime: string; blobUrl: SafeResourceUrl | string } = {
+    visible: false, name: '', content: '', mime: '', blobUrl: ''
   };
+  private _rawBlobUrl = '';
 
   private apiUrl = environment.apiUrl;
 
@@ -763,7 +764,8 @@ export class DossiersComponent implements OnInit {
     private matchingService: MatchingService,
     private candidateService: CandidateService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private sanitizer: DomSanitizer
   ) {}
 
   viewProfile(candidateId: string): void {
@@ -1042,25 +1044,34 @@ export class DossiersComponent implements OnInit {
     return `https://mail.google.com/mail/?view=cm&to=${email}&su=${subject}&body=${body}`;
   }
 
-  previewDoc(entry: DossierEntry, doc: any): void {
-    if (doc.content) {
-      this.preview = {
-        visible: true,
-        name: doc.name,
-        content: doc.content,
-        mime: this.detectMime(doc.name)
-      };
-      return;
+  private buildBlobUrl(content: string, mime: string): SafeResourceUrl {
+    const isBase64 = /^[A-Za-z0-9+/=\r\n]+$/.test(content.trim());
+    let blob: Blob;
+    if (isBase64) {
+      const binary = atob(content.replace(/\s/g, ''));
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      blob = new Blob([bytes], { type: mime });
+    } else {
+      blob = new Blob([content], { type: mime + ';charset=utf-8' });
     }
+    if (this._rawBlobUrl) URL.revokeObjectURL(this._rawBlobUrl);
+    this._rawBlobUrl = URL.createObjectURL(blob);
+    return this.sanitizer.bypassSecurityTrustResourceUrl(this._rawBlobUrl);
+  }
+
+  previewDoc(entry: DossierEntry, doc: any): void {
+    this.closePreview();
+    const open = (name: string, content: string) => {
+      const mime = this.detectMime(name);
+      const blobUrl = this.buildBlobUrl(content, mime);
+      this.preview = { visible: true, name, content, mime, blobUrl };
+    };
+
+    if (doc.content) { open(doc.name, doc.content); return; }
+
     this.candidateService.downloadDocument(entry.application.candidateId, doc.id).subscribe({
-      next: resp => {
-        this.preview = {
-          visible: true,
-          name: resp.name || doc.name,
-          content: resp.content || '',
-          mime: this.detectMime(resp.name || doc.name)
-        };
-      },
+      next: resp => open(resp.name || doc.name, resp.content || ''),
       error: () => alert('Impossible de charger le document.')
     });
   }
@@ -1093,14 +1104,8 @@ export class DossiersComponent implements OnInit {
   }
 
   closePreview(): void {
-    this.preview = { visible: false, name: '', content: '', mime: '' };
-  }
-
-  getDataUrl(): string {
-    if (!this.preview.content) return '';
-    const isBase64 = /^[A-Za-z0-9+/=\r\n]+$/.test(this.preview.content.trim());
-    if (isBase64) return `data:${this.preview.mime};base64,${this.preview.content.replace(/\s/g, '')}`;
-    return `data:${this.preview.mime};charset=utf-8,${encodeURIComponent(this.preview.content)}`;
+    if (this._rawBlobUrl) { URL.revokeObjectURL(this._rawBlobUrl); this._rawBlobUrl = ''; }
+    this.preview = { visible: false, name: '', content: '', mime: '', blobUrl: '' };
   }
 
   private detectMime(filename: string): string {
