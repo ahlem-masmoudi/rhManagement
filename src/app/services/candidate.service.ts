@@ -23,10 +23,10 @@ export class CandidateService {
     // Only recruiters/admins should eagerly load the full candidates list.
     const token = localStorage.getItem('authToken');
     const user = this.authService.getCurrentUser();
-    if (token && (user?.role === 'recruiter' || user?.role === 'admin')) {
+    const rhRoles = ['recruiter', 'admin', 'rh_offres', 'rh_candidatures'];
+    if (token && user?.role && rhRoles.includes(user.role)) {
       this.loadCandidates();
     } else {
-      // initialize with empty list to avoid nulls in subscribers
       this.candidatesSubject.next([]);
     }
   }
