@@ -160,6 +160,20 @@ export class CandidateService {
     );
   }
 
+  // Get CV from the candidate's latest application (fallback when not in candidate.documents)
+  getCandidateResume(candidateId: string) {
+    return this.http.get<{ success: boolean; data: { name: string; content: string } }>(
+      `${this.apiUrl}/candidates/${candidateId}/resume`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error fetching candidate resume:', error);
+        throw error;
+      })
+    );
+  }
+
   uploadTrackingDocument(token: string, payload: { name: string; content: string; type: string }) {
     return this.http.post<{ success: boolean; message: string }>(
       `${this.apiUrl}/candidates/tracking/${token}/documents`,

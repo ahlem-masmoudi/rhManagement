@@ -1043,15 +1043,40 @@ export class CandidaturesComponent implements OnInit {
     this.candidateService.getCandidateFull(app.candidateId).subscribe({
       next: candidate => {
         const docs: any[] = candidate.documents || [];
-        // Priority: type==='cv', then name contains cv/resume, then first doc
         const cvDoc = docs.find((d: any) => d.type === 'cv')
           || docs.find((d: any) => /cv|resume|curriculum/i.test(d.name || ''))
           || docs[0];
-        if (!cvDoc) { alert('Aucun CV disponible pour ce candidat.'); return; }
-        this.openPreview(app.candidateId, cvDoc.id);
+        if (cvDoc) {
+          this.openPreview(app.candidateId, cvDoc.id);
+        } else {
+          // Fallback: CV stored in application.resumeUrl (old candidates)
+          this.candidateService.getCandidateResume(app.candidateId).subscribe({
+            next: resp => this.openPreviewFromContent(resp.name, resp.content),
+            error: () => alert('Aucun CV disponible pour ce candidat.')
+          });
+        }
       },
       error: () => alert('Impossible de charger le CV.')
     });
+  }
+
+  openPreviewFromContent(name: string, content: string): void {
+    const mime = this.detectMimeType(name);
+    const raw = (content || '').replace(/\s/g, '');
+    let blob: Blob;
+    try {
+      const binary = atob(raw);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      blob = new Blob([bytes], { type: mime });
+    } catch {
+      blob = new Blob([content || ''], { type: mime + ';charset=utf-8' });
+    }
+    if (this._rawPreviewBlobUrl) URL.revokeObjectURL(this._rawPreviewBlobUrl);
+    this._rawPreviewBlobUrl = URL.createObjectURL(blob);
+    this.previewBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._rawPreviewBlobUrl);
+    this.previewData = { name, content, mime };
+    this.previewVisible = true;
   }
 
   openPreview(candidateId: string, docId: string) {

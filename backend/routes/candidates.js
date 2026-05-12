@@ -14,7 +14,8 @@ const {
   uploadDocumentByTrackingToken,
   generateSignedInternshipRequest,
   generateAssignmentLetter,
-  updateCandidateNotes
+  updateCandidateNotes,
+  getCandidateResume
 } = require('../controllers/candidateController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -47,5 +48,8 @@ router.put('/:id/notes', protect, authorize('recruiter', 'rh_candidatures'), upd
 
 // Download document
 router.get('/:id/documents/:docId/download', protect, downloadDocument);
+
+// Get CV from latest application (fallback when not in candidate.documents)
+router.get('/:id/resume', protect, authorize('recruiter', 'admin', 'rh_candidatures', 'rh_offres'), getCandidateResume);
 
 module.exports = router;

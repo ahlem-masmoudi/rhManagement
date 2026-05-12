@@ -831,3 +831,28 @@ exports.downloadDocumentByTrackingToken = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error downloading document', error: error.message });
   }
 };
+
+// @desc    Get resume (CV) for a candidate from their latest application
+// @route   GET /api/candidates/:id/resume
+// @access  Private (recruiter / admin / rh_candidatures)
+exports.getCandidateResume = async (req, res) => {
+  try {
+    const application = await Application.findOne({ candidate: req.params.id })
+      .sort({ createdAt: -1 })
+      .select('resumeUrl notes')
+      .lean();
+
+    if (!application || !application.resumeUrl) {
+      return res.status(404).json({ success: false, message: 'Aucun CV disponible pour ce candidat.' });
+    }
+
+    // Extract cv name from notes field ("CV: filename.pdf")
+    const nameMatch = (application.notes || '').match(/^CV:\s*(.+)$/i);
+    const name = nameMatch ? nameMatch[1].trim() : 'CV.pdf';
+
+    res.status(200).json({ success: true, data: { name, content: application.resumeUrl } });
+  } catch (error) {
+    console.error('getCandidateResume error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
