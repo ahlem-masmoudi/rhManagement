@@ -950,8 +950,8 @@ export class CandidaturesComponent implements OnInit {
   }
 
   getScoreColor(score: number): string {
-    if (score >= 80) return 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
-    if (score >= 60) return 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)';
+    if (score >= 70) return 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
+    if (score >= 50) return 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)';
     return 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)';
   }
 
