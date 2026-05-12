@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CandidateService } from '../../services/candidate.service';
 import { MatchingService } from '../../services/matching.service';
 import { OfferService } from '../../services/offer.service';
@@ -60,26 +61,21 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
         <div class="doc-preview" (click)="$event.stopPropagation()">
           <div class="doc-preview-header">
             <h3 style="margin:0">{{ previewData?.name }}</h3>
-            <button class="btn-secondary" (click)="closePreview()">Fermer</button>
-          </div>
-
-            <div class="doc-preview-body">
-              <ng-container *ngIf="previewData && previewData.mime === 'application/pdf'">
-                <object [data]="getPreviewDataUrl()" type="application/pdf" width="100%" height="600">Votre navigateur ne peut pas afficher le PDF.</object>
-              </ng-container>
-              <ng-container *ngIf="previewData && previewData.mime && previewData.mime.indexOf('image/') === 0">
-                <img [src]="getPreviewDataUrl()" alt="{{ previewData.name }}" style="max-width:100%; max-height:600px; display:block; margin:auto;" />
-              </ng-container>
-              <ng-container *ngIf="previewData && previewData.mime === 'text/plain'">
-                <pre style="white-space:pre-wrap; max-height:600px; overflow:auto">{{ previewData.content }}</pre>
-              </ng-container>
-              <ng-container *ngIf="previewData && previewData.mime === 'application/octet-stream'">
-                <p>Prévisualisation non disponible pour ce type de fichier. Vous pouvez le télécharger.</p>
-              </ng-container>
+            <div style="display:flex;gap:8px">
+              <button class="btn-primary" (click)="saveContentAsFilePublic(previewData?.name || 'document', previewData?.content || '')">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20" style="margin-right:4px"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                Télécharger
+              </button>
+              <button class="btn-secondary" (click)="closePreview()">Fermer</button>
             </div>
-
-          <div class="doc-preview-footer">
-            <button class="btn-primary" (click)="saveContentAsFilePublic(previewData?.name || 'document', previewData?.content || '')">Télécharger</button>
+          </div>
+          <div class="doc-preview-body">
+            <ng-container *ngIf="previewData && previewData.mime && previewData.mime.startsWith('image/')">
+              <img [src]="previewBlobUrl" alt="{{ previewData.name }}" style="max-width:100%;max-height:600px;display:block;margin:auto"/>
+            </ng-container>
+            <ng-container *ngIf="previewData && !previewData.mime?.startsWith('image/')">
+              <iframe [src]="previewBlobUrl" width="100%" height="600" style="border:none;display:block"></iframe>
+            </ng-container>
           </div>
         </div>
       </div>
@@ -157,6 +153,11 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
                   {{ formatDate(application.appliedAt) }}
                 </div>
                 <div class="card-actions" (click)="$event.stopPropagation()">
+                  <button class="icon-btn cv-btn" title="Voir le CV" (click)="openCvPreview(application, $event)">
+                    <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                    </svg>
+                  </button>
                   <button class="icon-btn" (click)="toggleDropdown(application, $event)">
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
@@ -504,6 +505,8 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       transition: all 0.2s;
     }
     .icon-btn:hover { background: #f3f4f6; color: #6366f1; }
+    .cv-btn { color: #6366f1; background: #EEF2FF; }
+    .cv-btn:hover { background: #6366f1; color: white; }
 
     .column-pagination {
       display: flex;
@@ -721,7 +724,8 @@ export class CandidaturesComponent implements OnInit {
     private candidateService: CandidateService,
     private matchingService: MatchingService,
     private offerService: OfferService,
-    private router: Router
+    private router: Router,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -765,7 +769,7 @@ export class CandidaturesComponent implements OnInit {
     return this.selectedCandidates.has(candidateId);
   }
 
-  handleCardClick(candidateId: string, event: Event): void {
+  handleCardClick(candidateId: string, _event: Event): void {
     if (this.selectMode) {
       this.toggleCandidateSelection(candidateId);
     } else {
@@ -962,38 +966,32 @@ export class CandidaturesComponent implements OnInit {
 
   // Download a single document for a candidate
   downloadSingleDocument(candidateId: string, docId: string, filename?: string): void {
-    this.candidateService.downloadDocument(candidateId, docId).subscribe(resp => {
-      const name = resp.name || filename || 'document';
-      const content = resp.content || '';
-      this.saveContentAsFile(name, content);
-    }, err => {
-      console.error('Failed to download document', err);
-      alert('Erreur lors du téléchargement du document.');
+    this.candidateService.downloadDocument(candidateId, docId).subscribe({
+      next: resp => {
+        const name = resp.name || filename || 'document';
+        this.saveContentAsFile(name, resp.content || '');
+      },
+      error: err => {
+        console.error('Failed to download document', err);
+        alert('Erreur lors du téléchargement du document.');
+      }
     });
   }
 
   downloadAllDocuments(app: Application): void {
     if (!app?.candidateId) return;
-    // Fetch full candidate record (contains documents)
-    this.candidateService.getCandidateFull(app.candidateId).subscribe(candidate => {
-      const docs = candidate.documents || [];
-      if (!docs || docs.length === 0) {
-        alert('Aucun document disponible pour ce candidat.');
-        return;
-      }
-
-      // Download each document sequentially
-      docs.forEach((doc: any) => {
-        this.candidateService.downloadDocument(app.candidateId, doc.id).subscribe(resp => {
-          const name = resp.name || doc.name || 'document';
-          const content = resp.content || doc.content || '';
-          this.saveContentAsFile(name, content);
-        }, err => {
-          console.error('Failed to download document', err);
+    this.candidateService.getCandidateFull(app.candidateId).subscribe({
+      next: candidate => {
+        const docs = candidate.documents || [];
+        if (!docs.length) { alert('Aucun document disponible pour ce candidat.'); return; }
+        docs.forEach((doc: any) => {
+          this.candidateService.downloadDocument(app.candidateId, doc.id).subscribe({
+            next: resp => this.saveContentAsFile(resp.name || doc.name || 'document', resp.content || doc.content || ''),
+            error: err => console.error('Failed to download document', err)
+          });
         });
-      });
-    }, err => {
-      console.error('Failed to load candidate for documents', err);
+      },
+      error: err => console.error('Failed to load candidate for documents', err)
     });
   }
 
@@ -1037,22 +1035,51 @@ export class CandidaturesComponent implements OnInit {
   // --- Document preview modal ---
   previewVisible: boolean = false;
   previewData: { name?: string; content?: string; mime?: string } | null = null;
+  previewBlobUrl: SafeResourceUrl | string = '';
+  private _rawPreviewBlobUrl = '';
+
+  openCvPreview(app: Application, event: MouseEvent): void {
+    event.stopPropagation();
+    this.candidateService.getCandidateFull(app.candidateId).subscribe({
+      next: candidate => {
+        const cvDoc = (candidate.documents || []).find((d: any) => d.type === 'cv');
+        if (!cvDoc) { alert('Aucun CV disponible pour ce candidat.'); return; }
+        this.openPreview(app.candidateId, cvDoc.id);
+      },
+      error: () => alert('Impossible de charger le CV.')
+    });
+  }
 
   openPreview(candidateId: string, docId: string) {
-    this.candidateService.downloadDocument(candidateId, docId).subscribe(resp => {
-      this.previewData = {
-        name: resp.name || 'document',
-        content: resp.content || '',
-        mime: this.detectMimeType(resp.name || '')
-      };
-      this.previewVisible = true;
-    }, err => {
-      console.error('Failed to load document for preview', err);
-      alert('Impossible de charger le document pour prévisualisation.');
+    this.candidateService.downloadDocument(candidateId, docId).subscribe({
+      next: resp => {
+        const mime = this.detectMimeType(resp.name || '');
+        const raw = (resp.content || '').replace(/\s/g, '');
+        let blob: Blob;
+        try {
+          const binary = atob(raw);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          blob = new Blob([bytes], { type: mime });
+        } catch {
+          blob = new Blob([resp.content || ''], { type: mime + ';charset=utf-8' });
+        }
+        if (this._rawPreviewBlobUrl) URL.revokeObjectURL(this._rawPreviewBlobUrl);
+        this._rawPreviewBlobUrl = URL.createObjectURL(blob);
+        this.previewBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._rawPreviewBlobUrl);
+        this.previewData = { name: resp.name || 'document', content: resp.content || '', mime };
+        this.previewVisible = true;
+      },
+      error: err => {
+        console.error('Failed to load document for preview', err);
+        alert('Impossible de charger le document pour prévisualisation.');
+      }
     });
   }
 
   closePreview() {
+    if (this._rawPreviewBlobUrl) { URL.revokeObjectURL(this._rawPreviewBlobUrl); this._rawPreviewBlobUrl = ''; }
+    this.previewBlobUrl = '';
     this.previewVisible = false;
     this.previewData = null;
   }
