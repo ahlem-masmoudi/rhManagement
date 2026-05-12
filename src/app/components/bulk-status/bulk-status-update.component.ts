@@ -23,10 +23,7 @@ import { Candidate, CandidateStatus, BulkStatusChange } from '../../models';
             <option value="">Changer le statut...</option>
             <option value="nouveau">Nouveau</option>
             <option value="preselectionne">Présélectionné</option>
-            <option value="en_attente_documents">En attente de documents</option>
-            <option value="documents_recus">Documents reçus</option>
             <option value="entretien_programme">Entretien programmé</option>
-            <option value="entretien_realise">Entretien réalisé</option>
             <option value="offre_acceptee">Accepté(e)</option>
             <option value="offre_refusee">Refusé(e)</option>
           </select>
