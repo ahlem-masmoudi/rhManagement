@@ -1060,18 +1060,32 @@ export class CandidaturesComponent implements OnInit {
     });
   }
 
-  openPreviewFromContent(name: string, content: string): void {
-    const mime = this.detectMimeType(name);
-    const raw = (content || '').replace(/\s/g, '');
-    let blob: Blob;
+  private buildBlobFromContent(content: string, mime: string): Blob {
+    // Handle data URLs: "data:application/pdf;base64,JVBERi..."
+    let b64 = content || '';
+    if (b64.startsWith('data:')) {
+      const commaIdx = b64.indexOf(',');
+      const header = commaIdx >= 0 ? b64.substring(5, commaIdx) : '';
+      b64 = commaIdx >= 0 ? b64.substring(commaIdx + 1) : b64;
+      // Extract mime from data URL if we don't have a better one
+      if (mime === 'application/octet-stream' && header.includes(';base64')) {
+        mime = header.replace(';base64', '');
+      }
+    }
+    b64 = b64.replace(/\s/g, '');
     try {
-      const binary = atob(raw);
+      const binary = atob(b64);
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      blob = new Blob([bytes], { type: mime });
+      return new Blob([bytes], { type: mime });
     } catch {
-      blob = new Blob([content || ''], { type: mime + ';charset=utf-8' });
+      return new Blob([content || ''], { type: mime + ';charset=utf-8' });
     }
+  }
+
+  openPreviewFromContent(name: string, content: string): void {
+    const mime = this.detectMimeType(name);
+    const blob = this.buildBlobFromContent(content, mime);
     if (this._rawPreviewBlobUrl) URL.revokeObjectURL(this._rawPreviewBlobUrl);
     this._rawPreviewBlobUrl = URL.createObjectURL(blob);
     this.previewBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._rawPreviewBlobUrl);
@@ -1083,16 +1097,7 @@ export class CandidaturesComponent implements OnInit {
     this.candidateService.downloadDocument(candidateId, docId).subscribe({
       next: resp => {
         const mime = this.detectMimeType(resp.name || '');
-        const raw = (resp.content || '').replace(/\s/g, '');
-        let blob: Blob;
-        try {
-          const binary = atob(raw);
-          const bytes = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-          blob = new Blob([bytes], { type: mime });
-        } catch {
-          blob = new Blob([resp.content || ''], { type: mime + ';charset=utf-8' });
-        }
+        const blob = this.buildBlobFromContent(resp.content || '', mime);
         if (this._rawPreviewBlobUrl) URL.revokeObjectURL(this._rawPreviewBlobUrl);
         this._rawPreviewBlobUrl = URL.createObjectURL(blob);
         this.previewBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._rawPreviewBlobUrl);
