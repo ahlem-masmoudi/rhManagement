@@ -369,6 +369,25 @@ exports.applyToOffer = async (req, res) => {
       notes: req.body.cvName ? `CV: ${req.body.cvName}` : ''
     });
 
+    // Also persist the CV in candidate.documents so the RH kanban can preview it
+    if (req.body.cvBase64 && req.body.cvName) {
+      const existingCvIdx = (candidate.documents || []).findIndex(d => d.type === 'cv');
+      const cvDoc = {
+        id: `${Date.now()}_${Math.random().toString(36).substr(2, 8)}`,
+        name: req.body.cvName,
+        type: 'cv',
+        content: req.body.cvBase64,
+        status: 'soumis',
+        uploadedAt: new Date()
+      };
+      if (existingCvIdx >= 0) {
+        candidate.documents[existingCvIdx] = { ...candidate.documents[existingCvIdx].toObject(), ...cvDoc };
+      } else {
+        candidate.documents.push(cvDoc);
+      }
+      await candidate.save();
+    }
+
     // Best-effort auto scoring: the application is still considered submitted
     // even if the Python scoring service is unavailable.
     if (application.resumeUrl) {

@@ -1042,7 +1042,11 @@ export class CandidaturesComponent implements OnInit {
     event.stopPropagation();
     this.candidateService.getCandidateFull(app.candidateId).subscribe({
       next: candidate => {
-        const cvDoc = (candidate.documents || []).find((d: any) => d.type === 'cv');
+        const docs: any[] = candidate.documents || [];
+        // Priority: type==='cv', then name contains cv/resume, then first doc
+        const cvDoc = docs.find((d: any) => d.type === 'cv')
+          || docs.find((d: any) => /cv|resume|curriculum/i.test(d.name || ''))
+          || docs[0];
         if (!cvDoc) { alert('Aucun CV disponible pour ce candidat.'); return; }
         this.openPreview(app.candidateId, cvDoc.id);
       },
