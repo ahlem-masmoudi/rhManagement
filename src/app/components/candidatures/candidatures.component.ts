@@ -167,7 +167,7 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
                     <div class="dropdown-item" *ngFor="let opt of statusDropdownOptions"
                          [class.active]="application.status === opt.status"
                          [class.item-accept]="opt.status === 'offre_acceptee'"
-                         [class.item-reject]="opt.status === 'rejete'"
+                         [class.item-reject]="opt.status === 'offre_refusee'"
                          (click)="changeStatus(application, opt.status)">
                       {{ opt.title }}
                     </div>
@@ -698,22 +698,17 @@ export class CandidaturesComponent implements OnInit {
   kanbanColumns = [
     { status: 'nouveau' as CandidateStatus, title: 'Nouveau' },
     { status: 'preselectionne' as CandidateStatus, title: 'Présélection' },
-    { status: 'en_attente_documents' as CandidateStatus, title: 'En attente de documents' },
-    { status: 'documents_recus' as CandidateStatus, title: 'Documents reçus' },
     { status: 'entretien_programme' as CandidateStatus, title: 'Entretien' },
-    { status: 'offre_envoyee' as CandidateStatus, title: 'Offre envoyée' },
-    { status: 'rejete' as CandidateStatus, title: 'Rejeté' }
+    { status: 'offre_acceptee' as CandidateStatus, title: 'Accepté(e)' },
+    { status: 'offre_refusee' as CandidateStatus, title: 'Refusé(e)' }
   ];
 
   statusDropdownOptions = [
     { status: 'nouveau' as CandidateStatus, title: 'Nouveau' },
     { status: 'preselectionne' as CandidateStatus, title: 'Présélection' },
-    { status: 'en_attente_documents' as CandidateStatus, title: 'En attente de documents' },
-    { status: 'documents_recus' as CandidateStatus, title: 'Documents reçus' },
     { status: 'entretien_programme' as CandidateStatus, title: 'Entretien' },
-    { status: 'offre_envoyee' as CandidateStatus, title: 'Offre envoyée' },
-    { status: 'offre_acceptee' as CandidateStatus, title: 'Accepté ✓' },
-    { status: 'rejete' as CandidateStatus, title: 'Rejeté' }
+    { status: 'offre_acceptee' as CandidateStatus, title: 'Accepté(e)' },
+    { status: 'offre_refusee' as CandidateStatus, title: 'Refusé(e)' }
   ];
 
   constructor(
