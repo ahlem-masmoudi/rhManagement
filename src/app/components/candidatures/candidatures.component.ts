@@ -157,21 +157,11 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
                   {{ formatDate(application.appliedAt) }}
                 </div>
                 <div class="card-actions" (click)="$event.stopPropagation()">
-                  <button class="icon-btn" (click)="toggleDropdown(application.id, $event)">
+                  <button class="icon-btn" (click)="toggleDropdown(application, $event)">
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
                     </svg>
                   </button>
-                  <div class="status-dropdown" *ngIf="activeDropdown === application.id"
-                       [style.top.px]="dropdownY" [style.left.px]="dropdownX">
-                    <div class="dropdown-item" *ngFor="let opt of statusDropdownOptions"
-                         [class.active]="application.status === opt.status"
-                         [class.item-accept]="opt.status === 'offre_acceptee'"
-                         [class.item-reject]="opt.status === 'offre_refusee'"
-                         (click)="changeStatus(application, opt.status)">
-                      {{ opt.title }}
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -192,6 +182,19 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
         (selectionCleared)="clearSelection()"
         (statusUpdated)="onStatusUpdated()">
       </app-bulk-status-update>
+    </div>
+
+    <!-- Global status dropdown — rendered outside kanban to avoid transform issues -->
+    <div class="dropdown-backdrop" *ngIf="activeDropdown" (click)="activeDropdown = null"></div>
+    <div class="status-dropdown" *ngIf="activeDropdown"
+         [style.top.px]="dropdownY" [style.left.px]="dropdownX">
+      <div class="dropdown-item" *ngFor="let opt of statusDropdownOptions"
+           [class.active]="activeDropdown?.status === opt.status"
+           [class.item-accept]="opt.status === 'offre_acceptee'"
+           [class.item-reject]="opt.status === 'offre_refusee'"
+           (click)="changeStatus(activeDropdown, opt.status); activeDropdown = null">
+        {{ opt.title }}
+      </div>
     </div>
   `,
   styles: [`
@@ -375,8 +378,7 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       overflow: visible;
     }
     .candidate-card:hover {
-      box-shadow: 0 8px 24px rgba(99,102,241,0.12);
-      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(99,102,241,0.16);
       border-color: rgba(99,102,241,0.2);
     }
     .candidate-card.selected {
@@ -460,16 +462,20 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       color: #9CA3AF;
     }
     .card-actions { display: flex; gap: 4px; position: relative; }
+    .dropdown-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+    }
     .status-dropdown {
       position: fixed;
       background: white;
       border: 1px solid rgba(0,0,0,0.08);
       border-radius: 12px;
       box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-      z-index: 9999;
-      min-width: 200px;
-      max-height: 340px;
-      overflow-y: auto;
+      z-index: 1000;
+      min-width: 180px;
+      overflow: hidden;
     }
     .dropdown-item {
       padding: 9px 14px;
@@ -808,24 +814,26 @@ export class CandidaturesComponent implements OnInit {
     this.columnPages[status] = Math.min(max, this.getPage(status) + 1);
   }
 
-  activeDropdown: string | null = null;
+  activeDropdown: Application | null = null;
   dropdownX = 0;
   dropdownY = 0;
 
-  toggleDropdown(appId: string, event: MouseEvent): void {
-    if (this.activeDropdown === appId) {
+  toggleDropdown(app: Application, event: MouseEvent): void {
+    event.stopPropagation();
+    if (this.activeDropdown?.id === app.id) {
       this.activeDropdown = null;
       return;
     }
-    this.activeDropdown = appId;
+    this.activeDropdown = app;
     const btn = event.currentTarget as HTMLElement;
     const rect = btn.getBoundingClientRect();
-    const dropdownH = 310; // approx max-height
+    const dropdownW = 200;
+    const dropdownH = 250;
     const spaceBelow = window.innerHeight - rect.bottom;
-    this.dropdownX = Math.max(4, rect.right - 200);
-    this.dropdownY = spaceBelow >= dropdownH
-      ? rect.bottom + 4
-      : rect.top - dropdownH - 4;
+    // Align right edge of dropdown with right edge of button, keep on screen
+    const x = Math.min(rect.right - dropdownW, window.innerWidth - dropdownW - 8);
+    this.dropdownX = Math.max(8, x);
+    this.dropdownY = spaceBelow >= dropdownH ? rect.bottom : rect.top - dropdownH;
   }
 
   changeStatus(application: any, newStatus: string): void {
