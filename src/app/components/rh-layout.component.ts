@@ -243,7 +243,7 @@ interface SearchResult {
                     </div>
                     <div *ngFor="let r of offerResults" class="search-item" (mousedown)="goToResult(r)">
                       <div class="search-item-icon">
-                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                       </div>
                       <div class="search-item-info">
                         <span class="search-item-title">{{ r.label }}</span>
@@ -826,8 +826,8 @@ interface SearchResult {
       width: 32px;
       height: 32px;
       border-radius: 9px;
-      background: #eef2ff;
-      color: #6366f1;
+      background: #fef3c7;
+      color: #d97706;
       display: flex;
       align-items: center;
       justify-content: center;
