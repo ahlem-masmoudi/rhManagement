@@ -43,7 +43,7 @@ interface RhUser {
             <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
           </div>
           <div>
-            <div class="role-card-name">Recruteur</div>
+            <div class="role-card-name">Admin</div>
             <div class="role-card-desc">Accès complet à toute la plateforme</div>
           </div>
         </div>
@@ -440,7 +440,7 @@ export class AdminUsersComponent implements OnInit {
   showPw = false;
 
   roleOptions = [
-    { value: 'recruiter',       label: 'Recruteur',          desc: 'Accès complet à toute la plateforme' },
+    { value: 'recruiter',       label: 'Admin',              desc: 'Accès complet à toute la plateforme' },
     { value: 'rh_offres',       label: 'Resp. Offres',        desc: 'Gestion des offres de stage uniquement' },
     { value: 'rh_candidatures', label: 'Resp. Candidatures',  desc: 'Gestion des candidatures et dossiers' },
   ];
@@ -547,7 +547,7 @@ export class AdminUsersComponent implements OnInit {
   initials(u: RhUser) { return `${u.firstName[0]}${u.lastName[0]}`.toUpperCase(); }
 
   roleLabel(role: string) {
-    return { recruiter: 'Recruteur', rh_offres: 'Resp. Offres', rh_candidatures: 'Resp. Candidatures' }[role] ?? role;
+    return { recruiter: 'Admin', rh_offres: 'Resp. Offres', rh_candidatures: 'Resp. Candidatures' }[role] ?? role;
   }
 
   formatDate(d: string) {
