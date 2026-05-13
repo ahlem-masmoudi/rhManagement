@@ -242,8 +242,8 @@ interface SearchResult {
                       Offres de stage
                     </div>
                     <div *ngFor="let r of offerResults" class="search-item" (mousedown)="goToResult(r)">
-                      <div class="search-item-icon">
-                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/><path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/></svg>
+                      <div class="search-item-icon" style="position:relative;width:32px;height:32px;min-width:32px;border-radius:9px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);flex-shrink:0;">
+                        <svg width="15" height="15" fill="#7c3aed" viewBox="0 0 20 20" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:block;"><path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/><path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/></svg>
                       </div>
                       <div class="search-item-info">
                         <span class="search-item-title">{{ r.label }}</span>
