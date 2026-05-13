@@ -222,7 +222,7 @@ interface SearchResult {
                   <!-- Candidates group -->
                   <div *ngIf="candidateResults.length > 0">
                     <div class="search-group-label">
-                      <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+                      <span class="search-group-dot search-group-dot-candidate"></span>
                       Candidats
                     </div>
                     <div *ngFor="let r of candidateResults" class="search-item" (mousedown)="goToResult(r)">
@@ -238,12 +238,12 @@ interface SearchResult {
                   <!-- Offers group -->
                   <div *ngIf="offerResults.length > 0">
                     <div class="search-group-label">
-                      <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/><path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/></svg>
+                      <span class="search-group-dot search-group-dot-offer"></span>
                       Offres de stage
                     </div>
                     <div *ngFor="let r of offerResults" class="search-item" (mousedown)="goToResult(r)">
                       <div class="search-item-icon">
-                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="12.01"/><path d="M2 12h20"/></svg>
                       </div>
                       <div class="search-item-info">
                         <span class="search-item-title">{{ r.label }}</span>
@@ -798,6 +798,16 @@ interface SearchResult {
     }
     .search-group-label:first-child { border-top: none; }
 
+    .search-group-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .search-group-dot-candidate { background: #6366f1; }
+    .search-group-dot-offer     { background: #7c3aed; }
+
     .search-item {
       display: flex;
       align-items: center;
@@ -826,13 +836,15 @@ interface SearchResult {
       width: 32px;
       height: 32px;
       border-radius: 9px;
-      background: #fef3c7;
-      color: #d97706;
+      background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+      color: #7c3aed;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      line-height: 0;
     }
+    .search-item-icon svg { display: block; }
 
     .search-item-info {
       flex: 1;
