@@ -211,7 +211,7 @@ import { Offer } from '../../models';
       align-items: center;
       margin-bottom: 24px;
       padding: 28px 32px;
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 55%, #24243e 100%);
+      background: linear-gradient(135deg, #312e81 0%, #4f46e5 40%, #7c3aed 100%);
       border-radius: 18px;
       position: relative;
       overflow: hidden;
@@ -506,7 +506,7 @@ import { Offer } from '../../models';
     }
     .modal-header {
       padding: 22px 28px;
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%);
+      background: linear-gradient(135deg, #312e81 0%, #7c3aed 100%);
       display: flex;
       justify-content: space-between;
       align-items: center;
