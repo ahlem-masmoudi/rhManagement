@@ -320,7 +320,7 @@ interface DossierEntry {
       align-items: center;
       margin-bottom: 24px;
       padding: 26px 30px;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 55%, #a78bfa 100%);
+      background: linear-gradient(135deg, #312e81 0%, #4f46e5 40%, #7c3aed 100%);
       border-radius: 18px;
       position: relative;
       overflow: hidden;
