@@ -835,13 +835,17 @@ interface SearchResult {
     .search-item-icon {
       width: 32px;
       height: 32px;
+      min-width: 32px;
       border-radius: 9px;
       background: linear-gradient(135deg, #ede9fe, #ddd6fe);
       color: #7c3aed;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: grid;
+      place-items: center;
       flex-shrink: 0;
+    }
+    .search-item-icon svg {
+      display: block;
+      margin: 0;
     }
 
     .search-item-info {
