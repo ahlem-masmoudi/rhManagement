@@ -1312,7 +1312,11 @@ export class RhLayoutComponent implements OnInit, OnDestroy {
     this.searchResults = [];
     this.candidateResults = [];
     this.offerResults = [];
-    this.router.navigate(result.route);
+    if (result.type === 'candidate') {
+      this.router.navigate(['/rh/candidatures'], { queryParams: { highlight: result.id } });
+    } else {
+      this.router.navigate(result.route);
+    }
   }
 
   toggleSidebar(): void {

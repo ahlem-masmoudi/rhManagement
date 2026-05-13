@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { take } from 'rxjs/operators';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CandidateService } from '../../services/candidate.service';
 import { MatchingService } from '../../services/matching.service';
@@ -113,8 +114,10 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
           <div class="column-body">
       <div *ngFor="let application of getPagedApplications(column.status)"
         class="candidate-card"
+        [attr.id]="'card-' + application.candidateId"
         [class.selected]="isCandidateSelected(application.candidateId)"
         [class.accepted]="application.status === 'offre_acceptee'"
+        [class.highlighted]="application.candidateId === highlightedCandidateId"
         (click)="handleCardClick(application.candidateId, $event)">
               
               <!-- Checkbox en mode sélection -->
@@ -436,6 +439,17 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       border-color: #663399;
       background: linear-gradient(145deg, #faf5ff, #f3e8ff);
       box-shadow: 0 0 0 2.5px #663399;
+    }
+    .candidate-card.highlighted {
+      animation: cardSpotlight 3.5s ease forwards;
+      z-index: 5;
+      position: relative;
+    }
+    @keyframes cardSpotlight {
+      0%   { box-shadow: 0 0 0 3px #6366f1, 0 0 40px rgba(99,102,241,0.5); transform: scale(1.03); border-color: #6366f1; background: linear-gradient(145deg,#eef2ff,#e0e7ff); }
+      30%  { box-shadow: 0 0 0 3px #6366f1, 0 0 25px rgba(99,102,241,0.35); transform: scale(1.015); }
+      70%  { box-shadow: 0 0 0 2px rgba(99,102,241,0.5), 0 0 12px rgba(99,102,241,0.15); transform: scale(1.005); }
+      100% { box-shadow: none; transform: scale(1); border-color: transparent; background: white; }
     }
     .candidate-card.accepted {
       border-color: rgba(102,51,153,0.3);
@@ -772,18 +786,31 @@ export class CandidaturesComponent implements OnInit {
     { status: 'offre_refusee' as CandidateStatus, title: 'Refusé(e)' }
   ];
 
+  highlightedCandidateId: string | null = null;
+  private pendingHighlight: string | null = null;
+
   constructor(
     private candidateService: CandidateService,
     private matchingService: MatchingService,
     private offerService: OfferService,
     private router: Router,
+    private route: ActivatedRoute,
     private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
+    this.route.queryParams.pipe(take(1)).subscribe(params => {
+      if (params['highlight']) this.pendingHighlight = params['highlight'];
+    });
+
     this.matchingService.getApplications().subscribe(applications => {
       this.applications = applications;
       console.log('Applications loaded in component:', this.applications);
+      if (this.pendingHighlight) {
+        const id = this.pendingHighlight;
+        this.pendingHighlight = null;
+        setTimeout(() => this.scrollToAndHighlight(id), 250);
+      }
     });
 
     // Load candidate objects so getSelectedCandidates() can return the actual Candidate[]
@@ -844,6 +871,28 @@ export class CandidaturesComponent implements OnInit {
   }
 
   // --- Pagination ---
+  private scrollToAndHighlight(candidateId: string): void {
+    const app = this.applications.find(a => a.candidateId === candidateId);
+    if (!app) return;
+
+    const status = app.status;
+    const allInColumn = this.getApplicationsByStatus(status);
+    const idx = allInColumn.findIndex(a => a.candidateId === candidateId);
+    if (idx < 0) return;
+
+    // Navigate to the page containing this card
+    this.columnPages[status] = Math.floor(idx / this.pageSize);
+    this.highlightedCandidateId = candidateId;
+
+    // Wait for Angular to re-render the page, then scroll
+    setTimeout(() => {
+      const el = document.getElementById('card-' + candidateId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Remove highlight after animation ends
+      setTimeout(() => { this.highlightedCandidateId = null; }, 3500);
+    }, 100);
+  }
+
   readonly pageSize = 5;
   private columnPages: Record<string, number> = {};
 
