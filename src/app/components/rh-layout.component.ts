@@ -1,13 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { Subject, combineLatest } from 'rxjs';
+import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { NotificationService, AppNotification } from '../services/notification.service';
+import { CandidateService } from '../services/candidate.service';
+import { OfferService } from '../services/offer.service';
+
+interface SearchResult {
+  type: 'candidate' | 'offer';
+  id: string;
+  label: string;
+  sub: string;
+  initials?: string;
+  route: string[];
+}
 
 @Component({
   selector: 'app-rh-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, FormsModule, RouterOutlet, RouterLink, RouterLinkActive],
   template: `
     <div class="app-layout">
       <!-- Sidebar overlay (mobile) -->
@@ -175,11 +189,71 @@ import { NotificationService, AppNotification } from '../services/notification.s
           </div>
 
           <div class="topbar-center">
-            <div class="search-bar">
+            <div class="search-bar" [class.search-active]="searchQuery.length > 0">
               <svg width="17" height="17" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
               </svg>
-              <input type="search" placeholder="Rechercher un candidat, une offre...">
+              <input type="search" placeholder="Rechercher un candidat, une offre..."
+                     [(ngModel)]="searchQuery"
+                     (input)="onSearchInput()"
+                     (focus)="searchFocused = true"
+                     (blur)="onSearchBlur()"
+                     autocomplete="off">
+              <button *ngIf="searchQuery" class="search-clear" (mousedown)="clearSearch()">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+
+              <!-- Search Results Dropdown -->
+              <div class="search-dropdown" *ngIf="searchFocused && searchQuery.length >= 2">
+                <div *ngIf="searchResults.length === 0 && !searchLoading" class="search-empty">
+                  <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                  <span>Aucun résultat pour "{{ searchQuery }}"</span>
+                </div>
+
+                <div *ngIf="searchLoading" class="search-loading">
+                  <span class="search-spinner"></span> Recherche...
+                </div>
+
+                <ng-container *ngIf="!searchLoading && searchResults.length > 0">
+                  <!-- Candidates group -->
+                  <div *ngIf="candidateResults.length > 0">
+                    <div class="search-group-label">
+                      <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+                      Candidats
+                    </div>
+                    <div *ngFor="let r of candidateResults" class="search-item" (mousedown)="goToResult(r)">
+                      <div class="search-item-avatar">{{ r.initials }}</div>
+                      <div class="search-item-info">
+                        <span class="search-item-title">{{ r.label }}</span>
+                        <span class="search-item-sub">{{ r.sub }}</span>
+                      </div>
+                      <span class="search-item-badge search-badge-candidate">Candidat</span>
+                    </div>
+                  </div>
+
+                  <!-- Offers group -->
+                  <div *ngIf="offerResults.length > 0">
+                    <div class="search-group-label">
+                      <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/><path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/></svg>
+                      Offres de stage
+                    </div>
+                    <div *ngFor="let r of offerResults" class="search-item" (mousedown)="goToResult(r)">
+                      <div class="search-item-icon">
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                      </div>
+                      <div class="search-item-info">
+                        <span class="search-item-title">{{ r.label }}</span>
+                        <span class="search-item-sub">{{ r.sub }}</span>
+                      </div>
+                      <span class="search-item-badge search-badge-offer">Offre</span>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
             </div>
           </div>
 
@@ -674,6 +748,157 @@ import { NotificationService, AppNotification } from '../services/notification.s
       box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
     }
 
+    .search-clear {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      border-radius: 4px;
+      transition: color 0.15s;
+    }
+    .search-clear:hover { color: #64748b; }
+
+    .search-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.13), 0 4px 16px rgba(0,0,0,0.07);
+      z-index: 300;
+      overflow: hidden;
+      animation: dropdownIn 0.18s cubic-bezier(0.34,1.56,0.64,1);
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    @keyframes dropdownIn {
+      from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .search-group-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #94a3b8;
+      padding: 10px 14px 6px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .search-group-label:first-child { border-top: none; }
+
+    .search-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .search-item:hover { background: #f5f3ff; }
+
+    .search-item-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .search-item-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: #eef2ff;
+      color: #6366f1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .search-item-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .search-item-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .search-item-sub {
+      font-size: 11.5px;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .search-item-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 99px;
+      flex-shrink: 0;
+    }
+    .search-badge-candidate { background: #eef2ff; color: #6366f1; }
+    .search-badge-offer { background: #f0fdf4; color: #16a34a; }
+
+    .search-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 28px 14px;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+    .search-empty svg { color: #cbd5e1; }
+
+    .search-loading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 14px;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .search-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #e2e8f0;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
     .topbar-actions {
       display: flex;
       align-items: center;
@@ -910,7 +1135,7 @@ import { NotificationService, AppNotification } from '../services/notification.s
     .notif-footer a:hover { color: #4f46e5; }
   `]
 })
-export class RhLayoutComponent implements OnInit {
+export class RhLayoutComponent implements OnInit, OnDestroy {
   isSidebarOpen = false;
   isFingerprintSupported = typeof PublicKeyCredential !== 'undefined';
   hasCredentials = false;
@@ -921,6 +1146,18 @@ export class RhLayoutComponent implements OnInit {
   showNotifications = false;
   notifications: AppNotification[] = [];
   notifLoading = false;
+
+  // Search
+  searchQuery = '';
+  searchFocused = false;
+  searchLoading = false;
+  searchResults: SearchResult[] = [];
+  candidateResults: SearchResult[] = [];
+  offerResults: SearchResult[] = [];
+  private allCandidates: any[] = [];
+  private allOffers: any[] = [];
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
 
   get unreadCount(): number {
     return this.notifications.filter(n => !n.read).length;
@@ -961,7 +1198,9 @@ export class RhLayoutComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private notifService: NotificationService
+    private notifService: NotificationService,
+    private candidateService: CandidateService,
+    private offerService: OfferService
   ) {}
 
   ngOnInit(): void {
@@ -972,6 +1211,94 @@ export class RhLayoutComponent implements OnInit {
       });
     }
     this.loadNotifications();
+
+    // Pre-load data for search
+    this.candidateService.getCandidates()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(c => this.allCandidates = c);
+
+    this.offerService.getOffers()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(o => this.allOffers = o);
+
+    // Debounce search
+    this.searchSubject.pipe(
+      debounceTime(200),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(q => this.runSearch(q));
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onSearchInput(): void {
+    this.searchSubject.next(this.searchQuery);
+  }
+
+  onSearchBlur(): void {
+    setTimeout(() => { this.searchFocused = false; }, 150);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.searchResults = [];
+    this.candidateResults = [];
+    this.offerResults = [];
+  }
+
+  private runSearch(q: string): void {
+    if (q.length < 2) {
+      this.searchResults = [];
+      this.candidateResults = [];
+      this.offerResults = [];
+      return;
+    }
+    const lower = q.toLowerCase();
+
+    this.candidateResults = this.allCandidates
+      .filter(c =>
+        `${c.firstName} ${c.lastName}`.toLowerCase().includes(lower) ||
+        (c.email || '').toLowerCase().includes(lower) ||
+        (c.school || '').toLowerCase().includes(lower)
+      )
+      .slice(0, 5)
+      .map(c => ({
+        type: 'candidate' as const,
+        id: c.id,
+        label: `${c.firstName} ${c.lastName}`,
+        sub: c.email || c.school || '',
+        initials: `${(c.firstName[0] || '').toUpperCase()}${(c.lastName[0] || '').toUpperCase()}`,
+        route: ['/rh/candidatures']
+      }));
+
+    this.offerResults = this.allOffers
+      .filter((o: any) =>
+        (o.title || '').toLowerCase().includes(lower) ||
+        (o.department || '').toLowerCase().includes(lower) ||
+        (o.location || '').toLowerCase().includes(lower)
+      )
+      .slice(0, 5)
+      .map((o: any) => ({
+        type: 'offer' as const,
+        id: o.id || o._id,
+        label: o.title,
+        sub: [o.department, o.location].filter(Boolean).join(' · '),
+        route: ['/rh/offres']
+      }));
+
+    this.searchResults = [...this.candidateResults, ...this.offerResults];
+  }
+
+  goToResult(result: SearchResult): void {
+    this.searchFocused = false;
+    this.searchQuery = '';
+    this.searchResults = [];
+    this.candidateResults = [];
+    this.offerResults = [];
+    this.router.navigate(result.route);
   }
 
   toggleSidebar(): void {
