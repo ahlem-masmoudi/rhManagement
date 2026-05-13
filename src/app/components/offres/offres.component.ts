@@ -623,7 +623,24 @@ import { Offer } from '../../models';
       background: #fafafa;
     }
     .modal-footer .btn-secondary { flex: 0; padding: 10px 22px; }
-    .modal-footer .btn-primary   { flex: 0; }
+    .modal-footer .btn-primary {
+      flex: 0;
+      background: linear-gradient(135deg, #3b1f6b, #663399, #9b44cc) !important;
+      border: none !important;
+      color: white !important;
+      padding: 11px 28px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(102,51,153,0.4);
+      transition: all 0.25s;
+      backdrop-filter: none !important;
+    }
+    .modal-footer .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(102,51,153,0.5) !important;
+    }
 
     .skills-input { display: flex; gap: 8px; }
     .skills-input input {
