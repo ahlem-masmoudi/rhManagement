@@ -1315,7 +1315,7 @@ export class RhLayoutComponent implements OnInit, OnDestroy {
     if (result.type === 'candidate') {
       this.router.navigate(['/rh/candidatures'], { queryParams: { highlight: result.id } });
     } else {
-      this.router.navigate(result.route);
+      this.router.navigate(['/rh/offres'], { queryParams: { highlight: result.id } });
     }
   }
 

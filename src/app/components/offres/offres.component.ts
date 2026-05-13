@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { take } from 'rxjs/operators';
 import { OfferService } from '../../services/offer.service';
 import { Offer } from '../../models';
 
@@ -53,7 +55,10 @@ import { Offer } from '../../models';
       </div>
 
       <div class="grid-3">
-        <div *ngFor="let offer of offers; let i = index" class="card offer-card" [style]="'--i:' + i">
+        <div *ngFor="let offer of offers; let i = index" class="card offer-card"
+             [attr.id]="'offer-' + offer.id"
+             [class.highlighted]="offer.id === highlightedOfferId"
+             [style]="'--i:' + i">
           <div class="offer-header">
             <h3 class="offer-title">{{ offer.title }}</h3>
           </div>
@@ -395,6 +400,17 @@ import { Offer } from '../../models';
       transform: translateY(-10px) scale(1.015);
       box-shadow: 0 24px 64px rgba(102,51,153,0.18), 0 8px 20px rgba(0,0,0,0.08);
       border-color: rgba(102,51,153,0.22);
+    }
+    .offer-card.highlighted {
+      animation: offerSpotlight 3.5s ease forwards;
+      z-index: 5;
+      position: relative;
+    }
+    @keyframes offerSpotlight {
+      0%   { box-shadow: 0 0 0 3px #6366f1, 0 0 50px rgba(99,102,241,0.5); transform: scale(1.04); border-color: #6366f1; }
+      30%  { box-shadow: 0 0 0 3px #6366f1, 0 0 28px rgba(99,102,241,0.35); transform: scale(1.02); }
+      70%  { box-shadow: 0 0 0 2px rgba(99,102,241,0.4), 0 0 12px rgba(99,102,241,0.15); transform: scale(1.01); }
+      100% { box-shadow: none; transform: scale(1); border-color: transparent; }
     }
 
     /* Card inner padding wrapper */
@@ -745,9 +761,15 @@ export class OffresComponent implements OnInit {
     }
   };
 
-  constructor(private offerService: OfferService) {}
+  highlightedOfferId: string | null = null;
+  private pendingHighlight: string | null = null;
+
+  constructor(private offerService: OfferService, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
+    this.route.queryParams.pipe(take(1)).subscribe(params => {
+      if (params['highlight']) this.pendingHighlight = params['highlight'];
+    });
     this.loadOffers();
   }
 
@@ -762,7 +784,29 @@ export class OffresComponent implements OnInit {
       this.allOffers = offers;
       this.offers = offers;
       this.filterOffers();
+      if (this.pendingHighlight) {
+        const id = this.pendingHighlight;
+        this.pendingHighlight = null;
+        setTimeout(() => this.scrollToAndHighlight(id), 250);
+      }
     });
+  }
+
+  private scrollToAndHighlight(offerId: string): void {
+    // Make sure the offer is visible (clear filters if needed)
+    const inFiltered = this.offers.find(o => o.id === offerId);
+    if (!inFiltered) {
+      this.searchTerm = '';
+      this.selectedDepartment = '';
+      this.selectedStatus = '';
+      this.filterOffers();
+    }
+    this.highlightedOfferId = offerId;
+    setTimeout(() => {
+      const el = document.getElementById('offer-' + offerId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => { this.highlightedOfferId = null; }, 3500);
+    }, 100);
   }
 
   toggleDesc(id: string): void {
