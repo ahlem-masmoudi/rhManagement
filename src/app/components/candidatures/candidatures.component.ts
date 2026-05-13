@@ -199,36 +199,68 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     </div>
   `,
   styles: [`
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+    @keyframes pageFadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes columnDrop {
+      from { opacity:0; transform:translateY(30px) scale(0.96); }
+      to   { opacity:1; transform:translateY(0)    scale(1);    }
+    }
+    @keyframes cardPop {
+      from { opacity:0; transform:translateY(16px) scale(0.95); }
+      to   { opacity:1; transform:translateY(0)    scale(1);    }
+    }
+    @keyframes orbitA {
+      0%,100% { transform:translate(0,0) scale(1); }
+      50% { transform:translate(-20px,15px) scale(1.2); }
+    }
+    @keyframes orbitB {
+      0%,100% { transform:translate(0,0) scale(1); }
+      50% { transform:translate(15px,-20px) scale(0.7); }
+    }
+    @keyframes scorePulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(102,51,153,0); }
+      50%     { box-shadow: 0 0 0 6px rgba(102,51,153,0.2); }
+    }
+    @keyframes shimmer {
+      0%   { transform:translateX(-120%) skewX(-15deg); }
+      100% { transform:translateX(260%)  skewX(-15deg); }
     }
 
-    .candidatures-page { max-width: 100%; animation: fadeUp 0.4s ease both; }
+    .candidatures-page { max-width: 100%; animation: pageFadeIn 0.4s ease both; }
 
     /* ── Page Header ── */
     .page-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-      padding: 24px 28px;
+      margin-bottom: 28px;
+      padding: 28px 32px;
       background: linear-gradient(135deg, #3b1f6b 0%, #663399 50%, #9b44cc 100%);
-      border-radius: 18px;
+      border-radius: 22px;
       position: relative;
       overflow: hidden;
     }
     .page-header::before {
       content: '';
       position: absolute;
-      width: 280px; height: 280px;
-      background: radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 70%);
-      top: -100px; right: -60px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 65%);
+      top: -110px; right: -70px;
       border-radius: 50%;
+      animation: orbitA 8s ease-in-out infinite;
       pointer-events: none;
     }
-    .page-header h1 { color: white; font-size: 22px; font-weight: 700; margin: 0 0 4px; }
-    .page-header .text-muted { color: rgba(255,255,255,0.55); font-size: 13px; margin: 0; }
+    .page-header::after {
+      content: '';
+      position: absolute;
+      width: 180px; height: 180px;
+      background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+      bottom: -70px; left: 40px;
+      border-radius: 50%;
+      animation: orbitB 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .page-header h1 { color: white; font-size: 24px; font-weight: 800; margin: 0 0 5px; letter-spacing:-0.3px; position:relative; z-index:1; }
+    .page-header .text-muted { color: rgba(255,255,255,0.65); font-size: 13px; margin: 0; position:relative; z-index:1; }
 
     .header-actions {
       display: flex;
@@ -304,33 +336,36 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     /* ── Kanban Board ── */
     .kanban-board {
       display: flex;
-      gap: 16px;
+      gap: 18px;
       overflow-x: auto;
-      padding-bottom: 12px;
+      padding-bottom: 16px;
       scrollbar-width: thin;
-      scrollbar-color: rgba(99,102,241,0.2) transparent;
+      scrollbar-color: rgba(102,51,153,0.25) transparent;
     }
     .kanban-board::-webkit-scrollbar { height: 5px; }
     .kanban-board::-webkit-scrollbar-track { background: transparent; }
-    .kanban-board::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.25); border-radius: 999px; }
+    .kanban-board::-webkit-scrollbar-thumb { background: rgba(102,51,153,0.25); border-radius: 999px; }
 
     .kanban-column {
-      flex: 0 0 284px;
-      background: #f8f9fc;
-      border-radius: 16px;
+      flex: 0 0 288px;
+      background: rgba(248,246,255,0.85);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
       display: flex;
       flex-direction: column;
-      border: 1px solid rgba(0,0,0,0.06);
+      border: 1px solid rgba(102,51,153,0.1);
+      box-shadow: 0 4px 24px rgba(102,51,153,0.06);
+      animation: columnDrop 0.5s calc(var(--col, 0) * 0.1s) both;
     }
 
     .column-header {
-      padding: 14px 16px;
+      padding: 16px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 2px solid rgba(0,0,0,0.06);
+      border-bottom: 1px solid rgba(102,51,153,0.08);
       background: white;
-      border-radius: 16px 16px 0 0;
+      border-radius: 20px 20px 0 0;
       position: relative;
       overflow: hidden;
     }
@@ -339,22 +374,23 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       position: absolute;
       bottom: 0; left: 0; right: 0;
       height: 3px;
-      background: linear-gradient(90deg, #6366f1, #8b5cf6);
-      opacity: 0.7;
+      background: linear-gradient(90deg, #3b1f6b, #663399, #9b44cc);
     }
     .column-header h3 {
       font-size: 13px;
-      font-weight: 700;
-      color: #374151;
+      font-weight: 800;
+      color: #2d1a4a;
       margin: 0;
+      letter-spacing: 0.1px;
     }
     .column-count {
-      background: #EEF2FF;
-      color: #6366f1;
-      padding: 3px 9px;
+      background: linear-gradient(135deg, rgba(102,51,153,0.1), rgba(155,68,204,0.1));
+      color: #663399;
+      padding: 4px 11px;
       border-radius: 999px;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
+      border: 1px solid rgba(102,51,153,0.15);
     }
 
     .column-body {
@@ -370,40 +406,54 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     /* ── Candidate Card ── */
     .candidate-card {
       background: white;
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 14px;
-      border: 1px solid rgba(0,0,0,0.07);
+      border: 1px solid rgba(102,51,153,0.08);
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative;
       overflow: visible;
+      animation: cardPop 0.4s both;
+      box-shadow: 0 2px 10px rgba(102,51,153,0.05);
+    }
+    .candidate-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 14px; bottom: 14px;
+      width: 3px;
+      background: linear-gradient(180deg, #3b1f6b, #9b44cc);
+      border-radius: 0 4px 4px 0;
+      opacity: 0;
+      transition: opacity 0.3s;
     }
     .candidate-card:hover {
-      box-shadow: 0 8px 28px rgba(99,102,241,0.16);
-      border-color: rgba(99,102,241,0.2);
+      box-shadow: 0 12px 36px rgba(102,51,153,0.18);
+      border-color: rgba(102,51,153,0.2);
+      transform: translateY(-4px) scale(1.01);
     }
+    .candidate-card:hover::before { opacity: 1; }
     .candidate-card.selected {
-      border-color: #6366f1;
-      background: #f5f3ff;
-      box-shadow: 0 0 0 2.5px #6366f1;
+      border-color: #663399;
+      background: linear-gradient(145deg, #faf5ff, #f3e8ff);
+      box-shadow: 0 0 0 2.5px #663399;
     }
     .candidate-card.accepted {
-      border-color: #059669;
-      background: linear-gradient(145deg, #f0fdf4, #ecfdf5);
-      box-shadow: 0 0 0 2px rgba(5,150,105,0.15);
+      border-color: rgba(102,51,153,0.3);
+      background: linear-gradient(145deg, #faf5ff, #f5f0ff);
+      box-shadow: 0 4px 16px rgba(102,51,153,0.12);
     }
     .accepted-badge {
       position: absolute;
       top: -10px; right: 12px;
-      background: linear-gradient(135deg, #059669, #10b981);
+      background: linear-gradient(135deg, #3b1f6b, #9b44cc);
       color: white;
       padding: 4px 10px;
       border-radius: 999px;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 10px;
-      box-shadow: 0 3px 8px rgba(5,150,105,0.3);
+      box-shadow: 0 3px 10px rgba(102,51,153,0.4);
       z-index: 20;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.4px;
     }
     .selection-checkbox { position: absolute; top: 8px; left: 8px; z-index: 10; }
     .selection-checkbox input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #6366f1; }
@@ -427,26 +477,28 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       box-shadow: 0 3px 10px rgba(99,102,241,0.3);
     }
     .score-badge {
-      width: 34px; height: 34px;
+      width: 36px; height: 36px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 12px;
+      font-weight: 900;
+      font-size: 11px;
       color: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+      animation: scorePulse 3s ease-in-out infinite;
     }
-    .candidate-name { font-size: 14px; font-weight: 700; color: #111827; margin: 0 0 3px; }
-    .candidate-school { font-size: 12px; color: #9CA3AF; margin: 0 0 10px; }
+    .candidate-name { font-size: 14px; font-weight: 800; color: #1a0533; margin: 0 0 2px; letter-spacing: -0.1px; }
+    .candidate-school { font-size: 11.5px; color: #9b44cc; margin: 0 0 10px; font-weight: 500; }
     .candidate-skills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
     .skill-tag {
-      background: #EEF2FF;
-      color: #6366f1;
-      padding: 3px 9px;
+      background: linear-gradient(135deg, rgba(102,51,153,0.08), rgba(155,68,204,0.08));
+      color: #663399;
+      padding: 3px 10px;
       border-radius: 999px;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
+      border: 1px solid rgba(102,51,153,0.12);
     }
     .card-footer {
       display: flex;
@@ -486,7 +538,7 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       transition: background 0.15s;
     }
     .dropdown-item:hover { background: #f9fafb; }
-    .dropdown-item.active { background: #EEF2FF; color: #6366f1; font-weight: 600; }
+    .dropdown-item.active { background: linear-gradient(135deg, rgba(102,51,153,0.08), rgba(155,68,204,0.08)); color: #663399; font-weight: 700; }
     .dropdown-item.item-accept { color: #16a34a; font-weight: 600; border-top: 1px solid #f0fdf4; margin-top: 4px; padding-top: 10px; }
     .dropdown-item.item-accept:hover { background: #f0fdf4; }
     .dropdown-item.item-reject { color: #dc2626; }

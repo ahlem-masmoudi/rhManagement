@@ -184,24 +184,37 @@ import { Offer } from '../../models';
     </div>
   `,
   styles: [`
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(22px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes pageFadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
+    @keyframes pageFadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes fadeIn     { from{opacity:0} to{opacity:1} }
     @keyframes modalSlideUp {
-      from { opacity: 0; transform: translateY(30px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
+      from { opacity:0; transform:translateY(40px) scale(0.94); }
+      to   { opacity:1; transform:translateY(0)    scale(1);    }
+    }
+    @keyframes cardIn {
+      from { opacity:0; transform:translateY(40px) scale(0.93); }
+      to   { opacity:1; transform:translateY(0)    scale(1);    }
+    }
+    @keyframes shimmer {
+      0%   { transform:translateX(-120%) skewX(-15deg); }
+      100% { transform:translateX(260%)  skewX(-15deg); }
+    }
+    @keyframes orbitA {
+      0%,100% { transform:translate(0,0)       scale(1);   }
+      50%     { transform:translate(-25px,18px) scale(1.3); }
+    }
+    @keyframes orbitB {
+      0%,100% { transform:translate(0,0)      scale(1);   }
+      50%     { transform:translate(18px,-22px) scale(0.7); }
+    }
+    @keyframes statPop {
+      from { transform:scale(0.3); opacity:0; }
+      to   { transform:scale(1);   opacity:1; }
+    }
+    @keyframes borderPulse {
+      0%,100% { opacity:0.4; }
+      50%     { opacity:1;   }
     }
 
-    /* pageFadeIn instead of fadeUp to avoid creating a stacking context that breaks position:fixed modals */
     .offres-page { max-width: 1400px; animation: pageFadeIn 0.4s ease both; }
 
     /* ── Page Header ── */
@@ -209,55 +222,73 @@ import { Offer } from '../../models';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-      padding: 28px 32px;
+      margin-bottom: 28px;
+      padding: 32px 36px;
       background: linear-gradient(135deg, #3b1f6b 0%, #663399 50%, #9b44cc 100%);
-      border-radius: 18px;
+      border-radius: 22px;
       position: relative;
       overflow: hidden;
     }
     .page-header::before {
       content: '';
       position: absolute;
-      width: 320px; height: 320px;
-      background: radial-gradient(circle, rgba(99,102,241,0.35) 0%, transparent 70%);
-      top: -120px; right: -80px;
+      width: 340px; height: 340px;
+      background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 65%);
+      top: -130px; right: -90px;
       border-radius: 50%;
+      animation: orbitA 8s ease-in-out infinite;
       pointer-events: none;
     }
-    .page-header h1 { color: white; font-size: 24px; font-weight: 700; margin: 0 0 5px; }
-    .page-header .text-muted { color: rgba(255,255,255,0.55); font-size: 13px; margin: 0; }
+    .page-header::after {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%);
+      bottom: -80px; left: 60px;
+      border-radius: 50%;
+      animation: orbitB 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .page-header h1 { color: white; font-size: 26px; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.3px; position: relative; z-index: 1; }
+    .page-header .text-muted { color: rgba(255,255,255,0.65); font-size: 13px; margin: 0; position: relative; z-index: 1; }
 
     .btn-primary {
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      background: rgba(255,255,255,0.18);
       color: white;
-      border: none;
-      padding: 11px 22px;
-      border-radius: 11px;
-      font-weight: 600;
+      border: 1.5px solid rgba(255,255,255,0.35);
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 700;
       font-size: 14px;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 8px;
       transition: all 0.25s;
-      box-shadow: 0 4px 18px rgba(99,102,241,0.45);
+      backdrop-filter: blur(8px);
       white-space: nowrap;
       position: relative;
       z-index: 1;
+      letter-spacing: 0.2px;
     }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(99,102,241,0.55); }
+    .btn-primary:hover {
+      background: rgba(255,255,255,0.28);
+      border-color: rgba(255,255,255,0.6);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
 
     /* ── Filters ── */
     .filters-bar-card {
-      background: white;
-      border-radius: 14px;
-      padding: 14px 18px;
-      margin-bottom: 22px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-      border: 1px solid rgba(99,102,241,0.09);
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 26px;
+      box-shadow: 0 4px 24px rgba(102,51,153,0.08), 0 1px 3px rgba(0,0,0,0.04);
+      border: 1px solid rgba(102,51,153,0.1);
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-columns: 2fr 1fr;
       gap: 12px;
       align-items: center;
     }
@@ -306,142 +337,169 @@ import { Offer } from '../../models';
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 20px;
+      gap: 22px;
     }
 
     .empty-card {
       background: white;
-      border-radius: 16px;
-      padding: 60px 24px;
+      border-radius: 20px;
+      padding: 70px 24px;
       text-align: center;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 24px rgba(102,51,153,0.06);
+      border: 1px solid rgba(102,51,153,0.08);
     }
 
+    /* ── Offer Card ── */
     .offer-card {
       background: white;
-      border-radius: 16px;
-      padding: 22px;
-      border: 1px solid rgba(0,0,0,0.06);
-      box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+      border-radius: 22px;
+      padding: 0;
+      border: 1px solid rgba(102,51,153,0.09);
+      box-shadow: 0 4px 24px rgba(102,51,153,0.07), 0 1px 3px rgba(0,0,0,0.04);
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      animation: fadeUp 0.5s calc(var(--i, 0) * 0.06s) both;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: cardIn 0.6s calc(var(--i, 0) * 0.09s) both;
       position: relative;
       overflow: hidden;
     }
+
+    /* Animated top gradient band */
     .offer-card::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      height: 4px;
+      background: linear-gradient(90deg, #3b1f6b, #663399, #9b44cc, #c084fc);
+      background-size: 200% 100%;
       transform: scaleX(0);
-      transition: transform 0.3s ease;
       transform-origin: left;
-    }
-    .offer-card:hover {
-      box-shadow: 0 14px 42px rgba(99,102,241,0.14);
-      transform: translateY(-5px);
-      border-color: rgba(99,102,241,0.2);
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 2;
     }
     .offer-card:hover::before { transform: scaleX(1); }
+
+    /* Shimmer overlay on hover */
+    .offer-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.65) 50%, transparent 65%);
+      transform: translateX(-120%) skewX(-15deg);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .offer-card:hover::after { animation: shimmer 0.65s ease forwards; }
+
+    .offer-card:hover {
+      transform: translateY(-10px) scale(1.015);
+      box-shadow: 0 24px 64px rgba(102,51,153,0.18), 0 8px 20px rgba(0,0,0,0.08);
+      border-color: rgba(102,51,153,0.22);
+    }
+
+    /* Card inner padding wrapper */
+    .offer-card .offer-header,
+    .offer-card .offer-meta,
+    .offer-card .dept-badge,
+    .offer-card .offer-description,
+    .offer-card .desc-toggle,
+    .offer-card .offer-stats,
+    .offer-card .offer-actions {
+      padding-left: 22px;
+      padding-right: 22px;
+    }
+    .offer-card .offer-header  { padding-top: 22px; }
+    .offer-card .offer-actions { padding-bottom: 20px; }
+    .offer-card .offer-stats   { margin-left: 22px; margin-right: 22px; padding-left: 0; padding-right: 0; }
 
     .offer-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 12px;
+      margin-bottom: 12px;
     }
     .offer-title {
       font-size: 16px;
-      font-weight: 700;
-      color: #111827;
+      font-weight: 800;
+      color: #1a0533;
       margin: 0;
       flex: 1;
-      line-height: 1.4;
+      line-height: 1.35;
+      letter-spacing: -0.2px;
     }
-    .badge {
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 700;
-      flex-shrink: 0;
-      letter-spacing: 0.3px;
-    }
-    .badge-success { background: #D1FAE5; color: #065F46; }
-    .badge-gray    { background: #F3F4F6; color: #6B7280; }
-    .badge-warning { background: #FEF3C7; color: #92400E; }
 
-    .offer-meta { display: flex; gap: 16px; flex-wrap: wrap; }
+    .offer-meta { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
     .meta-item {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: #6B7280;
+      gap: 5px;
+      font-size: 12.5px;
+      color: #7c5aa0;
+      font-weight: 500;
     }
+
     .dept-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 5px 12px;
-      background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
-      color: #6366f1;
-      border-radius: 8px;
+      padding: 6px 14px;
+      background: linear-gradient(135deg, rgba(102,51,153,0.08), rgba(155,68,204,0.08));
+      color: #663399;
+      border-radius: 10px;
       font-size: 12px;
-      font-weight: 600;
-      border: 1px solid rgba(99,102,241,0.15);
+      font-weight: 700;
+      border: 1px solid rgba(102,51,153,0.14);
+      margin-bottom: 12px;
+      width: fit-content;
     }
 
     .offer-description {
       font-size: 13px;
       color: #6B7280;
-      line-height: 1.6;
-      margin: 0;
+      line-height: 1.65;
+      margin: 0 0 4px;
       overflow: hidden;
       display: -webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
     }
-    .offer-description.expanded {
-      display: block;
-      -webkit-line-clamp: unset;
-      overflow: visible;
-    }
+    .offer-description.expanded { display: block; -webkit-line-clamp: unset; overflow: visible; }
     .desc-toggle {
-      background: none;
-      border: none;
-      color: #6366f1;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 2px 0;
-      transition: color 0.2s;
+      background: none; border: none;
+      color: #663399; font-size: 12px; font-weight: 700;
+      cursor: pointer; padding: 4px 0; margin-bottom: 8px;
+      transition: color 0.2s; letter-spacing: 0.2px;
     }
-    .desc-toggle:hover { color: #4338ca; }
+    .desc-toggle:hover { color: #3b1f6b; }
 
     .offer-stats {
       display: flex;
-      gap: 24px;
-      padding: 14px 0;
-      border-top: 1px solid #f3f4f6;
-      border-bottom: 1px solid #f3f4f6;
+      gap: 0;
+      padding: 14px 16px;
+      background: linear-gradient(135deg, rgba(102,51,153,0.04), rgba(155,68,204,0.04));
+      border-radius: 14px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(102,51,153,0.07);
     }
-    .stat { display: flex; flex-direction: column; gap: 2px; }
+    .stat { display: flex; flex-direction: column; gap: 2px; animation: statPop 0.5s 0.3s both; }
     .stat-value {
-      font-size: 22px;
-      font-weight: 800;
-      color: #111827;
-      letter-spacing: -0.5px;
+      font-size: 26px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #3b1f6b, #9b44cc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -1px;
+      line-height: 1;
     }
     .stat-label {
-      font-size: 11px;
-      color: #9CA3AF;
-      font-weight: 500;
+      font-size: 10px;
+      color: #9b44cc;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
+      margin-top: 2px;
     }
 
     .offer-actions {
@@ -451,33 +509,38 @@ import { Offer } from '../../models';
     }
     .btn-secondary {
       flex: 1;
-      padding: 9px 14px;
-      border: 1.5px solid #e5e7eb;
-      border-radius: 9px;
+      padding: 10px 14px;
+      border: 1.5px solid rgba(102,51,153,0.15);
+      border-radius: 11px;
       background: white;
-      color: #374151;
+      color: #663399;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.25s;
       text-align: center;
+      letter-spacing: 0.1px;
     }
-    .btn-secondary:hover { background: #f5f3ff; border-color: #6366f1; color: #6366f1; }
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, rgba(102,51,153,0.08), rgba(155,68,204,0.08));
+      border-color: #663399;
+      transform: translateY(-1px);
+    }
 
     .btn-danger {
       flex: 1;
-      padding: 9px 14px;
-      border: 1.5px solid #fee2e2;
-      border-radius: 9px;
-      background: #fff5f5;
+      padding: 10px 14px;
+      border: 1.5px solid rgba(220,38,38,0.15);
+      border-radius: 11px;
+      background: white;
       color: #dc2626;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.25s;
       text-align: center;
     }
-    .btn-danger:hover { background: #fee2e2; border-color: #dc2626; }
+    .btn-danger:hover { background: #fef2f2; border-color: #dc2626; transform: translateY(-1px); }
 
     /* ── Modal ── */
     .modal {
