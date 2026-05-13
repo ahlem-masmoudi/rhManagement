@@ -320,7 +320,7 @@ interface DossierEntry {
       align-items: center;
       margin-bottom: 24px;
       padding: 26px 30px;
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 55%, #a78bfa 100%);
       border-radius: 18px;
       position: relative;
       overflow: hidden;
@@ -329,13 +329,13 @@ interface DossierEntry {
       content: '';
       position: absolute;
       width: 280px; height: 280px;
-      background: radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
       top: -100px; right: -60px;
       border-radius: 50%;
       pointer-events: none;
     }
     .page-header h1 { color: white; font-size: 22px; font-weight: 700; margin: 0 0 4px; }
-    .page-header .text-muted { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
+    .page-header .text-muted { color: rgba(255,255,255,0.75); font-size: 13px; margin: 0; }
     .header-right { position: relative; z-index: 1; }
 
     .header-right { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
@@ -693,7 +693,7 @@ interface DossierEntry {
       justify-content: space-between;
       align-items: center;
       padding: 18px 22px;
-      background: linear-gradient(135deg, #0f0c29, #302b63);
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
     }
     .modal-header h3 { margin: 0; font-size: 16px; color: white; font-weight: 700; }
     .modal-header .btn-secondary {
