@@ -62,9 +62,9 @@ interface DossierEntry {
       <!-- Empty state -->
       <div *ngIf="!loading && dossiers.length === 0" class="empty-state card">
         <svg width="48" height="48" fill="none" viewBox="0 0 48 48" style="margin:0 auto 16px">
-          <circle cx="24" cy="24" r="24" fill="#F0FDF4"/>
-          <path d="M16 14h16v20H16V14z" fill="#D1FAE5" stroke="#059669" stroke-width="1.5"/>
-          <path d="M20 20h8M20 25h6" stroke="#059669" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="24" cy="24" r="24" fill="#EEF2FF"/>
+          <path d="M16 14h16v20H16V14z" fill="#c7d2fe" stroke="#6366f1" stroke-width="1.5"/>
+          <path d="M20 20h8M20 25h6" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
         <h3>Aucun dossier pour le moment</h3>
         <p style="color:var(--gray-500)">Les candidats dont le statut est "Accepté" apparaîtront ici avec leurs documents.</p>
@@ -320,7 +320,7 @@ interface DossierEntry {
       align-items: center;
       margin-bottom: 24px;
       padding: 26px 30px;
-      background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
       border-radius: 18px;
       position: relative;
       overflow: hidden;
@@ -399,7 +399,7 @@ interface DossierEntry {
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 3px;
-      background: linear-gradient(90deg, #059669, #10b981);
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
     }
     .dossier-card:hover {
       box-shadow: 0 12px 40px rgba(5,150,105,0.12);
@@ -419,7 +419,7 @@ interface DossierEntry {
     .avatar {
       width: 46px; height: 46px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #059669, #10b981);
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
       color: white;
       display: flex;
       align-items: center;
@@ -442,9 +442,9 @@ interface DossierEntry {
       letter-spacing: 0.3px;
     }
     .accepted {
-      background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
-      color: #065F46;
-      border: 1px solid rgba(5,150,105,0.2);
+      background: linear-gradient(135deg, #EEF2FF, #ddd6fe);
+      color: #3730a3;
+      border: 1px solid rgba(99,102,241,0.2);
     }
 
     /* ── Card Action Buttons ── */
@@ -511,7 +511,7 @@ interface DossierEntry {
       transition: all 0.2s;
       flex-shrink: 0;
     }
-    .btn-refresh-card:hover { background: #f0fdf4; color: #059669; border-color: #059669; }
+    .btn-refresh-card:hover { background: #EEF2FF; color: #6366f1; border-color: #6366f1; }
 
     .doc-loading, .no-docs {
       font-size: 13px;
@@ -531,7 +531,7 @@ interface DossierEntry {
     }
     .link-btn {
       background: none; border: none; padding: 0;
-      color: #059669; font-size: 13px; font-weight: 600;
+      color: #6366f1; font-size: 13px; font-weight: 600;
       cursor: pointer; text-decoration: underline;
     }
     .doc-row {
@@ -556,10 +556,10 @@ interface DossierEntry {
     .type-demande_stage   { background: #FEF3C7; color: #92400E; }
     .type-convention_stage { background: #DBEAFE; color: #1E40AF; }
     .type-cv              { background: #F3F4F6; color: #374151; }
-    .type-convention_signee { background: #D1FAE5; color: #065F46; }
+    .type-convention_signee { background: #EEF2FF; color: #3730a3; }
     .type-autre           { background: #F3F4F6; color: #6B7280; }
 
-    .signed-chip  { font-size: 11px; background: #D1FAE5; color: #065F46; padding: 3px 9px; border-radius: 999px; font-weight: 700; }
+    .signed-chip  { font-size: 11px; background: #EEF2FF; color: #3730a3; padding: 3px 9px; border-radius: 999px; font-weight: 700; }
     .pending-chip { font-size: 11px; background: #FEF3C7; color: #92400E; padding: 3px 9px; border-radius: 999px; font-weight: 600; }
 
     .doc-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
@@ -575,11 +575,11 @@ interface DossierEntry {
       color: #9CA3AF;
       transition: all 0.2s;
     }
-    .btn-icon:hover { background: #f0fdf4; color: #059669; border-color: #059669; }
+    .btn-icon:hover { background: #EEF2FF; color: #6366f1; border-color: #6366f1; }
 
     .btn-sign {
       padding: 7px 16px;
-      background: linear-gradient(135deg, #059669, #10b981);
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
       color: white;
       border: none;
       border-radius: 9px;
@@ -595,20 +595,20 @@ interface DossierEntry {
     .sign-form {
       margin-top: 16px;
       padding: 18px;
-      background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
-      border: 1px solid #A7F3D0;
+      background: linear-gradient(135deg, #EEF2FF, #f5f3ff);
+      border: 1px solid #c7d2fe;
       border-radius: 12px;
       animation: fadeUp 0.3s ease both;
     }
-    .sign-form h4 { margin: 0 0 14px; font-size: 15px; color: #065F46; font-weight: 700; }
-    .sign-form-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #059669; margin: 0 0 10px; padding-bottom: 4px; border-bottom: 1px solid #D1FAE5; }
+    .sign-form h4 { margin: 0 0 14px; font-size: 15px; color: #3730a3; font-weight: 700; }
+    .sign-form-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #6366f1; margin: 0 0 10px; padding-bottom: 4px; border-bottom: 1px solid #c7d2fe; }
     .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #374151; text-transform: uppercase; letter-spacing: 0.5px; }
     .form-group input, .form-group textarea {
       width: 100%;
       padding: 10px 14px;
-      border: 1.5px solid #D1FAE5;
+      border: 1.5px solid #c7d2fe;
       border-radius: 10px;
       font-size: 14px;
       background: white;
@@ -616,7 +616,7 @@ interface DossierEntry {
       transition: all 0.2s;
       box-sizing: border-box;
     }
-    .form-group input:focus, .form-group textarea:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(5,150,105,0.12); outline: none; }
+    .form-group input:focus, .form-group textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); outline: none; }
     .form-group textarea { resize: vertical; font-family: inherit; }
 
     .btn-reupload {
@@ -647,7 +647,7 @@ interface DossierEntry {
     .btn-secondary:hover { background: #f9fafb; border-color: #374151; }
     .btn-primary {
       padding: 9px 20px;
-      background: linear-gradient(135deg, #059669, #10b981);
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
       color: white;
       border: none;
       border-radius: 9px;
@@ -664,7 +664,7 @@ interface DossierEntry {
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .alert { margin-top: 12px; padding: 10px 14px; border-radius: 10px; font-size: 13px; }
-    .alert-success { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+    .alert-success { background: #EEF2FF; color: #3730a3; border: 1px solid #a5b4fc; }
     .alert-error   { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
 
     /* ── Preview Modal ── */
@@ -693,7 +693,7 @@ interface DossierEntry {
       justify-content: space-between;
       align-items: center;
       padding: 18px 22px;
-      background: linear-gradient(135deg, #064e3b, #065f46);
+      background: linear-gradient(135deg, #0f0c29, #302b63);
     }
     .modal-header h3 { margin: 0; font-size: 16px; color: white; font-weight: 700; }
     .modal-header .btn-secondary {
@@ -740,8 +740,8 @@ interface DossierEntry {
     }
     .btn-copy-notify { background: #1d4ed8; color: white; }
     .btn-copy-notify:hover { background: #1e40af; }
-    .btn-email-notify { background: #059669; color: white; }
-    .btn-email-notify:hover { background: #047857; }
+    .btn-email-notify { background: #6366f1; color: white; }
+    .btn-email-notify:hover { background: #4f46e5; }
 
     @media (max-width: 768px) {
       .page-header { flex-direction: column; gap: 14px; padding: 20px; }
