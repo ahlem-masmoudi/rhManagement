@@ -213,7 +213,7 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       align-items: center;
       margin-bottom: 24px;
       padding: 24px 28px;
-      background: linear-gradient(135deg, #312e81 0%, #4f46e5 40%, #7c3aed 100%);
+      background: linear-gradient(135deg, #3b1f6b 0%, #663399 50%, #9b44cc 100%);
       border-radius: 18px;
       position: relative;
       overflow: hidden;
@@ -615,7 +615,7 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       justify-content: space-between;
       align-items: center;
       padding: 18px 22px;
-      background: linear-gradient(135deg, #312e81, #7c3aed);
+      background: linear-gradient(135deg, #3b1f6b, #9b44cc);
     }
     .doc-preview-header h3 { margin: 0; color: white; font-size: 16px; }
     .doc-preview-header .btn-secondary {
