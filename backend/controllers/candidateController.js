@@ -134,7 +134,7 @@ function buildAssignmentLetterHtml({
       line-height: 1.55;
       color: #1a56a0;
       font-weight: 700;
-      max-width: 44%;
+      flex: 1;
     }
     .header-center {
       text-align: center;
@@ -142,11 +142,11 @@ function buildAssignmentLetterHtml({
       align-items: flex-start;
       justify-content: center;
       flex-shrink: 0;
-      padding: 0 8px;
+      width: 80px;
       padding-top: 2px;
     }
     .header-center img {
-      width: 65px;
+      width: 55px;
       height: auto;
     }
     .header-right {
@@ -155,6 +155,7 @@ function buildAssignmentLetterHtml({
       text-align: right;
       direction: rtl;
       color: #1a56a0;
+      flex: 1;
       font-weight: 700;
       max-width: 44%;
     }
