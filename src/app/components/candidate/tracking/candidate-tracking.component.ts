@@ -51,12 +51,16 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
             <div>
               <h1 class="welcome-name">Bonjour, {{ candidate.firstName }} {{ candidate.lastName }} <span *ngIf="isLastYear()">🎓</span><span *ngIf="!isLastYear()">👋</span></h1>
               <p class="welcome-sub">Bienvenue sur votre espace de suivi personnalisé</p>
+              <div class="offer-chip" *ngIf="application?.offer?.title" style="margin-top:10px; display:inline-flex;">
+                <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                {{ application.offer.title }}
+              </div>
             </div>
           </div>
-          <div class="welcome-offer" *ngIf="application?.offer?.title">
-            <div class="offer-chip">
-              <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
-              {{ application.offer.title }}
+          <div class="welcome-right">
+            <div class="welcome-divider"></div>
+            <div class="inet-logo">
+              <span class="inet-i">i</span><span class="inet-net">NET</span>
             </div>
           </div>
         </div>
@@ -378,7 +382,28 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       display: flex; align-items: center; justify-content: space-between;
       gap: 16px; flex-wrap: wrap;
     }
-    .welcome-left { display: flex; align-items: center; gap: 16px; }
+
+    /* iNET logo */
+    .inet-logo {
+      display: flex; align-items: baseline; gap: 1px;
+      background: #12b3e8; border-radius: 10px;
+      padding: 8px 12px 8px 10px; flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(18,179,232,0.35);
+    }
+    .inet-i {
+      font-size: 13px; font-weight: 700; color: #1a4060;
+      font-family: 'Inter', sans-serif; line-height: 1;
+    }
+    .inet-net {
+      font-size: 22px; font-weight: 800; color: white;
+      font-family: 'Inter', sans-serif; letter-spacing: -0.5px; line-height: 1;
+    }
+    .welcome-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+    .welcome-divider {
+      width: 1px; height: 52px; background: #e5e7eb; flex-shrink: 0;
+    }
+
+    .welcome-left { display: flex; align-items: flex-start; gap: 16px; flex: 1; }
     .candidate-avatar {
       width: 54px; height: 54px; border-radius: 50%;
       background: linear-gradient(135deg, #667eea, #764ba2);
@@ -665,6 +690,7 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       .tracking-page { padding: 20px 12px 48px; }
       .glass-card { padding: 20px; }
       .welcome-name { font-size: 17px; }
+      .welcome-right { display: none; }
       .pipeline { gap: 0; }
       .step-label { font-size: 9px; max-width: 55px; }
       .interview-grid { grid-template-columns: 1fr 1fr; }
