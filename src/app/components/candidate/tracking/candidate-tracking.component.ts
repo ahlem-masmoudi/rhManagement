@@ -30,7 +30,6 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
             🎓&nbsp;Suivi de candidature
           </span>
         </div>
-        <div class="header-tag">I.NET RH Platform</div>
       </header>
 
       <!-- Stage terminé -->
@@ -329,18 +328,14 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
     }
     .header-logo { display: flex; align-items: center; gap: 10px; justify-content: center; }
     .header-icon {
-      width: 38px; height: 38px; border-radius: 11px;
+      width: 44px; height: 44px; border-radius: 14px;
       background: linear-gradient(135deg, #764ba2, #9b59b6);
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 14px rgba(118,75,162,0.5);
+      box-shadow: 0 6px 18px rgba(118,75,162,0.45);
     }
     .header-title {
-      font-size: 20px; font-weight: 800; color: white;
-      letter-spacing: -0.4px; text-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    .header-tag {
-      font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5);
-      letter-spacing: 1.2px; text-transform: uppercase; margin-top: 4px;
+      font-size: 26px; font-weight: 900; color: white;
+      letter-spacing: -0.6px; text-shadow: 0 2px 12px rgba(0,0,0,0.18);
     }
 
     /* ── Container ── */
@@ -382,27 +377,26 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
     .welcome-card {
       display: flex; align-items: center; justify-content: space-between;
       gap: 16px; flex-wrap: wrap;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
     .welcome-left { display: flex; align-items: center; gap: 16px; }
     .candidate-avatar {
-      width: 52px; height: 52px; border-radius: 50%;
-      background: rgba(255,255,255,0.25);
+      width: 54px; height: 54px; border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
       color: white; font-size: 18px; font-weight: 800;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.3), 0 4px 16px rgba(0,0,0,0.15);
+      box-shadow: 0 0 0 3px rgba(102,126,234,0.2), 0 4px 16px rgba(102,126,234,0.3);
       flex-shrink: 0;
     }
     .welcome-name {
-      font-size: 20px; font-weight: 800; color: white;
+      font-size: 20px; font-weight: 800; color: #1f2937;
       letter-spacing: -0.4px; line-height: 1.3;
     }
-    .welcome-sub { font-size: 13px; color: rgba(255,255,255,0.75); margin-top: 3px; }
+    .welcome-sub { font-size: 13px; color: #6b7280; margin-top: 3px; }
     .offer-chip {
       display: flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
+      background: rgba(102,126,234,0.08); border: 1px solid rgba(102,126,234,0.2);
       border-radius: 99px; padding: 6px 14px;
-      font-size: 12px; font-weight: 600; color: white;
+      font-size: 12px; font-weight: 600; color: #667eea;
       white-space: nowrap;
     }
 
