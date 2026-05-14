@@ -261,7 +261,7 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
             </div>
             <div class="contact-item">
               <span class="ci-icon">📞</span>
-              <span>+216 74 XXX XXX</span>
+              <span>+216 92 313 572</span>
             </div>
             <div class="contact-item">
               <span class="ci-icon">⏰</span>
@@ -352,12 +352,10 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
 
     /* ── Glass card ── */
     .glass-card {
-      background: rgba(255,255,255,0.07);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.12);
+      background: white;
       border-radius: 20px;
       padding: 28px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
       animation: cardIn 0.55s cubic-bezier(.34,1.56,.64,1) var(--delay, 0s) both;
     }
 
@@ -367,44 +365,44 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
     }
 
     .card-title {
-      font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9);
+      font-size: 15px; font-weight: 700; color: #1f2937;
       margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
     }
     .card-icon {
       width: 30px; height: 30px; border-radius: 9px;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .cal-icon    { background: rgba(102,126,234,0.25); color: #b3c3ff; }
-    .upload-icon { background: rgba(118,75,162,0.25); color: #d4b3ff; }
-    .doc-icon    { background: rgba(155,89,182,0.25); color: #d7b3f5; }
-    .hist-icon   { background: rgba(245,158,11,0.25); color: #fcd34d; }
-    .phone-icon  { background: rgba(16,185,129,0.25); color: #6ee7b7; }
+    .cal-icon    { background: rgba(102,126,234,0.12); color: #667eea; }
+    .upload-icon { background: rgba(118,75,162,0.12); color: #764ba2; }
+    .doc-icon    { background: rgba(155,89,182,0.12); color: #9b59b6; }
+    .hist-icon   { background: rgba(245,158,11,0.12); color: #d97706; }
+    .phone-icon  { background: rgba(16,185,129,0.12); color: #059669; }
 
     /* ── Welcome card ── */
     .welcome-card {
       display: flex; align-items: center; justify-content: space-between;
       gap: 16px; flex-wrap: wrap;
-      background: rgba(255,255,255,0.1);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
     .welcome-left { display: flex; align-items: center; gap: 16px; }
     .candidate-avatar {
       width: 52px; height: 52px; border-radius: 50%;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: rgba(255,255,255,0.25);
       color: white; font-size: 18px; font-weight: 800;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 0 3px rgba(102,126,234,0.4), 0 4px 16px rgba(118,75,162,0.4);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.3), 0 4px 16px rgba(0,0,0,0.15);
       flex-shrink: 0;
     }
     .welcome-name {
       font-size: 20px; font-weight: 800; color: white;
       letter-spacing: -0.4px; line-height: 1.3;
     }
-    .welcome-sub { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 3px; }
+    .welcome-sub { font-size: 13px; color: rgba(255,255,255,0.75); margin-top: 3px; }
     .offer-chip {
       display: flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
       border-radius: 99px; padding: 6px 14px;
-      font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8);
+      font-size: 12px; font-weight: 600; color: white;
       white-space: nowrap;
     }
 
@@ -421,7 +419,7 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       content: '';
       position: absolute;
       top: 14px; left: 14px; right: 14px; height: 2px;
-      background: rgba(255,255,255,0.1);
+      background: #e5e7eb;
       z-index: 0;
     }
     .pipeline-step {
@@ -430,13 +428,13 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
     }
     .step-dot {
       width: 28px; height: 28px; border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      border: 2px solid rgba(255,255,255,0.15);
+      background: #f3f4f6;
+      border: 2px solid #e5e7eb;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.3s;
     }
     .pipeline-step.done .step-dot {
-      background: rgba(102,126,234,0.5);
+      background: rgba(102,126,234,0.2);
       border-color: #667eea;
     }
     .pipeline-step.active .step-dot {
@@ -454,11 +452,11 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       50%      { box-shadow: 0 0 0 8px rgba(102,126,234,0.1); }
     }
     .step-label {
-      font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4);
+      font-size: 10px; font-weight: 600; color: #9ca3af;
       text-align: center; letter-spacing: 0.3px; max-width: 70px; line-height: 1.3;
     }
     .pipeline-step.done .step-label,
-    .pipeline-step.active .step-label { color: rgba(255,255,255,0.85); }
+    .pipeline-step.active .step-label { color: #374151; }
 
     /* Status badge */
     .status-center { text-align: center; }
@@ -479,25 +477,25 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       0%,100% { transform: scale(1); opacity: 0.3; }
       50%      { transform: scale(1.06); opacity: 0.15; }
     }
-    .status-desc { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.6; max-width: 480px; margin: 0 auto; }
+    .status-desc { font-size: 14px; color: #6b7280; line-height: 1.6; max-width: 480px; margin: 0 auto; }
 
     /* ── Interview card ── */
-    .interview-card { border-left: 3px solid #06b6d4; }
+    .interview-card { border-left: 3px solid #667eea; }
     .interview-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 16px; margin-bottom: 16px;
     }
     .interview-block {
-      background: rgba(255,255,255,0.05); border-radius: 12px; padding: 14px 16px;
+      background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 12px; padding: 14px 16px;
     }
-    .ib-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
-    .ib-value { font-size: 15px; font-weight: 700; color: white; }
+    .ib-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #9ca3af; margin-bottom: 6px; }
+    .ib-value { font-size: 15px; font-weight: 700; color: #1f2937; }
     .ib-value.small { font-size: 13px; font-weight: 500; }
     .interview-advice {
       display: flex; align-items: flex-start; gap: 8px;
-      background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2);
+      background: rgba(102,126,234,0.07); border: 1px solid rgba(102,126,234,0.2);
       border-radius: 10px; padding: 11px 14px;
-      font-size: 13px; color: rgba(103,232,249,0.9); line-height: 1.5;
+      font-size: 13px; color: #4c51bf; line-height: 1.5;
     }
     .interview-advice svg { flex-shrink: 0; margin-top: 1px; }
 
@@ -529,29 +527,29 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
     .discord-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.25); }
 
     /* ── Upload card ── */
-    .upload-intro { font-size: 13.5px; color: rgba(255,255,255,0.65); line-height: 1.6; margin-bottom: 18px; }
-    .upload-intro strong { color: rgba(255,255,255,0.9); }
+    .upload-intro { font-size: 13.5px; color: #6b7280; line-height: 1.6; margin-bottom: 18px; }
+    .upload-intro strong { color: #1f2937; }
 
     .doc-banner {
       display: flex; align-items: flex-start; gap: 10px;
       border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;
       font-size: 13px;
     }
-    .pending-banner { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
-    .signed-banner  { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+    .pending-banner { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+    .signed-banner  { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
     .banner-sub { font-size: 11px; opacity: 0.75; margin-top: 3px; }
 
     .file-drop {
-      border: 2px dashed rgba(255,255,255,0.2); border-radius: 14px;
+      border: 2px dashed #d1d5db; border-radius: 14px;
       padding: 32px 16px; text-align: center; cursor: pointer;
       transition: border-color 0.2s, background 0.2s; margin-bottom: 14px;
     }
     .file-drop:hover, .file-drop.has-file {
-      border-color: #764ba2; background: rgba(118,75,162,0.1);
+      border-color: #764ba2; background: rgba(118,75,162,0.05);
     }
-    .file-drop-icon { color: rgba(255,255,255,0.25); margin-bottom: 10px; }
-    .file-drop p { font-size: 13.5px; color: rgba(255,255,255,0.5); }
-    .file-drop.has-file p { color: #c4b5fd; font-weight: 600; }
+    .file-drop-icon { color: #d1d5db; margin-bottom: 10px; }
+    .file-drop p { font-size: 13.5px; color: #9ca3af; }
+    .file-drop.has-file p { color: #764ba2; font-weight: 600; }
 
     .btn-upload {
       width: 100%; padding: 13px;
@@ -559,7 +557,7 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       color: white; border: none; border-radius: 12px;
       font-size: 14px; font-weight: 700; cursor: pointer;
       transition: opacity 0.2s, transform 0.2s;
-      box-shadow: 0 4px 16px rgba(102,126,234,0.4);
+      box-shadow: 0 4px 16px rgba(102,126,234,0.35);
     }
     .btn-upload:hover:not(:disabled) { transform: translateY(-2px); opacity: 0.92; }
     .btn-upload:disabled { opacity: 0.4; cursor: default; }
@@ -572,39 +570,40 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .alert-error {
-      font-size: 13px; color: #fca5a5;
-      background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+      font-size: 13px; color: #b91c1c;
+      background: #fef2f2; border: 1px solid #fecaca;
       border-radius: 10px; padding: 10px 14px; margin-bottom: 12px;
     }
     .alert-success {
       display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: #6ee7b7;
-      background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3);
+      font-size: 13px; color: #065f46;
+      background: #ecfdf5; border: 1px solid #6ee7b7;
       border-radius: 10px; padding: 10px 14px; margin-top: 12px;
     }
 
     .btn-dl {
-      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
-      color: white; border-radius: 8px; padding: 7px 14px;
+      background: #f3f4f6; border: 1px solid #e5e7eb;
+      color: #374151; border-radius: 8px; padding: 7px 14px;
       font-size: 12px; font-weight: 600; cursor: pointer;
       transition: background 0.15s; white-space: nowrap; flex-shrink: 0;
     }
-    .btn-dl:hover { background: rgba(255,255,255,0.2); }
+    .btn-dl:hover { background: #e5e7eb; }
 
     /* ── Docs card ── */
     .doc-item {
       display: flex; justify-content: space-between; align-items: center; gap: 12px;
       padding: 14px 16px; border-radius: 12px;
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      background: #f9fafb; border: 1px solid #f3f4f6;
       margin-bottom: 10px;
     }
     .doc-item:last-child { margin-bottom: 0; }
-    .doc-name { font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.9); }
-    .doc-meta { font-size: 11.5px; color: rgba(255,255,255,0.45); margin-top: 3px; }
+    .doc-name { font-size: 13.5px; font-weight: 600; color: #1f2937; }
+    .doc-meta { font-size: 11.5px; color: #9ca3af; margin-top: 3px; }
     .signed-chip {
-      display: inline-block; background: rgba(16,185,129,0.2);
-      color: #6ee7b7; padding: 2px 8px; border-radius: 99px;
+      display: inline-block; background: #ecfdf5;
+      color: #065f46; padding: 2px 8px; border-radius: 99px;
       font-size: 10.5px; font-weight: 700; margin-left: 6px;
+      border: 1px solid #6ee7b7;
     }
 
     /* ── Timeline ── */
@@ -618,53 +617,54 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       position: absolute; left: -36px;
       width: 26px; height: 26px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      border: 3px solid rgba(255,255,255,0.15);
+      border: 3px solid white;
     }
-    .tl-current .tl-dot { box-shadow: 0 0 0 4px rgba(102,126,234,0.3); }
+    .tl-current .tl-dot { box-shadow: 0 0 0 3px rgba(102,126,234,0.25); }
     .tl-content {
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      background: #f9fafb; border: 1px solid #f3f4f6;
       border-radius: 12px; padding: 12px 16px;
     }
     .tl-current .tl-content {
-      background: rgba(102,126,234,0.15); border-color: rgba(118,75,162,0.35);
+      background: rgba(102,126,234,0.06); border-color: rgba(102,126,234,0.2);
     }
     .tl-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-    .tl-row strong { font-size: 13.5px; color: rgba(255,255,255,0.9); }
-    .tl-date { font-size: 11.5px; color: rgba(255,255,255,0.4); }
-    .tl-comment { font-size: 12.5px; color: rgba(255,255,255,0.55); font-style: italic; margin-top: 4px; }
+    .tl-row strong { font-size: 13.5px; color: #1f2937; }
+    .tl-date { font-size: 11.5px; color: #9ca3af; }
+    .tl-comment { font-size: 12.5px; color: #6b7280; font-style: italic; margin-top: 4px; }
     .email-chip {
       display: inline-block; margin-top: 6px;
-      background: rgba(37,99,235,0.2); color: #93c5fd;
+      background: #eff6ff; color: #1d4ed8;
       border-radius: 99px; padding: 2px 9px; font-size: 11px; font-weight: 600;
+      border: 1px solid #bfdbfe;
     }
-    .empty-text { font-size: 13px; color: rgba(255,255,255,0.4); text-align: center; padding: 20px 0; }
+    .empty-text { font-size: 13px; color: #9ca3af; text-align: center; padding: 20px 0; }
 
     /* ── Contact card ── */
-    .contact-intro { font-size: 13.5px; color: rgba(255,255,255,0.6); margin-bottom: 16px; line-height: 1.6; }
+    .contact-intro { font-size: 13.5px; color: #6b7280; margin-bottom: 16px; line-height: 1.6; }
     .contact-items { display: flex; flex-direction: column; gap: 10px; }
     .contact-item {
       display: flex; align-items: center; gap: 12px;
-      background: rgba(255,255,255,0.05); border-radius: 10px; padding: 11px 14px;
-      font-size: 13.5px; color: rgba(255,255,255,0.75);
+      background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 10px; padding: 11px 14px;
+      font-size: 13.5px; color: #374151;
     }
     .ci-icon { font-size: 16px; }
 
     /* ── Done card (stage terminé) ── */
     .done-card { text-align: center; padding: 52px 28px; }
     .done-icon { font-size: 52px; margin-bottom: 16px; }
-    .done-title { font-size: 22px; font-weight: 800; color: white; margin-bottom: 10px; }
-    .done-sub { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.7; margin-bottom: 20px; }
+    .done-title { font-size: 22px; font-weight: 800; color: #1f2937; margin-bottom: 10px; }
+    .done-sub { font-size: 14px; color: #6b7280; line-height: 1.7; margin-bottom: 20px; }
     .done-badge {
       display: inline-block; padding: 8px 20px; border-radius: 99px;
-      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
-      font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 600;
+      background: #f3f4f6; border: 1px solid #e5e7eb;
+      font-size: 12px; color: #6b7280; font-weight: 600;
     }
 
     /* ── Error card ── */
     .error-card { text-align: center; padding: 48px 28px; }
-    .error-icon { color: rgba(239,68,68,0.7); margin-bottom: 20px; }
-    .error-card h2 { font-size: 20px; font-weight: 800; color: white; margin-bottom: 10px; }
-    .error-card p { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.7; }
+    .error-icon { color: #ef4444; margin-bottom: 20px; }
+    .error-card h2 { font-size: 20px; font-weight: 800; color: #1f2937; margin-bottom: 10px; }
+    .error-card p { font-size: 14px; color: #6b7280; line-height: 1.7; }
 
     /* ── Responsive ── */
     @media (max-width: 600px) {
