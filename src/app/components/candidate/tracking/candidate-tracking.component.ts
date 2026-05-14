@@ -27,13 +27,23 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
             </svg>
           </div>
           <span class="header-title">
-            <span *ngIf="isLastYear()">🎓&nbsp;</span>Suivi de candidature
+            🎓&nbsp;Suivi de candidature
           </span>
         </div>
         <div class="header-tag">I.NET RH Platform</div>
       </header>
 
-      <div class="container" *ngIf="candidate; else notFound">
+      <!-- Stage terminé -->
+      <div class="container" *ngIf="candidate && candidate.status === 'stage_termine'">
+        <div class="glass-card done-card" style="--delay:0.05s">
+          <div class="done-icon">🏁</div>
+          <h2 class="done-title">Stage terminé</h2>
+          <p class="done-sub">Votre stage est maintenant clôturé. Merci pour votre engagement et votre contribution au sein de l'équipe I.NET.</p>
+          <div class="done-badge">Ce lien de suivi est désormais archivé.</div>
+        </div>
+      </div>
+
+      <div class="container" *ngIf="candidate && candidate.status !== 'stage_termine'; else notFound">
 
         <!-- Welcome card -->
         <div class="glass-card welcome-card" style="--delay:0.05s">
@@ -141,10 +151,7 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
         <!-- Upload demande de stage -->
         <div class="glass-card upload-card" *ngIf="canUploadDemandeStage()" style="--delay:0.26s">
           <h2 class="card-title">
-            <span class="card-icon upload-icon">
-              <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-            </span>
-            Déposer votre demande de stage
+            📤&nbsp;Déposer votre demande de stage
           </h2>
           <p class="upload-intro">Félicitations ! Veuillez déposer votre <strong>demande de stage</strong> (PDF) afin que l'équipe RH puisse la signer et vous la retourner.</p>
 
@@ -275,7 +282,7 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
               </svg>
             </div>
             <h2>Lien invalide</h2>
-            <p>Ce lien de suivi n'est pas valide ou a expiré.<br>Vérifiez votre email ou contactez notre service RH.</p>
+            <p>Ce lien de suivi n'est pas valide.<br>Vérifiez votre email ou contactez notre service RH.</p>
           </div>
         </div>
       </ng-template>
@@ -287,7 +294,7 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
 
     .tracking-page {
       min-height: 100vh;
-      background: linear-gradient(145deg, #1a0533 0%, #2d1b69 40%, #3b1f6b 70%, #1f0a45 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       padding: 28px 16px 60px;
       position: relative;
       overflow-x: hidden;
@@ -299,13 +306,13 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       position: fixed;
       border-radius: 50%;
       filter: blur(70px);
-      opacity: 0.25;
+      opacity: 0.22;
       pointer-events: none;
       z-index: 0;
     }
-    .orb-1 { width: 500px; height: 500px; background: #6366f1; top: -150px; right: -100px; animation: orbFloat 14s ease-in-out infinite; }
-    .orb-2 { width: 350px; height: 350px; background: #a855f7; bottom: 10%; left: -80px; animation: orbFloat 18s ease-in-out infinite reverse; }
-    .orb-3 { width: 250px; height: 250px; background: #ec4899; bottom: 40%; right: 5%; animation: orbFloat 22s ease-in-out infinite 4s; }
+    .orb-1 { width: 500px; height: 500px; background: #9b59b6; top: -150px; right: -100px; animation: orbFloat 14s ease-in-out infinite; }
+    .orb-2 { width: 350px; height: 350px; background: #667eea; bottom: 10%; left: -80px; animation: orbFloat 18s ease-in-out infinite reverse; }
+    .orb-3 { width: 250px; height: 250px; background: #b39ddb; bottom: 40%; right: 5%; animation: orbFloat 22s ease-in-out infinite 4s; }
 
     @keyframes orbFloat {
       0%,100% { transform: translate(0,0) scale(1); }
@@ -316,24 +323,24 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
     /* ── Header ── */
     .top-header {
       position: relative; z-index: 1;
-      display: flex; align-items: center; justify-content: space-between;
-      max-width: 720px; margin: 0 auto 32px;
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      max-width: 720px; margin: 0 auto 32px; text-align: center;
       animation: cardIn 0.5s ease both;
     }
-    .header-logo { display: flex; align-items: center; gap: 10px; }
+    .header-logo { display: flex; align-items: center; gap: 10px; justify-content: center; }
     .header-icon {
       width: 38px; height: 38px; border-radius: 11px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      background: linear-gradient(135deg, #764ba2, #9b59b6);
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 14px rgba(99,102,241,0.5);
+      box-shadow: 0 4px 14px rgba(118,75,162,0.5);
     }
     .header-title {
-      font-size: 18px; font-weight: 700; color: white;
-      letter-spacing: -0.3px;
+      font-size: 20px; font-weight: 800; color: white;
+      letter-spacing: -0.4px; text-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
     .header-tag {
-      font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.45);
-      letter-spacing: 1px; text-transform: uppercase;
+      font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5);
+      letter-spacing: 1.2px; text-transform: uppercase; margin-top: 4px;
     }
 
     /* ── Container ── */
@@ -367,9 +374,9 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       width: 30px; height: 30px; border-radius: 9px;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .cal-icon    { background: rgba(6,182,212,0.25); color: #67e8f9; }
-    .upload-icon { background: rgba(99,102,241,0.25); color: #a5b4fc; }
-    .doc-icon    { background: rgba(139,92,246,0.25); color: #c4b5fd; }
+    .cal-icon    { background: rgba(102,126,234,0.25); color: #b3c3ff; }
+    .upload-icon { background: rgba(118,75,162,0.25); color: #d4b3ff; }
+    .doc-icon    { background: rgba(155,89,182,0.25); color: #d7b3f5; }
     .hist-icon   { background: rgba(245,158,11,0.25); color: #fcd34d; }
     .phone-icon  { background: rgba(16,185,129,0.25); color: #6ee7b7; }
 
@@ -382,10 +389,10 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
     .welcome-left { display: flex; align-items: center; gap: 16px; }
     .candidate-avatar {
       width: 52px; height: 52px; border-radius: 50%;
-      background: linear-gradient(135deg, #6366f1, #a855f7);
+      background: linear-gradient(135deg, #667eea, #764ba2);
       color: white; font-size: 18px; font-weight: 800;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 0 3px rgba(99,102,241,0.4), 0 4px 16px rgba(99,102,241,0.4);
+      box-shadow: 0 0 0 3px rgba(102,126,234,0.4), 0 4px 16px rgba(118,75,162,0.4);
       flex-shrink: 0;
     }
     .welcome-name {
@@ -429,13 +436,13 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       transition: all 0.3s;
     }
     .pipeline-step.done .step-dot {
-      background: rgba(99,102,241,0.5);
-      border-color: #6366f1;
+      background: rgba(102,126,234,0.5);
+      border-color: #667eea;
     }
     .pipeline-step.active .step-dot {
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      border-color: #8b5cf6;
-      box-shadow: 0 0 0 4px rgba(99,102,241,0.25);
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-color: #764ba2;
+      box-shadow: 0 0 0 4px rgba(102,126,234,0.3);
       animation: pulseDot 2s ease infinite;
     }
     .pipeline-step.refused .step-dot {
@@ -443,8 +450,8 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       border-color: #ef4444;
     }
     @keyframes pulseDot {
-      0%,100% { box-shadow: 0 0 0 4px rgba(99,102,241,0.25); }
-      50%      { box-shadow: 0 0 0 8px rgba(99,102,241,0.1); }
+      0%,100% { box-shadow: 0 0 0 4px rgba(102,126,234,0.3); }
+      50%      { box-shadow: 0 0 0 8px rgba(102,126,234,0.1); }
     }
     .step-label {
       font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4);
@@ -540,19 +547,19 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       transition: border-color 0.2s, background 0.2s; margin-bottom: 14px;
     }
     .file-drop:hover, .file-drop.has-file {
-      border-color: #6366f1; background: rgba(99,102,241,0.1);
+      border-color: #764ba2; background: rgba(118,75,162,0.1);
     }
     .file-drop-icon { color: rgba(255,255,255,0.25); margin-bottom: 10px; }
     .file-drop p { font-size: 13.5px; color: rgba(255,255,255,0.5); }
-    .file-drop.has-file p { color: #a5b4fc; font-weight: 600; }
+    .file-drop.has-file p { color: #c4b5fd; font-weight: 600; }
 
     .btn-upload {
       width: 100%; padding: 13px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      background: linear-gradient(135deg, #667eea, #764ba2);
       color: white; border: none; border-radius: 12px;
       font-size: 14px; font-weight: 700; cursor: pointer;
       transition: opacity 0.2s, transform 0.2s;
-      box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+      box-shadow: 0 4px 16px rgba(102,126,234,0.4);
     }
     .btn-upload:hover:not(:disabled) { transform: translateY(-2px); opacity: 0.92; }
     .btn-upload:disabled { opacity: 0.4; cursor: default; }
@@ -604,7 +611,7 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
     .timeline { display: flex; flex-direction: column; gap: 16px; position: relative; padding-left: 36px; }
     .timeline::before {
       content: ''; position: absolute; left: 13px; top: 6px; bottom: 6px;
-      width: 2px; background: linear-gradient(to bottom, #6366f1, rgba(99,102,241,0.1));
+      width: 2px; background: linear-gradient(to bottom, #764ba2, rgba(102,126,234,0.1));
     }
     .tl-item { position: relative; }
     .tl-dot {
@@ -613,13 +620,13 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       display: flex; align-items: center; justify-content: center;
       border: 3px solid rgba(255,255,255,0.15);
     }
-    .tl-current .tl-dot { box-shadow: 0 0 0 4px rgba(99,102,241,0.25); }
+    .tl-current .tl-dot { box-shadow: 0 0 0 4px rgba(102,126,234,0.3); }
     .tl-content {
       background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px; padding: 12px 16px;
     }
     .tl-current .tl-content {
-      background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.3);
+      background: rgba(102,126,234,0.15); border-color: rgba(118,75,162,0.35);
     }
     .tl-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .tl-row strong { font-size: 13.5px; color: rgba(255,255,255,0.9); }
@@ -641,6 +648,17 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
       font-size: 13.5px; color: rgba(255,255,255,0.75);
     }
     .ci-icon { font-size: 16px; }
+
+    /* ── Done card (stage terminé) ── */
+    .done-card { text-align: center; padding: 52px 28px; }
+    .done-icon { font-size: 52px; margin-bottom: 16px; }
+    .done-title { font-size: 22px; font-weight: 800; color: white; margin-bottom: 10px; }
+    .done-sub { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.7; margin-bottom: 20px; }
+    .done-badge {
+      display: inline-block; padding: 8px 20px; border-radius: 99px;
+      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+      font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 600;
+    }
 
     /* ── Error card ── */
     .error-card { text-align: center; padding: 48px 28px; }
@@ -838,11 +856,11 @@ export class CandidateTrackingComponent implements OnInit {
   }
 
   getStatusLabel(status: string): string {
-    return ({ nouveau:'Nouveau', preselectionne:'Présélectionné', en_attente_documents:'En attente de documents', documents_recus:'Documents reçus', entretien_programme:'Entretien programmé', entretien_realise:'Entretien réalisé', validation_finale:'Validation finale', offre_envoyee:'Offre envoyée', offre_acceptee:'Accepté(e)', offre_refusee:'Refusé(e)', rejete:'Rejeté', abandonne:'Abandonné' } as any)[status] || status;
+    return ({ nouveau:'Nouveau', preselectionne:'Présélectionné', en_attente_documents:'En attente de documents', documents_recus:'Documents reçus', entretien_programme:'Entretien programmé', entretien_realise:'Entretien réalisé', validation_finale:'Validation finale', offre_envoyee:'Offre envoyée', offre_acceptee:'Accepté(e)', offre_refusee:'Refusé(e)', rejete:'Rejeté', abandonne:'Abandonné', stage_termine:'Stage terminé' } as any)[status] || status;
   }
 
   getStatusColor(status: string): string {
-    return ({ nouveau:'#6b7280', preselectionne:'#3b82f6', en_attente_documents:'#f59e0b', documents_recus:'#8b5cf6', entretien_programme:'#06b6d4', entretien_realise:'#0ea5e9', validation_finale:'#6366f1', offre_envoyee:'#10b981', offre_acceptee:'#059669', offre_refusee:'#ef4444', rejete:'#dc2626', abandonne:'#6b7280' } as any)[status] || '#6b7280';
+    return ({ nouveau:'#6b7280', preselectionne:'#667eea', en_attente_documents:'#f59e0b', documents_recus:'#764ba2', entretien_programme:'#667eea', entretien_realise:'#7c6fd4', validation_finale:'#764ba2', offre_envoyee:'#10b981', offre_acceptee:'#059669', offre_refusee:'#ef4444', rejete:'#dc2626', abandonne:'#6b7280', stage_termine:'#059669' } as any)[status] || '#6b7280';
   }
 
   getStatusGradient(status: string): string {
@@ -858,12 +876,13 @@ export class CandidateTrackingComponent implements OnInit {
       offre_acceptee: 'linear-gradient(135deg,#047857,#059669)',
       offre_refusee: 'linear-gradient(135deg,#dc2626,#ef4444)',
       rejete: 'linear-gradient(135deg,#b91c1c,#dc2626)',
+      stage_termine: 'linear-gradient(135deg,#047857,#059669)',
     };
     return gradients[status] || 'linear-gradient(135deg,#4b5563,#6b7280)';
   }
 
   getStatusDescription(status: string): string {
-    return ({ nouveau:'Votre candidature a bien été reçue et est en cours d\'examen.', preselectionne:'Félicitations ! Votre profil a retenu notre attention. Consultez ci-dessous la date et l\'heure de votre entretien.', en_attente_documents:'Votre candidature est acceptée. Veuillez déposer votre demande de stage (formulaire vierge) ci-dessous.', documents_recus:'Votre demande de stage a été reçue. Le service RH est en train de la traiter.', entretien_programme:'Votre entretien est confirmé. Consultez les détails ci-dessous.', entretien_realise:'Merci pour votre participation à l\'entretien. Nous revenons vers vous prochainement.', validation_finale:'Votre candidature est en cours de validation finale.', offre_envoyee:'Une offre vous a été envoyée !', offre_acceptee:'Bienvenue dans l\'équipe ! Rejoignez notre groupe Discord d\'encadrement.', offre_refusee:'Nous ne pouvons pas donner suite à votre candidature pour le moment.', rejete:'Nous ne pouvons pas donner suite pour le moment.', abandonne:'Votre candidature semble inactive.' } as any)[status] || '';
+    return ({ nouveau:'Votre candidature a bien été reçue et est en cours d\'examen.', preselectionne:'Félicitations ! Votre profil a retenu notre attention. Consultez ci-dessous la date et l\'heure de votre entretien.', en_attente_documents:'Votre candidature est acceptée. Veuillez déposer votre demande de stage (formulaire vierge) ci-dessous.', documents_recus:'Votre demande de stage a été reçue. Le service RH est en train de la traiter.', entretien_programme:'Votre entretien est confirmé. Consultez les détails ci-dessous.', entretien_realise:'Merci pour votre participation à l\'entretien. Nous revenons vers vous prochainement.', validation_finale:'Votre candidature est en cours de validation finale.', offre_envoyee:'Une offre vous a été envoyée !', offre_acceptee:'Bienvenue dans l\'équipe ! Rejoignez notre groupe Discord d\'encadrement.', offre_refusee:'Nous ne pouvons pas donner suite à votre candidature pour le moment.', rejete:'Nous ne pouvons pas donner suite pour le moment.', abandonne:'Votre candidature semble inactive.', stage_termine:'Votre stage est maintenant terminé. Merci pour votre engagement.' } as any)[status] || '';
   }
 
   formatDate(date: Date): string {

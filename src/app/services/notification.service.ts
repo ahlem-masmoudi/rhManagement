@@ -203,7 +203,8 @@ export class NotificationService {
       'offre_acceptee': 'Accepté(e)',
       'offre_refusee': 'Refusé(e)',
       'rejete': 'Rejeté',
-      'abandonne': 'Abandonné'
+      'abandonne': 'Abandonné',
+      'stage_termine': 'Stage terminé'
     };
     
     return labels[status] || status;
@@ -225,9 +226,10 @@ export class NotificationService {
       'offre_acceptee': '#059669',
       'offre_refusee': '#ef4444',
       'rejete': '#dc2626',
-      'abandonne': '#6b7280'
+      'abandonne': '#6b7280',
+      'stage_termine': '#059669'
     };
-    
+
     return colors[status] || '#6b7280';
   }
 
@@ -247,7 +249,8 @@ export class NotificationService {
       'offre_acceptee': '<p>🎊 Bienvenue dans l\'équipe ! Vous trouverez les documents signés dans votre espace candidat.</p><p>💬 Rejoignez notre groupe Discord d\'encadrement : <a href="https://discord.gg/aeFTt2AgpA">https://discord.gg/aeFTt2AgpA</a></p>',
       'offre_refusee': '<p>Nous prenons note de votre refus. Nous vous souhaitons le meilleur pour la suite de votre parcours.</p>',
       'rejete': '<p>Après étude de votre candidature, nous sommes au regret de vous informer que nous ne pouvons pas donner suite pour le moment.</p>',
-      'abandonne': '<p>Nous constatons que vous n\'avez pas donné suite. N\'hésitez pas à nous recontacter si vous êtes toujours intéressé.</p>'
+      'abandonne': '<p>Nous constatons que vous n\'avez pas donné suite. N\'hésitez pas à nous recontacter si vous êtes toujours intéressé.</p>',
+      'stage_termine': '<p>🎓 Félicitations ! Votre stage est maintenant terminé. Merci pour votre contribution au sein de l\'équipe I.NET.</p>'
     };
     
     return messages[status] || '<p>Le statut de votre candidature a été mis à jour.</p>';

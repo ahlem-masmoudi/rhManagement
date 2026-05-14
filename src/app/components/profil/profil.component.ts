@@ -1482,6 +1482,7 @@ export class ProfilComponent implements OnInit {
       'offre_refusee':        'Refusé(e)',
       'rejete':               'Rejeté',
       'abandonne':            'Abandonné',
+      'stage_termine':        'Stage terminé',
     };
     return labels[status] || status;
   }
@@ -1500,6 +1501,7 @@ export class ProfilComponent implements OnInit {
       'offre_refusee':        '#ef4444',
       'rejete':               '#dc2626',
       'abandonne':            '#6b7280',
+      'stage_termine':        '#059669',
     };
     return colors[status] || '#6b7280';
   }
@@ -1509,7 +1511,7 @@ export class ProfilComponent implements OnInit {
   }
 
   isTerminalStatus(): boolean {
-    return ['offre_acceptee', 'offre_refusee', 'rejete', 'abandonne'].includes(this.candidate?.status || '');
+    return ['offre_acceptee', 'offre_refusee', 'rejete', 'abandonne', 'stage_termine'].includes(this.candidate?.status || '');
   }
 
   applyStatus(): void {

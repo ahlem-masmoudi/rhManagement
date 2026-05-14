@@ -249,7 +249,8 @@ export type CandidateStatus =
   | 'offre_acceptee'
   | 'offre_refusee'
   | 'rejete'
-  | 'abandonne';
+  | 'abandonne'
+  | 'stage_termine';
 
 export type DocumentType =
   | 'cv'

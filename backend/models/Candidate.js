@@ -69,7 +69,8 @@ const candidateSchema = new mongoose.Schema({
       'offre_acceptee',
       'offre_refusee',
       'rejete',
-      'abandonne'
+      'abandonne',
+      'stage_termine'
     ],
     default: 'nouveau'
   },

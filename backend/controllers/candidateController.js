@@ -442,7 +442,8 @@ exports.generateTrackingToken = async (req, res) => {
     const exists = await Candidate.exists({ _id: req.params.id });
     if (!exists) return res.status(404).json({ success: false, message: 'Candidate not found' });
 
-    const token = `${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
+    const existing = await Candidate.findById(req.params.id).select('trackingToken').lean();
+    const token = (existing && existing.trackingToken) || `${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
     // Use raw driver to avoid Mongoose CastError on documents with large HTML content
     await Candidate.collection.updateOne(
       { _id: new mongoose.Types.ObjectId(req.params.id) },
