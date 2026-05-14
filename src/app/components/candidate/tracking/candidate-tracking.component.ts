@@ -219,37 +219,6 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
           </div>
         </div>
 
-        <!-- Timeline -->
-        <div class="glass-card timeline-card" style="--delay:0.34s">
-          <h2 class="card-title">
-            <span class="card-icon hist-icon">
-              <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
-            </span>
-            Historique
-          </h2>
-          <div class="timeline" *ngIf="getStatusHistory().length > 0; else noHistory">
-            <div *ngFor="let change of getStatusHistory(); let isLast = last"
-                 class="tl-item" [class.tl-current]="isLast">
-              <div class="tl-dot" [style.background]="getStatusColor(change.newStatus)">
-                <svg *ngIf="isLast" width="10" height="10" fill="white" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-              </div>
-              <div class="tl-content">
-                <div class="tl-row">
-                  <strong>{{ getStatusLabel(change.newStatus) }}</strong>
-                  <span class="tl-date">{{ formatDate(change.changedAt) }}</span>
-                </div>
-                <p *ngIf="change.comment" class="tl-comment">{{ change.comment }}</p>
-                <span *ngIf="change.emailSent" class="email-chip">📧 Email envoyé</span>
-              </div>
-            </div>
-          </div>
-          <ng-template #noHistory>
-            <p class="empty-text">Aucun historique disponible pour le moment.</p>
-          </ng-template>
-        </div>
-
         <!-- Contact -->
         <div class="glass-card contact-card" style="--delay:0.38s">
           <h2 class="card-title">
