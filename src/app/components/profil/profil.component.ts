@@ -1679,11 +1679,37 @@ export class ProfilComponent implements OnInit {
   downloadDocument(doc: any): void {
     if (!this.candidate) return;
     this.candidateService.downloadDocument(this.candidate.id, doc.id).subscribe(response => {
-      const blob = new Blob([response.content], { type: 'text/html;charset=utf-8' });
+      const content = response.content || '';
+      const name = response.name || doc.name || '';
+      // Assignment letters: open in new tab → auto-triggers print-to-PDF dialog
+      if (doc.type === 'attestation' || name.toLowerCase().includes('affectation')) {
+        const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const win = window.open(url, '_blank');
+        if (win) win.focus();
+        setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+        return;
+      }
+      // All other docs: detect base64 vs raw content
+      const isBase64 = content.length > 0 && /^[A-Za-z0-9+/=\r\n]+$/.test(content.trim());
+      let blob: Blob;
+      if (isBase64) {
+        const binary = atob(content.replace(/\s/g, ''));
+        const arr = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+        const lower = name.toLowerCase();
+        const mime = lower.endsWith('.pdf') ? 'application/pdf'
+          : lower.endsWith('.png') ? 'image/png'
+          : (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) ? 'image/jpeg'
+          : 'application/octet-stream';
+        blob = new Blob([arr], { type: mime });
+      } else {
+        blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+      }
       const url = window.URL.createObjectURL(blob);
       const link = window.document.createElement('a');
       link.href = url;
-      link.download = response.name || doc.name;
+      link.download = name;
       link.click();
       window.URL.revokeObjectURL(url);
     });

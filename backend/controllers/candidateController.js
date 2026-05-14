@@ -81,78 +81,240 @@ function buildAssignmentLetterHtml({
   outcomeComment
 }) {
   const firstName = sanitize(candidate.userId?.firstName);
-  const lastName = sanitize(candidate.userId?.lastName);
-  const fullName = `${firstName} ${lastName}`.trim();
-  const field = sanitize(specialty || candidate.expectedDegree || candidate.educationLevel || '');
-  return `
-    <html>
-      <head>
-        <meta charset="utf-8" />
-        <title>Lettre d'affectation</title>
-        <style>
-          body { font-family: Arial, sans-serif; color: #111827; padding: 48px; line-height: 1.7; }
-          .masthead { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #2563eb; padding-bottom: 18px; margin-bottom: 28px; }
-          .title-box { border: 1px solid #9ca3af; border-collapse: collapse; width: 100%; margin: 24px 0; }
-          .title-box td { border: 1px solid #9ca3af; padding: 12px 16px; }
-          .strong { font-weight: 700; }
-          .footer-sign { margin-top: 48px; text-align: center; font-weight: 700; }
-        </style>
-      </head>
-      <body>
-        <div class="masthead">
-          <div>
-            <div><strong>${sanitize(instituteNameFr || 'Institut Supérieur de Gestion Industrielle de Sfax')}</strong></div>
-            <div>Direction des stages</div>
-          </div>
-          <div>Réf. IDF015</div>
-        </div>
+  const lastName  = sanitize(candidate.userId?.lastName);
+  const fullName  = `${firstName} ${lastName}`.trim();
+  const field     = sanitize(specialty || candidate.expectedDegree || candidate.educationLevel || '');
+  const instFr    = sanitize(instituteNameFr || "Institut Supérieur de Gestion Industrielle de Sfax");
+  const instAr    = sanitize(instituteNameAr || "المعهد العالي للتصرف الصناعي بصفاقس");
+  const date      = sanitize(letterDate || new Date().toLocaleDateString('fr-FR'));
+  const company   = sanitize(companyName || 'À compléter');
+  const director  = sanitize(directorName || 'Directeur société');
+  const title     = sanitize(internshipTitle || 'Stage');
+  const start     = sanitize(startDate || 'Date début');
+  const end       = sanitize(endDate || 'Date fin');
+  const signName  = sanitize(signatoryName || '');
+  const signTitle = sanitize(signatoryTitle || 'La Direction des Stages');
 
-        <table class="title-box">
-          <tr>
-            <td><strong>Lettre d'affectation à un stage</strong></td>
-            <td><strong>Date:</strong> ${sanitize(letterDate || new Date().toLocaleDateString('fr-FR'))}</td>
-          </tr>
-        </table>
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <title>Lettre d'affectation - ${fullName}</title>
+  <style>
+    @page { size: A4; margin: 20mm 18mm 20mm 18mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12pt;
+      color: #000;
+      background: #fff;
+      padding: 0;
+    }
 
-        <p><strong>A l'attention de M. le Directeur de la société : ${sanitize(companyName || 'A compléter')}</strong></p>
+    /* ── Top header: 3 columns ── */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #1a56a0;
+      margin-bottom: 20px;
+    }
+    .header-left {
+      font-size: 9.5pt;
+      line-height: 1.55;
+      color: #1a56a0;
+      font-weight: 700;
+      max-width: 44%;
+    }
+    .header-center {
+      text-align: center;
+      font-size: 28pt;
+      font-weight: 900;
+      color: #1a56a0;
+      border: 3px solid #1a56a0;
+      width: 52px; height: 52px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .header-right {
+      font-size: 9.5pt;
+      line-height: 1.55;
+      text-align: right;
+      direction: rtl;
+      color: #1a56a0;
+      font-weight: 700;
+      max-width: 44%;
+    }
 
-        <p>Monsieur,</p>
+    /* ── Reference table ── */
+    .ref-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    .ref-table td {
+      border: 1px solid #555;
+      padding: 8px 14px;
+      font-size: 10.5pt;
+    }
+    .ref-table .ref-title {
+      font-weight: 700;
+      width: 55%;
+    }
+    .ref-table .ref-info {
+      font-size: 9.5pt;
+      line-height: 1.6;
+    }
 
-        <p>
-          Suite à l'offre de stage que vous avez eu l'amabilité d'accorder à
-          <span class="strong">${fullName || 'Nom Prénom'}</span>
-          étudiant(e) à ${sanitize(instituteNameFr || 'l Institut Supérieur de Gestion Industrielle de Sfax')} inscrit(e) en
-          <span class="strong">${field || 'Filière'}</span>,
-          j'ai le plaisir de confirmer par la présente son affectation à votre honorable établissement
-          pour ce stage <span class="strong">${sanitize(internshipTitle || 'Stage')}</span>
-          du <span class="strong">${sanitize(startDate || 'Date début')}</span>
-          au <span class="strong">${sanitize(endDate || 'Date fin')}</span>.
-        </p>
+    /* ── Body ── */
+    .attention {
+      text-align: center;
+      font-weight: 700;
+      font-size: 12.5pt;
+      margin: 20px 0 24px;
+    }
+    .greeting { margin-bottom: 16px; }
+    .body-para {
+      text-align: justify;
+      text-indent: 24px;
+      margin-bottom: 14px;
+      line-height: 1.75;
+    }
 
-        <p>
-          Je saisis cette occasion pour vous exprimer mes vifs remerciements pour votre précieuse collaboration.
-        </p>
+    /* ── Signature block ── */
+    .signature-block {
+      margin-top: 40px;
+      text-align: center;
+    }
+    .signature-block .sign-title {
+      font-weight: 700;
+      font-size: 12.5pt;
+      margin-bottom: 60px;
+    }
+    .signature-block .sign-name {
+      font-size: 11pt;
+      color: #333;
+    }
 
-        <p>
-          Nous vous signalons que, durant la période de stage, l'étudiant est couvert par la Mutuelle Accident Scolaire et Universitaire.
-        </p>
+    /* ── ISGIS footer ── */
+    .page-footer {
+      margin-top: 50px;
+      border-top: 1px solid #bbb;
+      padding-top: 8px;
+      font-size: 8pt;
+      color: #555;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-left { line-height: 1.5; }
+    .footer-right { text-align: right; line-height: 1.5; }
+    .footer-logo {
+      font-weight: 900; font-size: 18pt;
+      color: #1a56a0; border: 2px solid #1a56a0;
+      padding: 2px 6px; border-radius: 4px;
+    }
 
-        <p>
-          Par ailleurs, je me tiens à votre entière disposition pour tout autre renseignement concernant les stages.
-        </p>
+    @media print {
+      body { padding: 0; }
+      @page { margin: 20mm 18mm 20mm 18mm; }
+    }
+  </style>
+</head>
+<body>
 
-        ${outcomeComment ? `<p><em>${sanitize(outcomeComment)}</em></p>` : ''}
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      République Tunisienne<br>
+      Ministère de l'Enseignement Supérieur<br>
+      Et de la Recherche Scientifique<br>
+      Université de Sfax<br>
+      ${instFr}
+    </div>
+    <div class="header-center">i</div>
+    <div class="header-right">
+      الجمهورية التونسية<br>
+      وزارة التعليم العالي<br>
+      والبحث العلمي<br>
+      جامعة صفاقس<br>
+      ${instAr}
+    </div>
+  </div>
 
-        <p>Veuillez croire, Madame, Monsieur, à l'expression de ma haute considération.</p>
+  <!-- Reference table -->
+  <table class="ref-table">
+    <tr>
+      <td class="ref-title">Lettre d'affectation à un stage</td>
+      <td class="ref-info">
+        <strong>Réf :</strong> ID.FO15<br>
+        <strong>Version :</strong> 01<br>
+        <strong>Date :</strong> ${date}
+      </td>
+    </tr>
+  </table>
 
-        <div class="footer-sign">
-          <div>${sanitize(signatoryTitle || 'La Direction des Stages')}</div>
-          <div style="margin-top: 12px; font-weight: 400;">${sanitize(signatoryName || '')}</div>
-          <div style="margin-top: 10px; font-size: 13px; color: #4b5563;">Destinataire: ${sanitize(directorName || 'Directeur société')}</div>
-        </div>
-      </body>
-    </html>
-  `;
+  <!-- Addressee -->
+  <p class="attention">A L'attention de M. le Directeur de la société : ${company}</p>
+
+  <!-- Body -->
+  <p class="greeting">Monsieur,</p>
+
+  <p class="body-para">
+    Suite à l'offre de stage que vous avez eu l'amabilité d'accorder à
+    <strong>${fullName}</strong> étudiant(e) à l'${instFr}, inscrit(e) en
+    <strong>${field}</strong>,
+    j'ai le plaisir de confirmer par la présente son affectation à votre honorable établissement
+    et ce pour un stage <strong>${title}</strong>
+    du <strong>${start}</strong> au <strong>${end}</strong>.
+  </p>
+
+  <p class="body-para">
+    Je saisis cette occasion pour vous exprimer mes vifs remerciements pour votre précieuse collaboration.
+  </p>
+
+  <p class="body-para">
+    Nous vous signalons, que durant la période de stage, l'étudiant est couvert par la
+    Mutuelle Accident Scolaire et Universitaire-MASU.
+  </p>
+
+  <p class="body-para">
+    Par ailleurs, je me tiens à votre entière disposition pour tout autre renseignement concernant
+    les stages ( service.stages@isgis.usf.tn).
+  </p>
+
+  ${outcomeComment ? `<p class="body-para"><em>${sanitize(outcomeComment)}</em></p>` : ''}
+
+  <p class="body-para">Veuillez croire, Madame, Monsieur, à l'expression de ma haute considération.</p>
+
+  <!-- Signature -->
+  <div class="signature-block">
+    <div class="sign-title">${signTitle}</div>
+    <div class="sign-name">${signName}</div>
+  </div>
+
+  <!-- Footer -->
+  <div class="page-footer">
+    <div class="footer-left">
+      Technopôle de Sfax, Route de Tunis Km 10 B.P. 1164 – 3018 Sfax, Tunisie<br>
+      Tél : 74 863 090 / Fax : 74 863 092<br>
+      Email : direction.isgis@isgis.usf.tn &nbsp;|&nbsp; Site Web : www.isgis.rnu.tn
+    </div>
+    <div style="text-align:center">
+      <span class="footer-logo">ISG</span>
+    </div>
+    <div class="footer-right">
+      القطب التكنولوجي، طريق تونس كلم 10 ص.ب : 1164 – 3018 صفاقس<br>
+      الهاتف: 74 863 090 / الفاكس: 74 863 092<br>
+      البريد الإلكتروني: direction.isgis@isgis.usf.tn
+    </div>
+  </div>
+
+  <script>window.onload = function(){ window.print(); };</script>
+</body>
+</html>`;
 }
 
 // @desc    Get candidate profile
@@ -658,7 +820,7 @@ exports.generateAssignmentLetter = async (req, res) => {
 
     const assignmentDoc = {
       id: `${Date.now()}_${Math.random().toString(36).substr(2,8)}`,
-      name: `Lettre_affectation_${sanitize(candidate.userId?.lastName || 'candidat')}.html`,
+      name: `Lettre_affectation_${sanitize(candidate.userId?.lastName || 'candidat')}_${sanitize(candidate.userId?.firstName || '')}.html`,
       type: 'attestation',
       content: html,
       status: 'valide',
