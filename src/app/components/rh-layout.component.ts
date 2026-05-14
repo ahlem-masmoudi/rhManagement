@@ -1364,7 +1364,7 @@ export class RhLayoutComponent implements OnInit, OnDestroy {
     if (role === 'rh_offres') return 'Resp. Offres';
     if (role === 'rh_candidatures') return 'Resp. Candidatures';
     if (role === 'admin') return 'Administrateur';
-    return 'Admin';
+    return 'Admin RH';
   }
 
   registerFingerprint(): void {
