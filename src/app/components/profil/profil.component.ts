@@ -1729,8 +1729,8 @@ export class ProfilComponent implements OnInit {
     if (!this.candidate || !this.canGenerateAssignmentLetter()) return;
     const existingEval = (this.candidateApplications[0] as any)?.evaluation;
     this.assignmentForm = {
-      instituteNameFr: 'Institut Supérieur de Gestion Industrielle de Sfax',
-      instituteNameAr: 'المعهد العالي للتصرف الصناعي بصفاقس',
+      instituteNameFr: this.candidate?.school || '',
+      instituteNameAr: '',
       logoText: 'ISGI',
       letterDate: this.todayLabel,
       companyName: 'Informatique net',

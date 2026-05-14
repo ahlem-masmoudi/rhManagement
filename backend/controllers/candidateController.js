@@ -4,6 +4,15 @@ const User = require('../models/User');
 const Application = require('../models/Application');
 const { scoreResumeAgainstOffer } = require('../utils/scoring');
 const { sendAcceptanceEmail } = require('../services/emailService');
+const path = require('path');
+const fs = require('fs');
+
+const _coatOfArmsDataUri = (() => {
+  try {
+    const buf = fs.readFileSync(path.join(__dirname, '../coat_of_arms_tn.png'));
+    return 'data:image/png;base64,' + buf.toString('base64');
+  } catch { return ''; }
+})();
 
 function sanitize(value) {
   return String(value || '').trim();
@@ -84,8 +93,8 @@ function buildAssignmentLetterHtml({
   const lastName  = sanitize(candidate.userId?.lastName);
   const fullName  = `${firstName} ${lastName}`.trim();
   const field     = sanitize(specialty || candidate.expectedDegree || candidate.educationLevel || '');
-  const instFr    = sanitize(instituteNameFr || "Institut Supérieur de Gestion Industrielle de Sfax");
-  const instAr    = sanitize(instituteNameAr || "المعهد العالي للتصرف الصناعي بصفاقس");
+  const instFr    = sanitize(instituteNameFr || candidate.school || '');
+  const instAr    = sanitize(instituteNameAr || candidate.school || '');
   const date      = sanitize(letterDate || new Date().toLocaleDateString('fr-FR'));
   const company   = sanitize(companyName || 'À compléter');
   const director  = sanitize(directorName || 'Directeur société');
@@ -129,14 +138,15 @@ function buildAssignmentLetterHtml({
     }
     .header-center {
       text-align: center;
-      font-size: 28pt;
-      font-weight: 900;
-      color: #1a56a0;
-      border: 3px solid #1a56a0;
-      width: 52px; height: 52px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
+      padding: 0 8px;
+    }
+    .header-center img {
+      width: 65px;
+      height: auto;
     }
     .header-right {
       font-size: 9.5pt;
@@ -198,25 +208,6 @@ function buildAssignmentLetterHtml({
       color: #333;
     }
 
-    /* ── ISGIS footer ── */
-    .page-footer {
-      margin-top: 50px;
-      border-top: 1px solid #bbb;
-      padding-top: 8px;
-      font-size: 8pt;
-      color: #555;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .footer-left { line-height: 1.5; }
-    .footer-right { text-align: right; line-height: 1.5; }
-    .footer-logo {
-      font-weight: 900; font-size: 18pt;
-      color: #1a56a0; border: 2px solid #1a56a0;
-      padding: 2px 6px; border-radius: 4px;
-    }
-
     @media print {
       body { padding: 0; }
       @page { margin: 20mm 18mm 20mm 18mm; }
@@ -231,15 +222,15 @@ function buildAssignmentLetterHtml({
       République Tunisienne<br>
       Ministère de l'Enseignement Supérieur<br>
       Et de la Recherche Scientifique<br>
-      Université de Sfax<br>
       ${instFr}
     </div>
-    <div class="header-center">i</div>
+    <div class="header-center">
+      <img src="${_coatOfArmsDataUri}" alt="République Tunisienne" />
+    </div>
     <div class="header-right">
       الجمهورية التونسية<br>
       وزارة التعليم العالي<br>
       والبحث العلمي<br>
-      جامعة صفاقس<br>
       ${instAr}
     </div>
   </div>
@@ -282,7 +273,7 @@ function buildAssignmentLetterHtml({
 
   <p class="body-para">
     Par ailleurs, je me tiens à votre entière disposition pour tout autre renseignement concernant
-    les stages ( service.stages@isgis.usf.tn).
+    les stages.
   </p>
 
   ${outcomeComment ? `<p class="body-para"><em>${sanitize(outcomeComment)}</em></p>` : ''}
@@ -293,23 +284,6 @@ function buildAssignmentLetterHtml({
   <div class="signature-block">
     <div class="sign-title">${signTitle}</div>
     <div class="sign-name">${signName}</div>
-  </div>
-
-  <!-- Footer -->
-  <div class="page-footer">
-    <div class="footer-left">
-      Technopôle de Sfax, Route de Tunis Km 10 B.P. 1164 – 3018 Sfax, Tunisie<br>
-      Tél : 74 863 090 / Fax : 74 863 092<br>
-      Email : direction.isgis@isgis.usf.tn &nbsp;|&nbsp; Site Web : www.isgis.rnu.tn
-    </div>
-    <div style="text-align:center">
-      <span class="footer-logo">ISG</span>
-    </div>
-    <div class="footer-right">
-      القطب التكنولوجي، طريق تونس كلم 10 ص.ب : 1164 – 3018 صفاقس<br>
-      الهاتف: 74 863 090 / الفاكس: 74 863 092<br>
-      البريد الإلكتروني: direction.isgis@isgis.usf.tn
-    </div>
   </div>
 
   <script>window.onload = function(){ window.print(); };</script>
