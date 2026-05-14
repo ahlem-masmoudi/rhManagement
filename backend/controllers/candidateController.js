@@ -139,10 +139,11 @@ function buildAssignmentLetterHtml({
     .header-center {
       text-align: center;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       flex-shrink: 0;
       padding: 0 8px;
+      padding-top: 2px;
     }
     .header-center img {
       width: 65px;
