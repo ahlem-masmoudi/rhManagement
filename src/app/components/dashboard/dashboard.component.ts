@@ -470,7 +470,7 @@ const STATUS_COLORS: Record<string, string> = {
           </div>
         </div>
 
-        <!-- Geographic map full-width -->
+        <!-- Geographic map — with school + department filters -->
         <div class="chart-card chart-span-12" style="--ca:#EC4899">
           <div class="chart-header">
             <div class="chart-title-wrap">
@@ -482,8 +482,89 @@ const STATUS_COLORS: Record<string, string> = {
                 <div class="chart-subtitle">Répartition des candidats par ville</div>
               </div>
             </div>
+            <span class="filter-badge" *ngIf="selectedMapSchools.length || selectedMapDepartments.length">
+              <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-4 4A1 1 0 016 19v-7.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/></svg>
+              {{ selectedMapSchools.length + selectedMapDepartments.length }} filtre(s)
+            </span>
           </div>
-          <div id="chart-cities" style="min-height:400px"></div>
+          <div class="chart-with-filters">
+            <div class="filter-panel">
+              <p class="filter-panel-head">Filtres</p>
+              <div class="filter-section">
+                <div class="filter-section-label">
+                  <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/></svg>
+                  Établissement
+                </div>
+                <div class="filter-list">
+                  <label class="filter-item" *ngFor="let s of allSchools">
+                    <input type="checkbox" [checked]="selectedMapSchools.includes(s.name)" (change)="toggleMapSchool(s.name)">
+                    <span class="filter-item-text">{{ s.name }}</span>
+                    <span class="filter-count">{{ s.count }}</span>
+                  </label>
+                </div>
+              </div>
+              <div class="filter-section">
+                <div class="filter-section-label">
+                  <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"/></svg>
+                  Département
+                </div>
+                <div class="filter-list">
+                  <label class="filter-item" *ngFor="let dept of allDepartments">
+                    <input type="checkbox" [checked]="selectedMapDepartments.includes(dept.name)" (change)="toggleMapDepartment(dept.name)">
+                    <span class="filter-item-text">{{ dept.name }}</span>
+                    <span class="filter-count">{{ dept.count }}</span>
+                  </label>
+                </div>
+              </div>
+              <button class="filter-reset-btn" *ngIf="selectedMapSchools.length || selectedMapDepartments.length" (click)="resetMapFilters()">Réinitialiser</button>
+            </div>
+            <div class="filter-chart-area">
+              <div class="filter-loading-overlay" *ngIf="mapFiltering"><div class="filter-spinner"></div></div>
+              <div id="chart-cities" style="min-height:440px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dept × Offres — bubble chart with region filter -->
+        <div class="chart-card chart-span-12" style="--ca:#10B981">
+          <div class="chart-header">
+            <div class="chart-title-wrap">
+              <div class="chart-icon" style="background:linear-gradient(135deg,#10B981,#34D399)">
+                <svg width="15" height="15" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <div class="chart-title">Performance par département</div>
+                <div class="chart-subtitle">Candidatures · Taux d'acceptation · Volume d'offres</div>
+              </div>
+            </div>
+            <span class="filter-badge" *ngIf="selectedDeptOffersRegions.length">
+              <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-4 4A1 1 0 016 19v-7.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/></svg>
+              {{ selectedDeptOffersRegions.length }} filtre(s)
+            </span>
+          </div>
+          <div class="chart-with-filters">
+            <div class="filter-panel">
+              <p class="filter-panel-head">Filtres</p>
+              <div class="filter-section">
+                <div class="filter-section-label">
+                  <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                  Région candidat
+                </div>
+                <div class="filter-list">
+                  <label class="filter-item" *ngFor="let loc of allLocations">
+                    <input type="checkbox" [checked]="selectedDeptOffersRegions.includes(loc.city)" (change)="toggleDeptOffersRegion(loc.city)">
+                    <span class="filter-item-text">{{ loc.city }}</span>
+                    <span class="filter-count">{{ loc.count }}</span>
+                  </label>
+                </div>
+              </div>
+              <button class="filter-reset-btn" *ngIf="selectedDeptOffersRegions.length" (click)="resetDeptOffersFilters()">Réinitialiser</button>
+            </div>
+            <div class="filter-chart-area">
+              <div class="filter-loading-overlay" *ngIf="deptOffersFiltering"><div class="filter-spinner"></div></div>
+              <div id="chart-dept-offers" style="height:400px"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -744,6 +825,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectedScoresDepartments: string[] = [];
   scoresFiltering = false;
 
+  // Filter state — Tab 3 map
+  selectedMapSchools:     string[] = [];
+  selectedMapDepartments: string[] = [];
+  mapFiltering = false;
+
+  // Filter state — Tab 3 dept-offers bubble
+  selectedDeptOffersRegions: string[] = [];
+  deptOffersFiltering = false;
+
   // Available options (loaded once)
   allLocations:   { city: string; count: number }[] = [];
   allDepartments: { name: string; count: number }[] = [];
@@ -759,7 +849,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    ['donut','monthly','schools','scores','skills','period','cities','departments','offers','education'].forEach(id => {
+    ['donut','monthly','schools','scores','skills','period','cities','departments','offers','education','dept-offers'].forEach(id => {
       const el = document.getElementById(`chart-${id}`);
       if (el && (window as any)['Plotly']) Plotly.purge(el);
     });
@@ -814,9 +904,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   toggleSchool(name: string)             { this.selectedSchools     = this.toggle(this.selectedSchools,     name); this.loadFilteredOffers(); }
   toggleEducationRegion(city: string)   { this.selectedEducationRegions   = this.toggle(this.selectedEducationRegions,   city); this.loadFilteredEducation(); }
   toggleScoresDepartment(name: string)  { this.selectedScoresDepartments  = this.toggle(this.selectedScoresDepartments,  name); this.loadFilteredScores(); }
+  toggleMapSchool(name: string)         { this.selectedMapSchools      = this.toggle(this.selectedMapSchools,      name); this.loadFilteredLocations(); }
+  toggleMapDepartment(name: string)     { this.selectedMapDepartments  = this.toggle(this.selectedMapDepartments,  name); this.loadFilteredLocations(); }
+  toggleDeptOffersRegion(city: string)  { this.selectedDeptOffersRegions = this.toggle(this.selectedDeptOffersRegions, city); this.loadFilteredDeptOffers(); }
 
-  resetDonutFilters()    { this.selectedLocations = []; this.selectedDepartments = []; setTimeout(() => this.renderDonut(this.analyticsData?.pipeline), 0); }
-  resetOffersFilters()   { this.selectedEducation = []; this.selectedSchools = [];     setTimeout(() => this.renderOfferStats(this.analyticsData?.offerStats), 0); }
+  resetDonutFilters()      { this.selectedLocations = []; this.selectedDepartments = [];         setTimeout(() => this.renderDonut(this.analyticsData?.pipeline), 0); }
+  resetOffersFilters()     { this.selectedEducation = []; this.selectedSchools = [];             setTimeout(() => this.renderOfferStats(this.analyticsData?.offerStats), 0); }
+  resetMapFilters()        { this.selectedMapSchools = []; this.selectedMapDepartments = [];     setTimeout(() => this.renderMap(this.analyticsData?.locations), 0); }
+  resetDeptOffersFilters() { this.selectedDeptOffersRegions = [];                                setTimeout(() => this.renderDeptOffers(this.analyticsData?.deptOffers), 0); }
   resetEducationFilters(){ this.selectedEducationRegions = [];                         setTimeout(() => this.renderEducation(this.analyticsData?.educationLevels), 0); }
   resetScoresFilters()   { this.selectedScoresDepartments = [];                        setTimeout(() => this.renderScores(this.analyticsData?.scores), 0); }
 
@@ -880,6 +975,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadFilteredLocations(): void {
+    if (!this.selectedMapSchools.length && !this.selectedMapDepartments.length) {
+      setTimeout(() => this.renderMap(this.analyticsData?.locations), 0); return;
+    }
+    this.mapFiltering = true;
+    const params = this.buildParams([
+      { key: 'schools',     vals: this.selectedMapSchools },
+      { key: 'departments', vals: this.selectedMapDepartments },
+    ]);
+    this.http.get<any>(`${environment.apiUrl}/analytics/locations`, { headers: this.authHeaders(), params }).subscribe({
+      next:  r => { this.mapFiltering = false; setTimeout(() => this.renderMap(r.data.locations), 0); },
+      error: () => { this.mapFiltering = false; },
+    });
+  }
+
+  private loadFilteredDeptOffers(): void {
+    if (!this.selectedDeptOffersRegions.length) {
+      setTimeout(() => this.renderDeptOffers(this.analyticsData?.deptOffers), 0); return;
+    }
+    this.deptOffersFiltering = true;
+    const params = this.buildParams([{ key: 'regions', vals: this.selectedDeptOffersRegions }]);
+    this.http.get<any>(`${environment.apiUrl}/analytics/dept-offers`, { headers: this.authHeaders(), params }).subscribe({
+      next:  r => { this.deptOffersFiltering = false; setTimeout(() => this.renderDeptOffers(r.data.deptOffers), 0); },
+      error: () => { this.deptOffersFiltering = false; },
+    });
+  }
+
   // ── Monthly table ─────────────────────────────────────────────
 
   private buildMonthlyTable(monthly: any[]): void {
@@ -911,6 +1033,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.renderEducation(d.educationLevels);
       this.renderScores(d.scores);
       this.renderMap(d.locations);
+      this.renderDeptOffers(d.deptOffers);
     }
   }
 
@@ -1202,6 +1325,47 @@ export class DashboardComponent implements OnInit, OnDestroy {
         showlakes: false,   showrivers: false,
         domain: { x: [0, 1], y: [0, 1] },
       },
+    }, this.cfg);
+  }
+
+  private renderDeptOffers(deptOffers: any[]): void {
+    if (!deptOffers?.length) return;
+    const el = document.getElementById('chart-dept-offers');
+    if (!el) return;
+
+    const sorted = [...deptOffers].sort((a, b) => b.applications - a.applications);
+    const palette = ['#4F46E5','#7C3AED','#0EA5E9','#059669','#F59E0B','#EF4444','#DB2777','#64748B','#0891B2','#6366F1'];
+    const maxOffers = Math.max(...sorted.map(d => d.offers), 1);
+
+    Plotly.newPlot('chart-dept-offers', [{
+      type: 'scatter',
+      mode: 'markers+text',
+      x: sorted.map(d => d.applications),
+      y: sorted.map(d => d.rate),
+      text: sorted.map(d => d.department),
+      textposition: sorted.map((_, i) => i % 2 === 0 ? 'top center' : 'bottom center') as any,
+      textfont: { size: 11, color: '#334155', family: 'Inter, sans-serif' },
+      marker: {
+        size: sorted.map(d => Math.max(28, Math.min(72, 28 + (d.offers / maxOffers) * 44))),
+        color: sorted.map((_, i) => palette[i % palette.length]),
+        line: { color: 'white', width: 2.5 },
+        sizemode: 'diameter' as any,
+        opacity: 0.88,
+      },
+      customdata: sorted.map(d => [d.department, d.applications, d.offers, d.accepted, d.rate]),
+      hovertemplate: '<b>%{customdata[0]}</b><br>%{customdata[1]} candidatures<br>%{customdata[2]} offres<br>%{customdata[3]} acceptés<br>Taux : <b>%{customdata[4]}%</b><extra></extra>',
+      hoverlabel: this.hl,
+    }], {
+      ...this.base(120),
+      margin: { t: 36, b: 56, l: 65, r: 30 },
+      xaxis: this.ax({ title: { text: 'Nombre de candidatures', font: { size: 11, color: '#94A3B8' }, standoff: 10 } }),
+      yaxis: this.ax({ title: { text: "Taux d'acceptation (%)", font: { size: 11, color: '#94A3B8' }, standoff: 10 }, rangemode: 'tozero' }),
+      annotations: [{
+        x: 0.99, y: 1.06, xref: 'paper', yref: 'paper',
+        text: '⬤ Taille = nombre d\'offres',
+        showarrow: false, font: { size: 10, color: '#94A3B8', family: 'Inter' },
+        align: 'right', xanchor: 'right',
+      }],
     }, this.cfg);
   }
 

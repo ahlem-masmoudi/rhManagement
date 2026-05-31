@@ -106,19 +106,18 @@ exports.getAnalytics = async (req, res) => {
         { $count: 'n' },
       ]),
 
-      // Departments — applications grouped by offer department
+      // Departments — enriched with offers count + acceptance
       Application.aggregate([
-        {
-          $lookup: {
-            from: 'offers',
-            localField: 'offer',
-            foreignField: '_id',
-            as: 'offerData',
-          },
-        },
+        { $lookup: { from: 'offers', localField: 'offer', foreignField: '_id', as: 'offerData' } },
         { $unwind: '$offerData' },
         { $match: { 'offerData.department': { $exists: true, $ne: null, $ne: '' } } },
-        { $group: { _id: '$offerData.department', count: { $sum: 1 } } },
+        { $group: {
+          _id: '$offerData.department',
+          count:    { $sum: 1 },
+          accepted: { $sum: { $cond: [{ $eq: ['$status', 'offre_acceptee'] }, 1, 0] } },
+          offerIds: { $addToSet: '$offerData._id' },
+        }},
+        { $project: { count: 1, accepted: 1, offers: { $size: '$offerIds' } } },
         { $sort: { count: -1 } },
         { $limit: 10 },
       ]),
@@ -172,6 +171,13 @@ exports.getAnalytics = async (req, res) => {
           .filter(d => d._id !== 'other')
           .map(d => ({ range: `${d._id}–${d._id + 9}%`, count: d.count })),
         departments:     departmentsRaw.map(d => ({ name: d._id, count: d.count })),
+        deptOffers:      departmentsRaw.map(d => ({
+          department:   d._id,
+          applications: d.count,
+          offers:       d.offers   || 0,
+          accepted:     d.accepted || 0,
+          rate: d.count > 0 ? Math.round(d.accepted / d.count * 1000) / 10 : 0,
+        })),
         educationLevels: educationRaw.map(d => ({ name: d._id, count: d.count })),
         offerStats:      offerStatsRaw.map(d => ({
           title:   d.title || 'Sans titre',
@@ -316,6 +322,87 @@ exports.getFilteredScores = async (req, res) => {
     res.json({ success: true, data: { scores } });
   } catch (err) {
     console.error('Filtered scores error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getFilteredLocations = async (req, res) => {
+  try {
+    const toArr = v => (v ? (Array.isArray(v) ? v : [v]) : []);
+    const schools     = toArr(req.query.schools);
+    const departments = toArr(req.query.departments);
+
+    if (!schools.length && !departments.length) {
+      const raw = await Candidate.aggregate([
+        { $match: { location: { $exists: true, $ne: null, $ne: '' } } },
+        { $group: { _id: '$location', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }, { $limit: 12 },
+      ]);
+      return res.json({ success: true, data: { locations: raw.map(d => ({ city: d._id, count: d.count })) } });
+    }
+
+    const stages = [
+      { $lookup: { from: 'offers',     localField: 'offer',      foreignField: '_id', as: 'offerData'     } },
+      { $unwind: { path: '$offerData',     preserveNullAndEmptyArrays: !departments.length } },
+      { $lookup: { from: 'candidates', localField: 'candidate',  foreignField: '_id', as: 'candidateData' } },
+      { $unwind: { path: '$candidateData', preserveNullAndEmptyArrays: false } },
+    ];
+    const matchStage = {};
+    if (departments.length) matchStage['offerData.department']    = { $in: departments };
+    if (schools.length)     matchStage['candidateData.school']    = { $in: schools };
+    stages.push({ $match: matchStage });
+    stages.push(
+      { $match: { 'candidateData.location': { $exists: true, $ne: null, $ne: '' } } },
+      { $group: { _id: { cid: '$candidate', location: '$candidateData.location' } } },
+      { $group: { _id: '$_id.location', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }, { $limit: 12 },
+    );
+    const raw = await Application.aggregate(stages);
+    res.json({ success: true, data: { locations: raw.map(d => ({ city: d._id, count: d.count })) } });
+  } catch (err) {
+    console.error('Filtered locations error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getDeptOffers = async (req, res) => {
+  try {
+    const toArr = v => (v ? (Array.isArray(v) ? v : [v]) : []);
+    const regions = toArr(req.query.regions);
+
+    const stages = [
+      { $lookup: { from: 'offers', localField: 'offer', foreignField: '_id', as: 'offerData' } },
+      { $unwind: { path: '$offerData', preserveNullAndEmptyArrays: false } },
+    ];
+    if (regions.length) {
+      stages.push(
+        { $lookup: { from: 'candidates', localField: 'candidate', foreignField: '_id', as: 'candidateData' } },
+        { $unwind: { path: '$candidateData', preserveNullAndEmptyArrays: false } },
+        { $match: { 'candidateData.location': { $in: regions } } },
+      );
+    }
+    stages.push(
+      { $match: { 'offerData.department': { $exists: true, $ne: null, $ne: '' } } },
+      { $group: {
+        _id:      '$offerData.department',
+        applications: { $sum: 1 },
+        accepted:     { $sum: { $cond: [{ $eq: ['$status', 'offre_acceptee'] }, 1, 0] } },
+        offerIds:     { $addToSet: '$offerData._id' },
+      }},
+      { $project: { applications: 1, accepted: 1, offers: { $size: '$offerIds' } } },
+      { $sort: { applications: -1 } },
+      { $limit: 10 },
+    );
+    const raw = await Application.aggregate(stages);
+    res.json({ success: true, data: { deptOffers: raw.map(d => ({
+      department:   d._id,
+      applications: d.applications,
+      offers:       d.offers,
+      accepted:     d.accepted,
+      rate: d.applications > 0 ? Math.round(d.accepted / d.applications * 1000) / 10 : 0,
+    })) } });
+  } catch (err) {
+    console.error('Dept offers error:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
