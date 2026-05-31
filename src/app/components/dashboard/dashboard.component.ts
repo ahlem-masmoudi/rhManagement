@@ -71,16 +71,6 @@ const STATUS_COLORS: Record<string, string> = {
             <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
           </div>
         </div>
-        <div class="kpi-card" style="--kc:#10B981;--ks:rgba(16,185,129,.08)">
-          <div class="kpi-body">
-            <div class="kpi-val">{{ kpi.activeOffers }}</div>
-            <div class="kpi-lbl">Offres actives</div>
-            <div class="kpi-progress"><div style="width:100%;background:#10B981"></div></div>
-          </div>
-          <div class="kpi-icon" style="background:rgba(16,185,129,.1);color:#10B981">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/><path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/></svg>
-          </div>
-        </div>
         <div class="kpi-card" style="--kc:#F59E0B;--ks:rgba(245,158,11,.08)">
           <div class="kpi-body">
             <div class="kpi-val">{{ kpi.totalApplications }}</div>
@@ -480,20 +470,20 @@ const STATUS_COLORS: Record<string, string> = {
           </div>
         </div>
 
-        <!-- Cities full-width -->
+        <!-- Geographic map full-width -->
         <div class="chart-card chart-span-12" style="--ca:#EC4899">
           <div class="chart-header">
             <div class="chart-title-wrap">
               <div class="chart-icon" style="background:linear-gradient(135deg,#EC4899,#F472B6)">
-                <svg width="15" height="15" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                <svg width="15" height="15" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z" clip-rule="evenodd"/></svg>
               </div>
               <div>
-                <div class="chart-title">Répartition géographique</div>
-                <div class="chart-subtitle">Villes d'origine des candidats</div>
+                <div class="chart-title">Distribution géographique</div>
+                <div class="chart-subtitle">Répartition des candidats par ville</div>
               </div>
             </div>
           </div>
-          <div id="chart-cities" class="chart-body"></div>
+          <div id="chart-cities" style="min-height:400px"></div>
         </div>
       </div>
 
@@ -525,7 +515,7 @@ const STATUS_COLORS: Record<string, string> = {
     .alert-error { background: #FFF1F2; border: 1px solid #FECDD3; color: #BE123C; padding: 12px 16px; border-radius: 14px; margin-bottom: 22px; font-size: 13px; }
 
     /* ── KPI Cards ── */
-    .kpi-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 14px; margin-bottom: 24px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; margin-bottom: 24px; }
     .kpi-card {
       background: white;
       border-radius: 20px;
@@ -700,6 +690,9 @@ const STATUS_COLORS: Record<string, string> = {
       .kpi-grid { grid-template-columns: repeat(3,1fr); }
       .chart-span-8 { grid-column: span 12; }
       .chart-span-4 { grid-column: span 6; }
+    }
+    @media (max-width:860px) {
+      .kpi-grid { grid-template-columns: repeat(3,1fr); }
     }
     @media (max-width:900px) {
       .kpi-grid { grid-template-columns: repeat(2,1fr); }
@@ -917,7 +910,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.renderSkills(d.skills);
       this.renderEducation(d.educationLevels);
       this.renderScores(d.scores);
-      this.renderCities(d.locations);
+      this.renderMap(d.locations);
     }
   }
 
@@ -1109,22 +1102,99 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }, this.cfg);
   }
 
-  private renderCities(locations: any[]): void {
+  private readonly CITY_COORDS: Record<string, [number, number]> = {
+    'Tunis': [36.8065, 10.1815], 'Sfax': [34.7406, 10.7603],
+    'Sousse': [35.8254, 10.6360], 'Kairouan': [35.6773, 10.0962],
+    'Bizerte': [37.2744, 9.8739], 'Gabes': [33.8815, 10.0983],
+    'Gabès': [33.8815, 10.0983], 'Ariana': [36.8625, 10.1956],
+    'Gafsa': [34.4250, 8.7842], 'Monastir': [35.7780, 10.8311],
+    'Ben Arous': [36.7531, 10.2282], 'Nabeul': [36.4561, 10.7376],
+    'Kasserine': [35.1676, 8.8365], 'Medenine': [33.3550, 10.5055],
+    'Médenine': [33.3550, 10.5055], 'Beja': [36.7339, 9.1817],
+    'Béja': [36.7339, 9.1817], 'Jendouba': [36.5012, 8.7745],
+    'Mahdia': [35.5047, 11.0622], 'Sidi Bouzid': [35.0382, 9.4858],
+    'Tozeur': [33.9197, 8.1335], 'Siliana': [36.0847, 9.3708],
+    'Zaghouan': [36.4026, 10.1436], 'Manouba': [36.8093, 10.0993],
+    'La Marsa': [36.8776, 10.3248], 'Hammamet': [36.3997, 10.6211],
+    'Djerba': [33.8076, 10.8451], 'Jerba': [33.8076, 10.8451],
+    'Kebili': [33.7052, 8.9650], 'Kébili': [33.7052, 8.9650],
+    'Tataouine': [32.9290, 10.4508], 'El Kef': [36.1820, 8.7095],
+    'Msaken': [35.7296, 10.5813], 'Zarzis': [33.5026, 11.1122],
+    'Ettadhamen': [36.8367, 10.1033], 'Moknine': [35.6424, 10.8957],
+    'Menzel Bourguiba': [37.1525, 9.7870], 'Mateur': [37.0476, 9.6641],
+    'Ksar Hellal': [35.6430, 10.8903], 'Korba': [36.5740, 10.8609],
+  };
+
+  private renderMap(locations: any[]): void {
     if (!locations?.length) return;
-    const top = locations.slice(0, 12).reverse();
-    const maxV = Math.max(...top.map(l => l.count));
+
+    const top = locations.slice(0, 15);
+    const mapped = top
+      .map(l => ({ city: l.city, count: l.count, coord: this.CITY_COORDS[l.city] }))
+      .filter(l => l.coord);
+
+    // Fall back to horizontal bar chart if we can't map the cities
+    if (mapped.length < 2) {
+      const rev = top.reverse();
+      const maxV = Math.max(...rev.map(l => l.count));
+      Plotly.newPlot('chart-cities', [{
+        type: 'bar', orientation: 'h',
+        y: rev.map(l => l.city), x: rev.map(l => l.count),
+        marker: { color: rev.map(l => {
+          const t = l.count / maxV;
+          return `rgba(${Math.round(236+(16-236)*t)},${Math.round(72+(185-72)*t)},${Math.round(153+(129-153)*t)},0.88)`;
+        })},
+        text: rev.map(l => String(l.count)), textposition: 'outside',
+        hovertemplate: '<b>%{y}</b><br>%{x} candidats<extra></extra>',
+      }], { ...this.base(rev.length * 4), margin: { t:16,b:24,l:130,r:52 }, yaxis: this.ax({ automargin:true, showgrid:false }) }, this.cfg);
+      return;
+    }
+
+    const maxCount = Math.max(...mapped.map(l => l.count));
+
     Plotly.newPlot('chart-cities', [{
-      type: 'bar', orientation: 'h',
-      y: top.map(l => l.city), x: top.map(l => l.count),
-      marker: { color: top.map(l => {
-        const t = l.count / maxV;
-        return `rgba(${Math.round(236 + (16-236)*t)},${Math.round(72 + (185-72)*t)},${Math.round(153 + (129-153)*t)},0.88)`;
-      })},
-      text: top.map(l => String(l.count)), textposition: 'outside',
-      hovertemplate: '<b>%{y}</b><br>%{x} candidats<extra></extra>',
+      type: 'scattergeo',
+      mode: 'markers',
+      lat: mapped.map(l => l.coord![0]),
+      lon: mapped.map(l => l.coord![1]),
+      customdata: mapped.map(l => [l.city, l.count]),
+      marker: {
+        size: mapped.map(l => Math.max(14, Math.min(54, 14 + (l.count / maxCount) * 40))),
+        color: mapped.map(l => l.count),
+        colorscale: [[0,'#C7D2FE'],[0.35,'#818CF8'],[0.7,'#4F46E5'],[1,'#3730A3']],
+        showscale: true,
+        colorbar: {
+          thickness: 12, len: 0.55, x: 1.01,
+          title: { text: 'Candidats', font: { size: 11, color: '#64748B' } },
+          tickfont: { size: 9.5, color: '#94A3B8' },
+          outlinewidth: 0,
+        },
+        line: { color: 'white', width: 2.5 },
+        opacity: 0.88,
+        sizemode: 'diameter',
+      },
+      hovertemplate: '<b>%{customdata[0]}</b><br>%{customdata[1]} candidats<extra></extra>',
+      hoverlabel: this.hl,
     }], {
-      ...this.base(top.length * 4), margin: { t: 16, b: 24, l: 120, r: 52 },
-      xaxis: this.ax({ showgrid: true }), yaxis: this.ax({ automargin: true, showgrid: false }),
+      paper_bgcolor: 'transparent',
+      font: { family: 'Inter, sans-serif', size: 10, color: '#475569' },
+      margin: { t: 8, b: 8, l: 0, r: 60 },
+      height: 430,
+      hoverlabel: this.hl,
+      geo: {
+        scope: 'world',
+        resolution: 50,
+        center: { lat: 34.5, lon: 9.5 },
+        lonaxis: { range: [7.5, 12.2] },
+        lataxis: { range: [30.5, 38.0] },
+        showland: true,     landcolor: '#F1F5F9',
+        showcoastlines: true, coastlinecolor: '#CBD5E1', coastlinewidth: 1,
+        showocean: true,    oceancolor: '#DBEAFE',
+        showcountries: true, countrycolor: '#E2E8F0', countrywidth: 1,
+        showsubunits: true, subunitcolor: '#E5E7EB',
+        showframe: false,   bgcolor: 'transparent',
+        showlakes: false,   showrivers: false,
+      },
     }, this.cfg);
   }
 

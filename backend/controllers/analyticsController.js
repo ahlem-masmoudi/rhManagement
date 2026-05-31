@@ -96,9 +96,9 @@ exports.getAnalytics = async (req, res) => {
         { $group: { _id: null, avg: { $avg: '$matchingScore' }, total: { $sum: 1 } } },
       ]),
 
-      Candidate.countDocuments({ status: 'offre_acceptee' }),
-      Candidate.countDocuments({ status: { $in: ['offre_acceptee', 'rejete', 'abandonne'] } }),
-      Candidate.countDocuments({ status: 'en_attente_documents' }),
+      Application.countDocuments({ status: 'offre_acceptee' }),
+      Application.countDocuments({ status: { $in: ['offre_acceptee', 'rejete', 'abandonne'] } }),
+      Application.countDocuments({ status: 'en_attente_documents' }),
 
       // Departments — applications grouped by offer department
       Application.aggregate([
@@ -149,7 +149,7 @@ exports.getAnalytics = async (req, res) => {
           totalApplications,
           activeOffers,
           avgScore,
-          acceptanceRate: finalCount > 0 ? Math.round(acceptedCount / finalCount * 1000) / 10 : 0,
+          acceptanceRate: totalApplications > 0 ? Math.round(acceptedCount / totalApplications * 1000) / 10 : 0,
           pendingDocuments: pendingDocs,
         },
         pipeline:  pipelineRaw.map(d => ({ status: d._id, count: d.count })),
