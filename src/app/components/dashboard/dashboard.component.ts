@@ -1151,20 +1151,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     const maxCount = Math.max(...mapped.map(l => l.count));
+    const top6 = new Set(mapped.slice(0, 6).map(l => l.city));
 
     Plotly.newPlot('chart-cities', [{
       type: 'scattergeo',
-      mode: 'markers',
+      mode: 'markers+text',
       lat: mapped.map(l => l.coord![0]),
       lon: mapped.map(l => l.coord![1]),
+      text: mapped.map(l => top6.has(l.city) ? l.city : ''),
+      textposition: mapped.map(l => l.coord![0] > 35.5 ? 'top center' : 'bottom center'),
+      textfont: { size: 11, color: '#1E293B', family: 'Inter, sans-serif' },
       customdata: mapped.map(l => [l.city, l.count]),
       marker: {
-        size: mapped.map(l => Math.max(14, Math.min(54, 14 + (l.count / maxCount) * 40))),
+        size: mapped.map(l => Math.max(18, Math.min(62, 18 + (l.count / maxCount) * 44))),
         color: mapped.map(l => l.count),
         colorscale: [[0,'#C7D2FE'],[0.35,'#818CF8'],[0.7,'#4F46E5'],[1,'#3730A3']],
         showscale: true,
         colorbar: {
-          thickness: 12, len: 0.55, x: 1.01,
+          thickness: 12, len: 0.5, x: 1.01,
           title: { text: 'Candidats', font: { size: 11, color: '#64748B' } },
           tickfont: { size: 9.5, color: '#94A3B8' },
           outlinewidth: 0,
@@ -1179,18 +1183,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
       paper_bgcolor: 'transparent',
       font: { family: 'Inter, sans-serif', size: 10, color: '#475569' },
       margin: { t: 8, b: 8, l: 0, r: 60 },
-      height: 430,
+      height: 490,
       hoverlabel: this.hl,
       geo: {
         scope: 'world',
         resolution: 50,
-        center: { lat: 34.5, lon: 9.5 },
-        lonaxis: { range: [7.5, 12.2] },
-        lataxis: { range: [30.5, 38.0] },
+        center: { lat: 34.0, lon: 9.5 },
+        lonaxis: { range: [5.0, 14.5] },
+        lataxis: { range: [28.5, 38.5] },
         showland: true,     landcolor: '#F1F5F9',
         showcoastlines: true, coastlinecolor: '#CBD5E1', coastlinewidth: 1,
         showocean: true,    oceancolor: '#DBEAFE',
-        showcountries: true, countrycolor: '#E2E8F0', countrywidth: 1,
+        showcountries: true, countrycolor: '#CBD5E1', countrywidth: 1.5,
         showsubunits: true, subunitcolor: '#E5E7EB',
         showframe: false,   bgcolor: 'transparent',
         showlakes: false,   showrivers: false,

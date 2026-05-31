@@ -98,7 +98,13 @@ exports.getAnalytics = async (req, res) => {
 
       Application.countDocuments({ status: 'offre_acceptee' }),
       Application.countDocuments({ status: { $in: ['offre_acceptee', 'rejete', 'abandonne'] } }),
-      Application.countDocuments({ status: 'en_attente_documents' }),
+      Application.aggregate([
+        { $match: { status: 'offre_acceptee' } },
+        { $lookup: { from: 'candidates', localField: 'candidate', foreignField: '_id', as: 'cand' } },
+        { $unwind: { path: '$cand', preserveNullAndEmptyArrays: true } },
+        { $match: { $expr: { $lte: [{ $size: { $ifNull: ['$cand.documents', []] } }, 0] } } },
+        { $count: 'n' },
+      ]),
 
       // Departments — applications grouped by offer department
       Application.aggregate([
@@ -140,6 +146,7 @@ exports.getAnalytics = async (req, res) => {
     ]);
 
     const avgScore = scoredApps.length > 0 ? Math.round(scoredApps[0].avg * 10) / 10 : 0;
+    const pendingDocuments = Array.isArray(pendingDocs) ? (pendingDocs[0]?.n ?? 0) : (pendingDocs ?? 0);
 
     res.json({
       success: true,
@@ -150,7 +157,7 @@ exports.getAnalytics = async (req, res) => {
           activeOffers,
           avgScore,
           acceptanceRate: totalApplications > 0 ? Math.round(acceptedCount / totalApplications * 1000) / 10 : 0,
-          pendingDocuments: pendingDocs,
+          pendingDocuments,
         },
         pipeline:  pipelineRaw.map(d => ({ status: d._id, count: d.count })),
         monthly:   monthlyRaw.map(d => ({
