@@ -19,6 +19,8 @@ exports.getAnalytics = async (req, res) => {
       finalCount,
       pendingDocs,
       departmentsRaw,
+      educationRaw,
+      offerStatsRaw,
     ] = await Promise.all([
       Candidate.countDocuments(),
       Application.countDocuments(),
@@ -114,6 +116,27 @@ exports.getAnalytics = async (req, res) => {
         { $sort: { count: -1 } },
         { $limit: 10 },
       ]),
+
+      // Education levels
+      Candidate.aggregate([
+        { $match: { educationLevel: { $exists: true, $ne: null, $ne: '' } } },
+        { $group: { _id: '$educationLevel', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+
+      // Top offers by application count + acceptance rate
+      Application.aggregate([
+        { $lookup: { from: 'offers', localField: 'offer', foreignField: '_id', as: 'offerData' } },
+        { $unwind: { path: '$offerData', preserveNullAndEmptyArrays: false } },
+        { $group: {
+          _id: '$offerData._id',
+          title: { $first: '$offerData.title' },
+          total: { $sum: 1 },
+          accepted: { $sum: { $cond: [{ $eq: ['$status', 'offre_acceptee'] }, 1, 0] } },
+        }},
+        { $sort: { total: -1 } },
+        { $limit: 8 },
+      ]),
     ]);
 
     const avgScore = scoredApps.length > 0 ? Math.round(scoredApps[0].avg * 10) / 10 : 0;
@@ -141,7 +164,14 @@ exports.getAnalytics = async (req, res) => {
         scores:    scoresRaw
           .filter(d => d._id !== 'other')
           .map(d => ({ range: `${d._id}–${d._id + 9}%`, count: d.count })),
-        departments: departmentsRaw.map(d => ({ name: d._id, count: d.count })),
+        departments:     departmentsRaw.map(d => ({ name: d._id, count: d.count })),
+        educationLevels: educationRaw.map(d => ({ name: d._id, count: d.count })),
+        offerStats:      offerStatsRaw.map(d => ({
+          title:   d.title || 'Sans titre',
+          total:   d.total,
+          accepted: d.accepted,
+          rate:    d.total > 0 ? Math.round(d.accepted / d.total * 1000) / 10 : 0,
+        })),
       },
     });
   } catch (err) {
