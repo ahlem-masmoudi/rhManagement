@@ -341,8 +341,8 @@ import { Offer } from '../../models';
     /* ── Cards Grid ── */
     .grid-3 {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 22px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
     }
 
     .empty-card {
@@ -421,12 +421,12 @@ import { Offer } from '../../models';
     .offer-card .desc-toggle,
     .offer-card .offer-stats,
     .offer-card .offer-actions {
-      padding-left: 22px;
-      padding-right: 22px;
+      padding-left: 14px;
+      padding-right: 14px;
     }
-    .offer-card .offer-header  { padding-top: 22px; }
-    .offer-card .offer-actions { padding-bottom: 20px; }
-    .offer-card .offer-stats   { margin-left: 22px; margin-right: 22px; padding-left: 0; padding-right: 0; }
+    .offer-card .offer-header  { padding-top: 14px; }
+    .offer-card .offer-actions { padding-bottom: 14px; }
+    .offer-card .offer-stats   { margin-left: 14px; margin-right: 14px; padding-left: 0; padding-right: 0; }
 
     .offer-header {
       display: flex;
@@ -436,7 +436,7 @@ import { Offer } from '../../models';
       margin-bottom: 12px;
     }
     .offer-title {
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 800;
       color: #1a0533;
       margin: 0;
@@ -445,12 +445,12 @@ import { Offer } from '../../models';
       letter-spacing: -0.2px;
     }
 
-    .offer-meta { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+    .offer-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
     .meta-item {
       display: flex;
       align-items: center;
-      gap: 5px;
-      font-size: 12.5px;
+      gap: 4px;
+      font-size: 11px;
       color: #7c5aa0;
       font-weight: 500;
     }
@@ -458,22 +458,22 @@ import { Offer } from '../../models';
     .dept-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
+      gap: 5px;
+      padding: 4px 10px;
       background: linear-gradient(135deg, rgba(102,51,153,0.08), rgba(155,68,204,0.08));
       color: #663399;
-      border-radius: 10px;
-      font-size: 12px;
+      border-radius: 8px;
+      font-size: 11px;
       font-weight: 700;
       border: 1px solid rgba(102,51,153,0.14);
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       width: fit-content;
     }
 
     .offer-description {
-      font-size: 13px;
+      font-size: 11.5px;
       color: #6B7280;
-      line-height: 1.65;
+      line-height: 1.55;
       margin: 0 0 4px;
       overflow: hidden;
       display: -webkit-box;
@@ -492,15 +492,15 @@ import { Offer } from '../../models';
     .offer-stats {
       display: flex;
       gap: 0;
-      padding: 14px 16px;
+      padding: 8px 12px;
       background: linear-gradient(135deg, rgba(102,51,153,0.04), rgba(155,68,204,0.04));
-      border-radius: 14px;
-      margin-bottom: 16px;
+      border-radius: 10px;
+      margin-bottom: 10px;
       border: 1px solid rgba(102,51,153,0.07);
     }
     .stat { display: flex; flex-direction: column; gap: 2px; animation: statPop 0.5s 0.3s both; }
     .stat-value {
-      font-size: 26px;
+      font-size: 20px;
       font-weight: 900;
       background: linear-gradient(135deg, #3b1f6b, #9b44cc);
       -webkit-background-clip: text;
