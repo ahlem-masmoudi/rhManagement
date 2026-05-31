@@ -179,3 +179,80 @@ exports.getAnalytics = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+exports.getFilteredPipeline = async (req, res) => {
+  try {
+    const toArr = v => (v ? (Array.isArray(v) ? v : [v]) : []);
+    const regions     = toArr(req.query.regions);
+    const departments = toArr(req.query.departments);
+
+    let pipeline;
+    if (!regions.length && !departments.length) {
+      const raw = await Candidate.aggregate([
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]);
+      pipeline = raw.map(d => ({ status: d._id, count: d.count }));
+    } else {
+      const matchStage = {};
+      if (regions.length)     matchStage['candidateData.location']    = { $in: regions };
+      if (departments.length) matchStage['offerData.department']      = { $in: departments };
+
+      const raw = await Application.aggregate([
+        { $lookup: { from: 'offers',     localField: 'offer',      foreignField: '_id', as: 'offerData'     } },
+        { $unwind: { path: '$offerData',     preserveNullAndEmptyArrays: !departments.length } },
+        { $lookup: { from: 'candidates', localField: 'candidate',  foreignField: '_id', as: 'candidateData' } },
+        { $unwind: '$candidateData' },
+        { $match: matchStage },
+        { $group: { _id: { cid: '$candidate', status: '$candidateData.status' } } },
+        { $group: { _id: '$_id.status', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]);
+      pipeline = raw.map(d => ({ status: d._id, count: d.count }));
+    }
+
+    res.json({ success: true, data: { pipeline } });
+  } catch (err) {
+    console.error('Filtered pipeline error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getFilteredOffers = async (req, res) => {
+  try {
+    const toArr = v => (v ? (Array.isArray(v) ? v : [v]) : []);
+    const educationLevels = toArr(req.query.educationLevels);
+    const schools         = toArr(req.query.schools);
+
+    const stages = [
+      { $lookup: { from: 'offers',     localField: 'offer',     foreignField: '_id', as: 'offerData'     } },
+      { $unwind: { path: '$offerData', preserveNullAndEmptyArrays: false } },
+      { $lookup: { from: 'candidates', localField: 'candidate', foreignField: '_id', as: 'candidateData' } },
+      { $unwind: { path: '$candidateData', preserveNullAndEmptyArrays: !educationLevels.length && !schools.length } },
+    ];
+
+    const matchStage = {};
+    if (educationLevels.length) matchStage['candidateData.educationLevel'] = { $in: educationLevels };
+    if (schools.length)         matchStage['candidateData.school']         = { $in: schools };
+    if (Object.keys(matchStage).length) stages.push({ $match: matchStage });
+
+    stages.push(
+      { $group: { _id: '$offerData._id', title: { $first: '$offerData.title' }, total: { $sum: 1 }, accepted: { $sum: { $cond: [{ $eq: ['$status', 'offre_acceptee'] }, 1, 0] } } } },
+      { $sort: { total: -1 } },
+      { $limit: 8 },
+    );
+
+    const raw = await Application.aggregate(stages);
+    const offerStats = raw.map(d => ({
+      title:    d.title || 'Sans titre',
+      total:    d.total,
+      accepted: d.accepted,
+      rate:     d.total > 0 ? Math.round(d.accepted / d.total * 1000) / 10 : 0,
+    }));
+
+    res.json({ success: true, data: { offerStats } });
+  } catch (err) {
+    console.error('Filtered offers error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

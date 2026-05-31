@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../services/auth.service';
 
@@ -35,11 +35,6 @@ const STATUS_COLORS: Record<string, string> = {
   validation_finale:    '#059669',
   offre_envoyee:        '#059669',
 };
-
-const PIPELINE_ORDER = [
-  'nouveau', 'preselectionne', 'en_attente_documents', 'documents_recus',
-  'entretien_programme', 'entretien_realise', 'offre_acceptee', 'offre_refusee',
-];
 
 @Component({
   selector: 'app-dashboard',
@@ -157,24 +152,61 @@ const PIPELINE_ORDER = [
 
       <!-- ── TAB 1: APERÇU GÉNÉRAL ── -->
       <div class="charts-grid" *ngIf="dataReady && activeTab==='overview'">
-        <div class="chart-card chart-span-8">
-          <div class="chart-header">
-            <div class="chart-title-wrap">
-              <div class="chart-icon" style="background:#4F46E5"><svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg></div>
-              <span>Pipeline de recrutement</span>
-            </div>
-          </div>
-          <div id="chart-pipeline" class="chart-body"></div>
-        </div>
-        <div class="chart-card chart-span-4">
+
+        <!-- Donut + Filter panel -->
+        <div class="chart-card chart-span-12">
           <div class="chart-header">
             <div class="chart-title-wrap">
               <div class="chart-icon" style="background:#8B5CF6"><svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg></div>
               <span>Répartition statuts</span>
             </div>
+            <span class="filter-badge" *ngIf="selectedLocations.length || selectedDepartments.length">
+              {{ selectedLocations.length + selectedDepartments.length }} filtre(s) actif(s)
+            </span>
           </div>
-          <div id="chart-donut" class="chart-body"></div>
+          <div class="chart-with-filters">
+            <!-- Filter panel -->
+            <div class="filter-panel">
+              <div class="filter-panel-head">Filtres</div>
+
+              <div class="filter-section">
+                <div class="filter-section-label">Région</div>
+                <div class="filter-list">
+                  <label class="filter-item" *ngFor="let loc of allLocations">
+                    <input type="checkbox" [checked]="selectedLocations.includes(loc.city)" (change)="toggleLocation(loc.city)">
+                    <span class="filter-item-text">{{ loc.city }}</span>
+                    <span class="filter-count">{{ loc.count }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="filter-section">
+                <div class="filter-section-label">Département</div>
+                <div class="filter-list">
+                  <label class="filter-item" *ngFor="let dept of allDepartments">
+                    <input type="checkbox" [checked]="selectedDepartments.includes(dept.name)" (change)="toggleDepartment(dept.name)">
+                    <span class="filter-item-text">{{ dept.name }}</span>
+                    <span class="filter-count">{{ dept.count }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <button class="filter-reset-btn" *ngIf="selectedLocations.length || selectedDepartments.length" (click)="resetDonutFilters()">
+                Réinitialiser
+              </button>
+            </div>
+
+            <!-- Chart area -->
+            <div class="filter-chart-area">
+              <div class="filter-loading-overlay" *ngIf="donutFiltering">
+                <div class="filter-spinner"></div>
+              </div>
+              <div id="chart-donut" class="chart-body" style="height:340px"></div>
+            </div>
+          </div>
         </div>
+
+        <!-- Monthly evolution -->
         <div class="chart-card chart-span-12">
           <div class="chart-header">
             <div class="chart-title-wrap">
@@ -189,14 +221,58 @@ const PIPELINE_ORDER = [
       <!-- ── TAB 2: PIPELINE & CONVERSION ── -->
       <div *ngIf="dataReady && activeTab==='pipeline'">
         <div class="charts-grid">
-          <div class="chart-card chart-span-5">
+
+          <!-- Offers chart + Filter panel -->
+          <div class="chart-card chart-span-8">
             <div class="chart-header">
               <div class="chart-title-wrap">
-                <div class="chart-icon" style="background:#4F46E5"><svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
-                <span>Entonnoir de recrutement</span>
+                <div class="chart-icon" style="background:#F59E0B"><svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/></svg></div>
+                <span>Performance des offres</span>
+              </div>
+              <span class="filter-badge" *ngIf="selectedEducation.length || selectedSchools.length">
+                {{ selectedEducation.length + selectedSchools.length }} filtre(s) actif(s)
+              </span>
+            </div>
+            <div class="chart-with-filters">
+              <!-- Filter panel -->
+              <div class="filter-panel">
+                <div class="filter-panel-head">Filtres</div>
+
+                <div class="filter-section">
+                  <div class="filter-section-label">Niveau d'études</div>
+                  <div class="filter-list">
+                    <label class="filter-item" *ngFor="let edu of allEducation">
+                      <input type="checkbox" [checked]="selectedEducation.includes(edu.name)" (change)="toggleEducation(edu.name)">
+                      <span class="filter-item-text">{{ edu.name }}</span>
+                      <span class="filter-count">{{ edu.count }}</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="filter-section">
+                  <div class="filter-section-label">Établissement</div>
+                  <div class="filter-list">
+                    <label class="filter-item" *ngFor="let s of allSchools">
+                      <input type="checkbox" [checked]="selectedSchools.includes(s.name)" (change)="toggleSchool(s.name)">
+                      <span class="filter-item-text">{{ s.name }}</span>
+                      <span class="filter-count">{{ s.count }}</span>
+                    </label>
+                  </div>
+                </div>
+
+                <button class="filter-reset-btn" *ngIf="selectedEducation.length || selectedSchools.length" (click)="resetOffersFilters()">
+                  Réinitialiser
+                </button>
+              </div>
+
+              <!-- Chart area -->
+              <div class="filter-chart-area">
+                <div class="filter-loading-overlay" *ngIf="offersFiltering">
+                  <div class="filter-spinner"></div>
+                </div>
+                <div id="chart-offers" class="chart-body"></div>
               </div>
             </div>
-            <div id="chart-funnel" class="chart-body"></div>
           </div>
 
           <!-- Monthly conversion table -->
@@ -235,27 +311,7 @@ const PIPELINE_ORDER = [
             </div>
           </div>
 
-          <div class="chart-card chart-span-3">
-            <div class="chart-header">
-              <div class="chart-title-wrap">
-                <div class="chart-icon" style="background:#EC4899"><svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/></svg></div>
-                <span>Taux de conv. par mois</span>
-              </div>
-            </div>
-            <div id="chart-convrate" class="chart-body"></div>
-          </div>
-
-          <div class="chart-card chart-span-6">
-            <div class="chart-header">
-              <div class="chart-title-wrap">
-                <div class="chart-icon" style="background:#F59E0B"><svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/></svg></div>
-                <span>Performance des offres</span>
-              </div>
-            </div>
-            <div id="chart-offers" class="chart-body"></div>
-          </div>
-
-          <div class="chart-card chart-span-6">
+          <div class="chart-card chart-span-12">
             <div class="chart-header">
               <div class="chart-title-wrap">
                 <div class="chart-icon" style="background:#0EA5E9"><svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"/></svg></div>
@@ -400,9 +456,7 @@ const PIPELINE_ORDER = [
     .chart-span-12 { grid-column: span 12; }
     .chart-span-8  { grid-column: span 8; }
     .chart-span-6  { grid-column: span 6; }
-    .chart-span-5  { grid-column: span 5; }
     .chart-span-4  { grid-column: span 4; }
-    .chart-span-3  { grid-column: span 3; }
 
     .chart-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 0; }
     .chart-title-wrap { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #374151; }
@@ -430,16 +484,157 @@ const PIPELINE_ORDER = [
     .tr-total { background: #F8F9FF; font-weight: 700; }
     .tr-total td { border-top: 2px solid #E5E7EB; color: #1F2937; }
 
+    /* ── Filter panel ── */
+    .filter-badge {
+      font-size: 11px; font-weight: 600;
+      color: #4F46E5; background: #EEF2FF; border: 1px solid #C7D2FE;
+      padding: 2px 10px; border-radius: 20px;
+    }
+
+    .chart-with-filters {
+      display: flex;
+      min-height: 300px;
+    }
+
+    .filter-panel {
+      width: 196px;
+      flex-shrink: 0;
+      border-right: 1px solid #F3F4F6;
+      padding: 12px 14px 16px;
+      overflow-y: auto;
+      max-height: 420px;
+    }
+
+    .filter-panel-head {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      color: #9CA3AF;
+      margin-bottom: 12px;
+    }
+
+    .filter-section {
+      margin-bottom: 14px;
+    }
+
+    .filter-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 7px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    .filter-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .filter-list::-webkit-scrollbar { width: 3px; }
+    .filter-list::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: #374151;
+      cursor: pointer;
+      padding: 4px 5px;
+      border-radius: 6px;
+      transition: background .12s;
+      line-height: 1.2;
+    }
+
+    .filter-item:hover { background: #F3F4F6; }
+
+    .filter-item input[type=checkbox] {
+      accent-color: #4F46E5;
+      cursor: pointer;
+      flex-shrink: 0;
+      width: 13px;
+      height: 13px;
+    }
+
+    .filter-item-text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .filter-count {
+      font-size: 10px;
+      font-weight: 600;
+      color: #9CA3AF;
+      background: #F3F4F6;
+      padding: 1px 5px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .filter-chart-area {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+    }
+
+    .filter-loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .filter-spinner {
+      width: 26px;
+      height: 26px;
+      border: 3px solid #E5E7EB;
+      border-top-color: #4F46E5;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    .filter-reset-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 6px 0;
+      font-size: 11px;
+      font-weight: 600;
+      color: #DC2626;
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .filter-reset-btn:hover { background: #FEE2E2; }
+
     /* Responsive */
     @media (max-width: 1200px) {
       .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-      .chart-span-8, .chart-span-5 { grid-column: span 12; }
-      .chart-span-4, .chart-span-3 { grid-column: span 6; }
+      .chart-span-8 { grid-column: span 12; }
+      .chart-span-4 { grid-column: span 6; }
     }
     @media (max-width: 900px) {
       .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-      .chart-span-6, .chart-span-4, .chart-span-3 { grid-column: span 12; }
+      .chart-span-6, .chart-span-4 { grid-column: span 12; }
       .tab-nav { flex-wrap: wrap; width: auto; }
+      .filter-panel { width: 160px; }
+    }
+    @media (max-width: 640px) {
+      .chart-with-filters { flex-direction: column; }
+      .filter-panel { width: 100%; max-height: none; border-right: none; border-bottom: 1px solid #F3F4F6; }
+      .filter-list { max-height: none; flex-direction: row; flex-wrap: wrap; }
     }
     @media (max-width: 480px) {
       .kpi-grid { grid-template-columns: 1fr; }
@@ -463,6 +658,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
   monthlyTableData: { label: string; total: number; accepted: number; rate: number }[] = [];
   totalMonthly = { total: 0, accepted: 0, rate: 0 };
 
+  // Filter state (arrays for Angular change detection)
+  selectedLocations:   string[] = [];
+  selectedDepartments: string[] = [];
+  selectedEducation:   string[] = [];
+  selectedSchools:     string[] = [];
+
+  // Available filter options (populated from analytics load)
+  allLocations:   { city: string;  count: number }[] = [];
+  allDepartments: { name: string;  count: number }[] = [];
+  allEducation:   { name: string;  count: number }[] = [];
+  allSchools:     { name: string;  count: number }[] = [];
+
+  donutFiltering  = false;
+  offersFiltering = false;
+
   private analyticsData: any = null;
 
   ngOnInit(): void {
@@ -472,8 +682,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    ['pipeline','donut','monthly','schools','scores','skills','period','cities','departments',
-     'funnel','convrate','offers','education'].forEach(id => {
+    ['donut','monthly','schools','scores','skills','period','cities','departments','offers','education'].forEach(id => {
       const el = document.getElementById(`chart-${id}`);
       if (el && (window as any)['Plotly']) Plotly.purge(el);
     });
@@ -499,10 +708,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.http.get<any>(`${environment.apiUrl}/analytics`, { headers }).subscribe({
       next: (res) => {
-        this.analyticsData = res.data;
-        this.kpi           = res.data.overview;
-        this.loading       = false;
-        this.dataReady     = true;
+        this.analyticsData  = res.data;
+        this.kpi            = res.data.overview;
+        this.loading        = false;
+        this.dataReady      = true;
+        this.allLocations   = res.data.locations   || [];
+        this.allDepartments = res.data.departments || [];
+        this.allEducation   = res.data.educationLevels || [];
+        this.allSchools     = (res.data.schools || []).slice(0, 12);
         this.buildMonthlyTable(res.data.monthly);
         setTimeout(() => this.renderTab(this.activeTab), 80);
       },
@@ -512,6 +725,90 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
     });
   }
+
+  // ── Filter toggles ──────────────────────────────────────────────
+
+  toggleLocation(city: string): void {
+    const i = this.selectedLocations.indexOf(city);
+    this.selectedLocations = i === -1
+      ? [...this.selectedLocations, city]
+      : this.selectedLocations.filter(v => v !== city);
+    this.loadFilteredPipeline();
+  }
+
+  toggleDepartment(name: string): void {
+    const i = this.selectedDepartments.indexOf(name);
+    this.selectedDepartments = i === -1
+      ? [...this.selectedDepartments, name]
+      : this.selectedDepartments.filter(v => v !== name);
+    this.loadFilteredPipeline();
+  }
+
+  toggleEducation(name: string): void {
+    const i = this.selectedEducation.indexOf(name);
+    this.selectedEducation = i === -1
+      ? [...this.selectedEducation, name]
+      : this.selectedEducation.filter(v => v !== name);
+    this.loadFilteredOffers();
+  }
+
+  toggleSchool(name: string): void {
+    const i = this.selectedSchools.indexOf(name);
+    this.selectedSchools = i === -1
+      ? [...this.selectedSchools, name]
+      : this.selectedSchools.filter(v => v !== name);
+    this.loadFilteredOffers();
+  }
+
+  resetDonutFilters(): void {
+    this.selectedLocations   = [];
+    this.selectedDepartments = [];
+    setTimeout(() => this.renderDonut(this.analyticsData?.pipeline), 0);
+  }
+
+  resetOffersFilters(): void {
+    this.selectedEducation = [];
+    this.selectedSchools   = [];
+    setTimeout(() => this.renderOfferStats(this.analyticsData?.offerStats), 0);
+  }
+
+  private loadFilteredPipeline(): void {
+    if (!this.selectedLocations.length && !this.selectedDepartments.length) {
+      setTimeout(() => this.renderDonut(this.analyticsData?.pipeline), 0);
+      return;
+    }
+    this.donutFiltering = true;
+    const token   = localStorage.getItem('authToken');
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    let params    = new HttpParams();
+    this.selectedLocations.forEach(r   => { params = params.append('regions',     r); });
+    this.selectedDepartments.forEach(d => { params = params.append('departments', d); });
+
+    this.http.get<any>(`${environment.apiUrl}/analytics/pipeline`, { headers, params }).subscribe({
+      next:  (res) => { this.donutFiltering = false; setTimeout(() => this.renderDonut(res.data.pipeline), 0); },
+      error: ()    => { this.donutFiltering = false; },
+    });
+  }
+
+  private loadFilteredOffers(): void {
+    if (!this.selectedEducation.length && !this.selectedSchools.length) {
+      setTimeout(() => this.renderOfferStats(this.analyticsData?.offerStats), 0);
+      return;
+    }
+    this.offersFiltering = true;
+    const token   = localStorage.getItem('authToken');
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    let params    = new HttpParams();
+    this.selectedEducation.forEach(e => { params = params.append('educationLevels', e); });
+    this.selectedSchools.forEach(s   => { params = params.append('schools', s); });
+
+    this.http.get<any>(`${environment.apiUrl}/analytics/offers`, { headers, params }).subscribe({
+      next:  (res) => { this.offersFiltering = false; setTimeout(() => this.renderOfferStats(res.data.offerStats), 0); },
+      error: ()    => { this.offersFiltering = false; },
+    });
+  }
+
+  // ── Data helpers ─────────────────────────────────────────────────
 
   private buildMonthlyTable(monthly: any[]): void {
     if (!monthly?.length) return;
@@ -530,12 +827,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const d = this.analyticsData;
     if (!d || typeof Plotly === 'undefined') return;
     if (tab === 'overview') {
-      this.renderPipeline(d.pipeline);
       this.renderDonut(d.pipeline);
       this.renderMonthly(d.monthly);
     } else if (tab === 'pipeline') {
-      this.renderFunnel(d.pipeline);
-      this.renderConvRate(d.monthly);
       this.renderOfferStats(d.offerStats);
       this.renderDepartments(d.departments);
       this.renderPeriod(d.monthly);
@@ -566,18 +860,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     };
   }
 
-  private renderPipeline(pipeline: any[]): void {
-    if (!pipeline?.length) return;
-    const ordered = PIPELINE_ORDER.map(s => pipeline.find((p: any) => p.status === s)).filter(Boolean);
-    Plotly.newPlot('chart-pipeline', [{
-      type: 'bar', x: ordered.map((p: any) => STATUS_LABELS[p.status] || p.status),
-      y: ordered.map((p: any) => p.count),
-      marker: { color: ordered.map((p: any) => STATUS_COLORS[p.status] || '#6B7280'), opacity: 0.9 },
-      text: ordered.map((p: any) => p.count.toString()), textposition: 'outside',
-      hovertemplate: '<b>%{x}</b><br>%{y} candidats<extra></extra>',
-    }], { ...this.baseLayout(), showlegend: false }, this.cfg);
-  }
-
   private renderDonut(pipeline: any[]): void {
     if (!pipeline?.length) return;
     const filtered = pipeline.filter((p: any) => p.status && STATUS_LABELS[p.status]);
@@ -591,7 +873,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       hovertemplate: '<b>%{label}</b><br>%{value} (%{percent})<extra></extra>',
     }], {
       paper_bgcolor: 'transparent', font: { family: 'Inter, sans-serif', size: 11 },
-      margin: { t: 10, b: 10, l: 10, r: 10 }, height: 280,
+      margin: { t: 20, b: 20, l: 20, r: 20 }, height: 320,
       showlegend: true, legend: { font: { size: 10 }, orientation: 'v', x: 1.02 },
     }, this.cfg);
   }
@@ -612,41 +894,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         line: { color: '#10B981', width: 2, dash: 'dot' }, marker: { color: '#10B981', size: 5 },
       },
     ], { ...this.baseLayout(), height: 260, legend: { orientation: 'h', y: 1.12, x: 0, font: { size: 10 } } }, this.cfg);
-  }
-
-  private renderFunnel(pipeline: any[]): void {
-    if (!pipeline?.length) return;
-    const funnelOrder = ['nouveau','preselectionne','en_attente_documents','documents_recus','entretien_programme','entretien_realise','offre_envoyee','offre_acceptee'];
-    const items = funnelOrder.map(s => pipeline.find((p: any) => p.status === s)).filter(Boolean);
-    Plotly.newPlot('chart-funnel', [{
-      type: 'funnel',
-      y: items.map((p: any) => STATUS_LABELS[p.status] || p.status),
-      x: items.map((p: any) => p.count),
-      textposition: 'inside',
-      textinfo: 'value+percent initial',
-      marker: { color: items.map((p: any) => STATUS_COLORS[p.status] || '#6B7280') },
-      connector: { line: { color: '#E5E7EB', width: 1 } },
-    }], {
-      paper_bgcolor: 'transparent', font: { family: 'Inter, sans-serif', size: 11 },
-      margin: { t: 16, b: 16, l: 10, r: 10 }, height: 340,
-    }, this.cfg);
-  }
-
-  private renderConvRate(monthly: any[]): void {
-    if (!monthly?.length) return;
-    const rates = monthly.map((m: any) => m.total > 0 ? Math.round(m.accepted / m.total * 1000) / 10 : 0);
-    Plotly.newPlot('chart-convrate', [{
-      type: 'scatter', mode: 'lines+markers',
-      x: monthly.map((m: any) => m.label), y: rates,
-      fill: 'tozeroy', fillcolor: 'rgba(236,72,153,.08)',
-      line: { color: '#EC4899', width: 2.5 }, marker: { color: '#EC4899', size: 5 },
-      hovertemplate: '<b>%{x}</b><br>%{y}%<extra></extra>',
-    }], {
-      ...this.baseLayout(),
-      height: 200,
-      yaxis: { ...this.baseLayout().yaxis, ticksuffix: '%' },
-      margin: { t: 16, b: 40, l: 48, r: 16 },
-    }, this.cfg);
   }
 
   private renderOfferStats(offerStats: any[]): void {
