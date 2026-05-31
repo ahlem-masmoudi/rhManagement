@@ -288,10 +288,10 @@ interface Department {
     .dept-dropdown-count.empty { background: rgba(255,255,255,0.08); color: #64748b; }
 
     /* ── Hero ── */
-    .hero { background: linear-gradient(135deg,#00A0DC 0%,#0074BC 100%); color: white; padding: 4rem 0; position: relative; overflow: hidden; }
+    .hero { background: linear-gradient(135deg,#00A0DC 0%,#0074BC 100%); color: white; padding: 4rem 0; position: relative; overflow: hidden; min-height: 100vh; display: flex; align-items: center; }
     .hero::before { content:''; position:absolute; inset:0; background: radial-gradient(circle at 20% 50%,rgba(255,255,255,0.1) 0%,transparent 50%), radial-gradient(circle at 80% 80%,rgba(255,255,255,0.1) 0%,transparent 50%); animation: heroShine 10s infinite ease-in-out; }
     @keyframes heroShine { 0%,100%{opacity:0.5} 50%{opacity:1} }
-    .hero-container { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
+    .hero-container { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; width: 100%; }
     .hero-content { position:relative; z-index:1; }
     .hero-image { position:relative; z-index:1; display:flex; align-items:center; justify-content:center; background:white; padding:3rem; border-radius:24px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
     .hero-img { width:100%; max-width:500px; height:auto; animation:floatImage 6s ease-in-out infinite; }
