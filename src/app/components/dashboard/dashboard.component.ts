@@ -1160,7 +1160,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       lon: mapped.map(l => l.coord![1]),
       text: mapped.map(l => top6.has(l.city) ? l.city : ''),
       textposition: mapped.map(l => l.coord![0] > 35.5 ? 'top center' : 'bottom center'),
-      textfont: { size: 11, color: '#1E293B', family: 'Inter, sans-serif' },
+      textfont: { size: 12, color: '#0F172A', family: 'Inter, sans-serif' },
       customdata: mapped.map(l => [l.city, l.count]),
       marker: {
         size: mapped.map(l => Math.max(18, Math.min(62, 18 + (l.count / maxCount) * 44))),
@@ -1181,16 +1181,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
       hoverlabel: this.hl,
     }], {
       paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
       font: { family: 'Inter, sans-serif', size: 10, color: '#475569' },
-      margin: { t: 8, b: 8, l: 0, r: 60 },
+      margin: { t: 8, b: 8, l: 8, r: 60 },
       height: 490,
+      autosize: true,
       hoverlabel: this.hl,
       geo: {
         scope: 'world',
         resolution: 50,
-        center: { lat: 34.0, lon: 9.5 },
-        lonaxis: { range: [5.0, 14.5] },
-        lataxis: { range: [28.5, 38.5] },
+        center: { lat: 33.5, lon: 9.5 },
+        lonaxis: { range: [-5, 25] },
+        lataxis: { range: [28, 39] },
         showland: true,     landcolor: '#F1F5F9',
         showcoastlines: true, coastlinecolor: '#CBD5E1', coastlinewidth: 1,
         showocean: true,    oceancolor: '#DBEAFE',
@@ -1198,6 +1200,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         showsubunits: true, subunitcolor: '#E5E7EB',
         showframe: false,   bgcolor: 'transparent',
         showlakes: false,   showrivers: false,
+        domain: { x: [0, 1], y: [0, 1] },
       },
     }, this.cfg);
   }
