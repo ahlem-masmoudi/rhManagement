@@ -256,3 +256,59 @@ exports.getFilteredOffers = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+exports.getFilteredEducation = async (req, res) => {
+  try {
+    const toArr = v => (v ? (Array.isArray(v) ? v : [v]) : []);
+    const regions = toArr(req.query.regions);
+    const matchStage = { educationLevel: { $exists: true, $ne: null } };
+    if (regions.length) matchStage.location = { $in: regions };
+
+    const raw = await Candidate.aggregate([
+      { $match: matchStage },
+      { $match: { educationLevel: { $ne: '' } } },
+      { $group: { _id: '$educationLevel', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+    res.json({ success: true, data: { educationLevels: raw.map(d => ({ name: d._id, count: d.count })) } });
+  } catch (err) {
+    console.error('Filtered education error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getFilteredScores = async (req, res) => {
+  try {
+    const toArr = v => (v ? (Array.isArray(v) ? v : [v]) : []);
+    const departments = toArr(req.query.departments);
+
+    const baseMatch = { matchingScore: { $exists: true, $ne: null, $type: 'number' } };
+    const stages = [{ $match: baseMatch }];
+
+    if (departments.length) {
+      stages.push(
+        { $lookup: { from: 'offers', localField: 'offer', foreignField: '_id', as: 'offerData' } },
+        { $unwind: { path: '$offerData', preserveNullAndEmptyArrays: false } },
+        { $match: { 'offerData.department': { $in: departments } } },
+      );
+    }
+
+    stages.push({
+      $bucket: {
+        groupBy: '$matchingScore',
+        boundaries: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 101],
+        default: 'other',
+        output: { count: { $sum: 1 } },
+      },
+    });
+
+    const raw = await Application.aggregate(stages);
+    const scores = raw
+      .filter(d => d._id !== 'other')
+      .map(d => ({ range: `${d._id}–${d._id + 9}%`, count: d.count }));
+    res.json({ success: true, data: { scores } });
+  } catch (err) {
+    console.error('Filtered scores error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
