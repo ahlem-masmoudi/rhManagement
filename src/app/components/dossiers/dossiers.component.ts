@@ -12,6 +12,7 @@ import { environment } from '../../../environments/environment';
 interface DossierEntry {
   application: Application;
   documents: any[];
+  docsExpanded: boolean;
   docsLoaded: boolean;
   docsError: boolean;
   signing: boolean;
@@ -140,18 +141,23 @@ interface DossierEntry {
 
           <!-- Documents section -->
           <div class="docs-section">
-            <div class="docs-header">
+            <div class="docs-header" (click)="toggleDocs(entry)">
               <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
               </svg>
               <span>Documents</span>
-              <button class="btn-refresh-card" (click)="refreshEntry(entry)" title="Rafraîchir les documents">
+              <span *ngIf="entry.docsLoaded && entry.documents.length > 0" class="docs-count-badge">{{ entry.documents.length }}</span>
+              <svg class="chevron" [class.open]="entry.docsExpanded" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+              <button class="btn-refresh-card" (click)="$event.stopPropagation(); refreshEntry(entry)" title="Rafraîchir les documents">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
               </button>
             </div>
 
+            <div *ngIf="entry.docsExpanded">
             <!-- Loading documents -->
             <div *ngIf="!entry.docsLoaded" class="doc-loading">
               <div class="spinner spinner-sm"></div> Chargement...
@@ -280,6 +286,7 @@ interface DossierEntry {
               <div *ngIf="entry.signSuccess" class="alert alert-success">{{ entry.signSuccess }}</div>
               <div *ngIf="entry.signError" class="alert alert-error">{{ entry.signError }}</div>
             </div>
+            </div><!-- /docsExpanded -->
           </div>
         </div>
       </div>
@@ -496,10 +503,33 @@ interface DossierEntry {
       font-size: 13px;
       font-weight: 700;
       color: #374151;
-      margin-bottom: 14px;
+      margin-bottom: 0;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      cursor: pointer;
+      padding: 10px 0;
+      user-select: none;
+      border-radius: 8px;
+      transition: color 0.2s;
     }
+    .docs-header:hover { color: #6366f1; }
+    .docs-count-badge {
+      background: #eef2ff;
+      color: #6366f1;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 20px;
+      border: 1px solid #c7d2fe;
+    }
+    .chevron {
+      margin-left: 2px;
+      transition: transform 0.25s ease;
+      color: #9ca3af;
+      flex-shrink: 0;
+    }
+    .chevron.open { transform: rotate(180deg); }
+    .doc-loading, .no-docs { margin-top: 8px; }
     .btn-refresh-card {
       margin-left: auto;
       width: 26px; height: 26px;
@@ -784,6 +814,7 @@ export class DossiersComponent implements OnInit {
       this.dossiers = accepted.map(app => ({
         application: app,
         documents: [],
+        docsExpanded: false,
         docsLoaded: false,
         docsError: false,
         signing: false,
@@ -821,6 +852,7 @@ export class DossiersComponent implements OnInit {
       this.dossiers = accepted.map(app => ({
         application: app,
         documents: [],
+        docsExpanded: false,
         docsLoaded: false,
         docsError: false,
         signing: false,
@@ -912,6 +944,10 @@ export class DossiersComponent implements OnInit {
       autre: 'Autre'
     };
     return labels[type] || type;
+  }
+
+  toggleDocs(entry: DossierEntry): void {
+    entry.docsExpanded = !entry.docsExpanded;
   }
 
   toggleSignForm(entry: DossierEntry): void {
