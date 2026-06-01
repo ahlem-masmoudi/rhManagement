@@ -273,6 +273,45 @@ const STATUS_COLORS: Record<string, string> = {
             </div>
           </div>
 
+          <!-- Conversion table -->
+          <div class="chart-card chart-span-4" style="--ca:#6366F1">
+            <div class="chart-header">
+              <div class="chart-title-wrap">
+                <div class="chart-icon" style="background:linear-gradient(135deg,#6366F1,#818CF8)">
+                  <svg width="15" height="15" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clip-rule="evenodd"/></svg>
+                </div>
+                <div>
+                  <div class="chart-title">Conversion mensuelle</div>
+                  <div class="chart-subtitle">Taux d'acceptation par mois</div>
+                </div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="conv-table">
+                <thead><tr><th>Mois</th><th>Total</th><th>Acceptés</th><th>Taux</th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let m of monthlyTableData">
+                    <td class="td-month">{{ m.label }}</td>
+                    <td class="td-num">{{ m.total }}</td>
+                    <td class="td-num td-green">{{ m.accepted }}</td>
+                    <td class="td-rate">
+                      <div class="rate-wrap">
+                        <div class="rate-bar"><div class="rate-fill" [style.width]="m.rate+'%'"></div></div>
+                        <span>{{ m.rate }}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="tr-total">
+                    <td>Total</td>
+                    <td class="td-num">{{ totalMonthly.total }}</td>
+                    <td class="td-num td-green">{{ totalMonthly.accepted }}</td>
+                    <td class="td-rate"><strong>{{ totalMonthly.rate }}%</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <!-- Dept × Offres — bubble chart with region filter -->
           <div class="chart-card chart-span-12" style="--ca:#10B981">
             <div class="chart-header">
@@ -312,45 +351,6 @@ const STATUS_COLORS: Record<string, string> = {
                 <div class="filter-loading-overlay" *ngIf="deptOffersFiltering"><div class="filter-spinner"></div></div>
                 <div id="chart-dept-offers" style="height:400px"></div>
               </div>
-            </div>
-          </div>
-
-          <!-- Conversion table -->
-          <div class="chart-card chart-span-4" style="--ca:#6366F1">
-            <div class="chart-header">
-              <div class="chart-title-wrap">
-                <div class="chart-icon" style="background:linear-gradient(135deg,#6366F1,#818CF8)">
-                  <svg width="15" height="15" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clip-rule="evenodd"/></svg>
-                </div>
-                <div>
-                  <div class="chart-title">Conversion mensuelle</div>
-                  <div class="chart-subtitle">Taux d'acceptation par mois</div>
-                </div>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table class="conv-table">
-                <thead><tr><th>Mois</th><th>Total</th><th>Acceptés</th><th>Taux</th></tr></thead>
-                <tbody>
-                  <tr *ngFor="let m of monthlyTableData">
-                    <td class="td-month">{{ m.label }}</td>
-                    <td class="td-num">{{ m.total }}</td>
-                    <td class="td-num td-green">{{ m.accepted }}</td>
-                    <td class="td-rate">
-                      <div class="rate-wrap">
-                        <div class="rate-bar"><div class="rate-fill" [style.width]="m.rate+'%'"></div></div>
-                        <span>{{ m.rate }}%</span>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr class="tr-total">
-                    <td>Total</td>
-                    <td class="td-num">{{ totalMonthly.total }}</td>
-                    <td class="td-num td-green">{{ totalMonthly.accepted }}</td>
-                    <td class="td-rate"><strong>{{ totalMonthly.rate }}%</strong></td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           </div>
 
