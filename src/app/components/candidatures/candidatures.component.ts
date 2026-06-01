@@ -228,11 +228,13 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       100% { transform:translateX(260%)  skewX(-15deg); }
     }
 
-    .candidatures-page { max-width: 100%; animation: pageFadeIn 0.4s ease both; }
+    :host { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+    .candidatures-page { display: flex; flex-direction: column; flex: 1; min-height: 0; max-width: 100%; animation: pageFadeIn 0.4s ease both; overflow: hidden; }
 
     /* ── Page Header ── */
     .page-header {
       display: flex;
+      flex-shrink: 0;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 28px;
@@ -300,6 +302,7 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     /* ── Filters ── */
     .filters-bar {
       display: flex;
+      flex-shrink: 0;
       gap: 10px;
       padding: 14px 18px;
       background: white;
@@ -340,7 +343,10 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     .kanban-board {
       display: flex;
       gap: 18px;
+      flex: 1;
+      min-height: 0;
       overflow-x: auto;
+      overflow-y: hidden;
       padding-bottom: 16px;
       scrollbar-width: thin;
       scrollbar-color: rgba(102,51,153,0.25) transparent;
@@ -351,6 +357,7 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
 
     .kanban-column {
       flex: 0 0 288px;
+      min-height: 0;
       background: rgba(248,246,255,0.85);
       backdrop-filter: blur(8px);
       border-radius: 20px;
@@ -399,11 +406,11 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     .column-body {
       padding: 12px;
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      max-height: 580px;
     }
 
     /* ── Candidate Card ── */
