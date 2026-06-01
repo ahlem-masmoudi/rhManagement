@@ -273,6 +273,48 @@ const STATUS_COLORS: Record<string, string> = {
             </div>
           </div>
 
+          <!-- Dept × Offres — bubble chart with region filter -->
+          <div class="chart-card chart-span-12" style="--ca:#10B981">
+            <div class="chart-header">
+              <div class="chart-title-wrap">
+                <div class="chart-icon" style="background:linear-gradient(135deg,#10B981,#34D399)">
+                  <svg width="15" height="15" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg>
+                </div>
+                <div>
+                  <div class="chart-title">Performance par département</div>
+                  <div class="chart-subtitle">Candidatures · Taux d'acceptation · Volume d'offres</div>
+                </div>
+              </div>
+              <span class="filter-badge" *ngIf="selectedDeptOffersRegions.length">
+                <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-4 4A1 1 0 016 19v-7.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/></svg>
+                {{ selectedDeptOffersRegions.length }} filtre(s)
+              </span>
+            </div>
+            <div class="chart-with-filters">
+              <div class="filter-panel">
+                <p class="filter-panel-head">Filtres</p>
+                <div class="filter-section">
+                  <div class="filter-section-label">
+                    <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                    Région candidat
+                  </div>
+                  <div class="filter-list">
+                    <label class="filter-item" *ngFor="let loc of allLocations">
+                      <input type="checkbox" [checked]="selectedDeptOffersRegions.includes(loc.city)" (change)="toggleDeptOffersRegion(loc.city)">
+                      <span class="filter-item-text">{{ loc.city }}</span>
+                      <span class="filter-count">{{ loc.count }}</span>
+                    </label>
+                  </div>
+                </div>
+                <button class="filter-reset-btn" *ngIf="selectedDeptOffersRegions.length" (click)="resetDeptOffersFilters()">Réinitialiser</button>
+              </div>
+              <div class="filter-chart-area">
+                <div class="filter-loading-overlay" *ngIf="deptOffersFiltering"><div class="filter-spinner"></div></div>
+                <div id="chart-dept-offers" style="height:400px"></div>
+              </div>
+            </div>
+          </div>
+
           <!-- Conversion table -->
           <div class="chart-card chart-span-4" style="--ca:#6366F1">
             <div class="chart-header">
@@ -525,47 +567,6 @@ const STATUS_COLORS: Record<string, string> = {
           </div>
         </div>
 
-        <!-- Dept × Offres — bubble chart with region filter -->
-        <div class="chart-card chart-span-12" style="--ca:#10B981">
-          <div class="chart-header">
-            <div class="chart-title-wrap">
-              <div class="chart-icon" style="background:linear-gradient(135deg,#10B981,#34D399)">
-                <svg width="15" height="15" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg>
-              </div>
-              <div>
-                <div class="chart-title">Performance par département</div>
-                <div class="chart-subtitle">Candidatures · Taux d'acceptation · Volume d'offres</div>
-              </div>
-            </div>
-            <span class="filter-badge" *ngIf="selectedDeptOffersRegions.length">
-              <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-4 4A1 1 0 016 19v-7.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/></svg>
-              {{ selectedDeptOffersRegions.length }} filtre(s)
-            </span>
-          </div>
-          <div class="chart-with-filters">
-            <div class="filter-panel">
-              <p class="filter-panel-head">Filtres</p>
-              <div class="filter-section">
-                <div class="filter-section-label">
-                  <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
-                  Région candidat
-                </div>
-                <div class="filter-list">
-                  <label class="filter-item" *ngFor="let loc of allLocations">
-                    <input type="checkbox" [checked]="selectedDeptOffersRegions.includes(loc.city)" (change)="toggleDeptOffersRegion(loc.city)">
-                    <span class="filter-item-text">{{ loc.city }}</span>
-                    <span class="filter-count">{{ loc.count }}</span>
-                  </label>
-                </div>
-              </div>
-              <button class="filter-reset-btn" *ngIf="selectedDeptOffersRegions.length" (click)="resetDeptOffersFilters()">Réinitialiser</button>
-            </div>
-            <div class="filter-chart-area">
-              <div class="filter-loading-overlay" *ngIf="deptOffersFiltering"><div class="filter-spinner"></div></div>
-              <div id="chart-dept-offers" style="height:400px"></div>
-            </div>
-          </div>
-        </div>
       </div>
 
     </div>
@@ -1025,6 +1026,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.renderMonthly(d.monthly);
     } else if (tab === 'pipeline') {
       this.renderOfferStats(d.offerStats);
+      this.renderDeptOffers(d.deptOffers);
       this.renderDepartments(d.departments);
       this.renderPeriod(d.monthly);
     } else {
@@ -1033,7 +1035,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.renderEducation(d.educationLevels);
       this.renderScores(d.scores);
       this.renderMap(d.locations);
-      this.renderDeptOffers(d.deptOffers);
     }
   }
 
