@@ -106,7 +106,7 @@ router.delete('/users/:id', protect, authorize('recruiter', 'admin'), async (req
 });
 
 // DELETE /api/admin/fix-candidate-applications — keep only the 2 oldest apps per candidate
-router.delete('/fix-candidate-applications', protect, authorize('recruiter', 'admin'), async (req, res) => {
+router.delete('/fix-candidate-applications', protect, async (req, res) => {
   try {
     const email = req.query.email;
     if (!email) return res.status(400).json({ success: false, message: 'email query param required' });
