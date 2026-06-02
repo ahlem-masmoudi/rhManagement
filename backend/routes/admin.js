@@ -105,6 +105,32 @@ router.delete('/users/:id', protect, authorize('recruiter', 'admin'), async (req
   }
 });
 
+// DELETE /api/admin/fix-candidate-applications — keep only the 2 oldest apps per candidate
+router.delete('/fix-candidate-applications', protect, authorize('recruiter', 'admin'), async (req, res) => {
+  try {
+    const email = req.query.email;
+    if (!email) return res.status(400).json({ success: false, message: 'email query param required' });
+
+    const User  = require('../models/User');
+    const Candidate = require('../models/Candidate');
+    const Application = require('../models/Application');
+
+    const user = await User.findOne({ email: email.toLowerCase() }).lean();
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const candidate = await Candidate.findOne({ userId: user._id }).lean();
+    if (!candidate) return res.status(404).json({ success: false, message: 'Candidate not found' });
+
+    const apps = await Application.find({ candidate: candidate._id }).sort({ createdAt: 1 }).lean();
+    const toRemove = apps.slice(2);
+    for (const app of toRemove) await Application.deleteOne({ _id: app._id });
+
+    res.json({ success: true, totalFound: apps.length, removed: toRemove.length });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // DELETE /api/admin/cleanup-letters — remove all generated assignment letters (one-time migration)
 router.delete('/cleanup-letters', protect, authorize('recruiter', 'admin'), async (req, res) => {
   try {
