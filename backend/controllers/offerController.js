@@ -346,7 +346,7 @@ exports.applyToOffer = async (req, res) => {
       });
     }
 
-    // Check if already applied
+    // Check if already applied to this offer
     const existingApplication = await Application.findOne({
       candidate: candidate._id,
       offer: req.params.id
@@ -356,6 +356,15 @@ exports.applyToOffer = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Already applied to this offer'
+      });
+    }
+
+    // Limit: max 2 applications per candidate
+    const totalApplications = await Application.countDocuments({ candidate: candidate._id });
+    if (totalApplications >= 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vous avez atteint la limite de 2 candidatures. Vous ne pouvez pas postuler à plus de 2 offres.'
       });
     }
 

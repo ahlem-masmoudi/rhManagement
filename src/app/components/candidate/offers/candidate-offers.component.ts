@@ -1233,9 +1233,14 @@ export class CandidateOffersComponent implements OnInit {
         },
         error: (error) => {
           this.isApplying = false;
-          if (error.message?.includes('Already applied'))       this.applyError = 'Vous avez déjà postulé à cette offre.';
-          else if (error.message?.includes('profile not found')) this.applyError = 'Profil incomplet. Complétez votre profil avant de postuler.';
-          else this.applyError = error.message || 'Erreur lors de l\'envoi. Veuillez réessayer.';
+          if (error.message?.includes('Already applied'))
+            this.applyError = 'Vous avez déjà postulé à cette offre.';
+          else if (error.message?.includes('profile not found'))
+            this.applyError = 'Profil incomplet. Complétez votre profil avant de postuler.';
+          else if (error.message?.includes('limite') || error.message?.includes('2 candidatures'))
+            this.applyError = '⚠️ Vous avez atteint la limite de 2 candidatures. Il n\'est pas possible de postuler à une 3ème offre.';
+          else
+            this.applyError = error.message || 'Erreur lors de l\'envoi. Veuillez réessayer.';
         }
       });
     };
