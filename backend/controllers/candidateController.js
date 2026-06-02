@@ -823,22 +823,11 @@ exports.generateAssignmentLetter = async (req, res) => {
       }
     };
 
-    const historyEntry = {
-      id: `${Date.now()}_${Math.random().toString(36).substr(2,8)}`,
-      previousStatus: candidate.status,
-      newStatus: 'offre_envoyee',
-      changedBy: req.user.id,
-      changedAt: new Date(),
-      comment: 'Lettre d affectation generee et envoyee au candidat.',
-      emailSent: false
-    };
     // Use raw driver to avoid CastError on large document content
+    // Status stays offre_acceptee — no status change when generating a letter
     await Candidate.collection.updateOne(
       { _id: new mongoose.Types.ObjectId(req.params.id) },
-      {
-        $push: { documents: assignmentDoc, statusHistory: historyEntry },
-        $set: { status: 'offre_envoyee' }
-      }
+      { $push: { documents: assignmentDoc } }
     );
 
     res.status(201).json({ success: true, data: assignmentDoc });

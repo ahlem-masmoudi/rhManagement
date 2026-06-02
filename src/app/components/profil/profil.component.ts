@@ -217,7 +217,7 @@ import { Candidate, CandidateStatus, Application } from '../../models';
                   </div>
                 </div>
 
-                <div class="project-card assignment-card" *ngIf="['offre_acceptee','offre_envoyee'].includes(candidate?.status || '')" >
+                <div class="project-card assignment-card" *ngIf="candidate?.status === 'offre_acceptee'">
                   <h4>Lettre d'affectation</h4>
                   <p class="project-description">
                     Disponible pour les candidats dont l'offre a été acceptée.
@@ -1335,10 +1335,7 @@ export class ProfilComponent implements OnInit {
   private readonly nextStatus: Record<string, string> = {
     'nouveau':              'preselectionne',
     'preselectionne':       'entretien_programme',
-    'entretien_programme':  'entretien_realise',
-    'entretien_realise':    'validation_finale',
-    'validation_finale':    'offre_envoyee',
-    'offre_envoyee':        'offre_acceptee',
+    'entretien_programme':  'offre_acceptee',
   };
 
   assignmentForm = {
@@ -1440,7 +1437,7 @@ export class ProfilComponent implements OnInit {
     return this.tabs.filter(t => {
       if (t.id === 'documents') return !this.shouldHideRhDocuments();
       if (t.id === 'interview') return !['nouveau', 'offre_acceptee', 'offre_refusee', 'rejete', 'abandonne'].includes(this.candidate?.status || '');
-      if (t.id === 'evaluation') return ['offre_acceptee', 'entretien_realise', 'validation_finale', 'offre_envoyee'].includes(this.candidate?.status || '');
+      if (t.id === 'evaluation') return ['offre_acceptee', 'entretien_programme'].includes(this.candidate?.status || '');
       return true;
     });
   }
@@ -1472,7 +1469,6 @@ export class ProfilComponent implements OnInit {
       'entretien_programme':  'Entretien programmé',
       'entretien_realise':    'Entretien réalisé',
       'validation_finale':    'Validation finale',
-      'offre_envoyee':        'Accepté(e)',
       'offre_acceptee':       'Accepté(e)',
       'offre_refusee':        'Refusé(e)',
       'rejete':               'Rejeté',
@@ -1491,7 +1487,6 @@ export class ProfilComponent implements OnInit {
       'entretien_programme':  '#06b6d4',
       'entretien_realise':    '#0ea5e9',
       'validation_finale':    '#6366f1',
-      'offre_envoyee':        '#059669',
       'offre_acceptee':       '#059669',
       'offre_refusee':        '#ef4444',
       'rejete':               '#dc2626',
@@ -1771,7 +1766,7 @@ export class ProfilComponent implements OnInit {
 
   shouldHideRhDocuments(): boolean {
     if (!this.candidate) return true;
-    const showStatuses = ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'stage_termine'];
+    const showStatuses = ['offre_acceptee', 'stage_termine'];
     return !showStatuses.includes(this.candidate.status);
   }
 

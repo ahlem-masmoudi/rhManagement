@@ -692,11 +692,11 @@ export class CandidateTrackingComponent implements OnInit {
 
   private normalizeStatus(status: string): string {
     const map: Record<string,string> = {
-      offre_envoyee:       'offre_acceptee',
-      entretien_realise:   'entretien_programme',
-      validation_finale:   'offre_acceptee',
-      en_attente_documents:'offre_acceptee',
-      documents_recus:     'offre_acceptee',
+      offre_envoyee:        'offre_acceptee',
+      entretien_realise:    'entretien_programme',
+      validation_finale:    'offre_acceptee',
+      en_attente_documents: 'offre_acceptee',
+      documents_recus:      'offre_acceptee',
     };
     return map[status] ?? status;
   }

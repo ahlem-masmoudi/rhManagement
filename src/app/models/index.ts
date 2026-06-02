@@ -237,15 +237,10 @@ export interface Activity {
   userName: string;
 }
 
-export type CandidateStatus = 
+export type CandidateStatus =
   | 'nouveau'
   | 'preselectionne'
-  | 'en_attente_documents'
-  | 'documents_recus'
   | 'entretien_programme'
-  | 'entretien_realise'
-  | 'validation_finale'
-  | 'offre_envoyee'
   | 'offre_acceptee'
   | 'offre_refusee'
   | 'rejete'

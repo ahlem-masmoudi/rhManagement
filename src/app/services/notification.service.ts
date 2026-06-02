@@ -191,15 +191,10 @@ export class NotificationService {
   private getStatusLabel(status: CandidateStatus | null): string {
     if (!status) return 'Nouveau';
     
-    const labels: Record<CandidateStatus, string> = {
+    const labels: Partial<Record<CandidateStatus, string>> = {
       'nouveau': 'Nouveau',
       'preselectionne': 'Présélectionné',
-      'en_attente_documents': 'En attente de documents',
-      'documents_recus': 'Documents reçus',
       'entretien_programme': 'Entretien programmé',
-      'entretien_realise': 'Entretien réalisé',
-      'validation_finale': 'Validation finale',
-      'offre_envoyee': 'Offre envoyée',
       'offre_acceptee': 'Accepté(e)',
       'offre_refusee': 'Refusé(e)',
       'rejete': 'Rejeté',
@@ -214,15 +209,10 @@ export class NotificationService {
    * Retourne la couleur d'un statut
    */
   private getStatusColor(status: CandidateStatus): string {
-    const colors: Record<CandidateStatus, string> = {
+    const colors: Partial<Record<CandidateStatus, string>> = {
       'nouveau': '#6b7280',
       'preselectionne': '#3b82f6',
-      'en_attente_documents': '#f59e0b',
-      'documents_recus': '#8b5cf6',
       'entretien_programme': '#06b6d4',
-      'entretien_realise': '#0ea5e9',
-      'validation_finale': '#6366f1',
-      'offre_envoyee': '#10b981',
       'offre_acceptee': '#059669',
       'offre_refusee': '#ef4444',
       'rejete': '#dc2626',
@@ -237,20 +227,15 @@ export class NotificationService {
    * Retourne un message personnalisé selon le statut
    */
   private getStatusMessage(status: CandidateStatus): string {
-    const messages: Record<CandidateStatus, string> = {
+    const messages: Partial<Record<CandidateStatus, string>> = {
       'nouveau': '<p>Votre candidature a bien été reçue et est en cours d\'examen.</p>',
       'preselectionne': '<p>🎉 Félicitations ! Votre profil a retenu notre attention. Nous vous contacterons prochainement pour la suite du processus.</p>',
-      'en_attente_documents': '<p>Pour continuer le traitement de votre candidature, merci de déposer les documents demandés via votre espace candidat.</p>',
-      'documents_recus': '<p>Nous avons bien reçu vos documents. Ils sont en cours de vérification.</p>',
-      'entretien_programme': '<p>Un entretien a été programmé. Vous recevrez prochainement un email avec les détails (date, heure, lieu).</p>',
-      'entretien_realise': '<p>Merci d\'avoir participé à l\'entretien. Nous reviendrons vers vous très prochainement.</p>',
-      'validation_finale': '<p>Votre candidature est en phase de validation finale auprès de la direction.</p>',
-      'offre_envoyee': '<p>🎉 Une offre de stage vous a été envoyée ! Consultez votre espace candidat pour les détails.</p>',
-      'offre_acceptee': '<p>🎊 Bienvenue dans l\'équipe ! Vous trouverez les documents signés dans votre espace candidat.</p><p>💬 Rejoignez notre groupe Discord d\'encadrement : <a href="https://discord.gg/aeFTt2AgpA">https://discord.gg/aeFTt2AgpA</a></p>',
-      'offre_refusee': '<p>Nous prenons note de votre refus. Nous vous souhaitons le meilleur pour la suite de votre parcours.</p>',
+      'entretien_programme': '<p>Un entretien a été programmé. Vous recevrez prochainement les détails (date, heure, lieu).</p>',
+      'offre_acceptee': '<p>🎊 Bienvenue dans l\'équipe ! Vous trouverez les documents dans votre espace candidat.</p><p>💬 Rejoignez notre groupe Discord : <a href="https://discord.gg/aeFTt2AgpA">https://discord.gg/aeFTt2AgpA</a></p>',
+      'offre_refusee': '<p>Après étude de votre dossier, nous ne pouvons pas donner suite pour le moment. Bonne continuation.</p>',
       'rejete': '<p>Après étude de votre candidature, nous sommes au regret de vous informer que nous ne pouvons pas donner suite pour le moment.</p>',
       'abandonne': '<p>Nous constatons que vous n\'avez pas donné suite. N\'hésitez pas à nous recontacter si vous êtes toujours intéressé.</p>',
-      'stage_termine': '<p>🎓 Félicitations ! Votre stage est maintenant terminé. Merci pour votre contribution au sein de l\'équipe I.NET.</p>'
+      'stage_termine': '<p>🎓 Félicitations ! Votre stage est terminé. Merci pour votre contribution.</p>'
     };
     
     return messages[status] || '<p>Le statut de votre candidature a été mis à jour.</p>';

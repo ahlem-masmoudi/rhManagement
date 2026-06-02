@@ -7,33 +7,23 @@ import { AuthService } from '../../services/auth.service';
 declare const Plotly: any;
 
 const STATUS_LABELS: Record<string, string> = {
-  nouveau:              'Nouveau',
-  preselectionne:       'Présélectionné',
-  en_attente_documents: 'Att. documents',
-  documents_recus:      'Docs reçus',
-  entretien_programme:  'Entretien prévu',
-  entretien_realise:    'Entretien réalisé',
-  offre_acceptee:       'Accepté(e)',
-  offre_refusee:        'Refusé(e)',
-  rejete:               'Refusé(e)',
-  abandonne:            'Abandonné',
-  validation_finale:    'Accepté(e)',
-  offre_envoyee:        'Accepté(e)',
+  nouveau:             'Nouveau',
+  preselectionne:      'Présélectionné',
+  entretien_programme: 'Entretien',
+  offre_acceptee:      'Accepté(e)',
+  offre_refusee:       'Refusé(e)',
+  rejete:              'Refusé(e)',
+  abandonne:           'Abandonné',
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  nouveau:              '#94A3B8',
-  preselectionne:       '#6366F1',
-  en_attente_documents: '#F59E0B',
-  documents_recus:      '#8B5CF6',
-  entretien_programme:  '#06B6D4',
-  entretien_realise:    '#0EA5E9',
-  offre_acceptee:       '#10B981',
-  offre_refusee:        '#F43F5E',
-  rejete:               '#F43F5E',
-  abandonne:            '#CBD5E1',
-  validation_finale:    '#10B981',
-  offre_envoyee:        '#10B981',
+  nouveau:             '#94A3B8',
+  preselectionne:      '#6366F1',
+  entretien_programme: '#06B6D4',
+  offre_acceptee:      '#10B981',
+  offre_refusee:       '#F43F5E',
+  rejete:              '#F43F5E',
+  abandonne:           '#CBD5E1',
 };
 
 @Component({
