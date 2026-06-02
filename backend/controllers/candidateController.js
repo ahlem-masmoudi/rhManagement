@@ -885,6 +885,23 @@ exports.downloadDocument = async (req, res) => {
   }
 };
 
+// @desc    Delete a document from a candidate's documents array
+// @route   DELETE /api/candidates/:id/documents/:docId
+// @access  Private (Recruiter / Admin)
+exports.deleteDocument = async (req, res) => {
+  try {
+    const result = await Candidate.collection.updateOne(
+      { _id: new mongoose.Types.ObjectId(req.params.id) },
+      { $pull: { documents: { id: req.params.docId } } }
+    );
+    if (!result.matchedCount) return res.status(404).json({ success: false, message: 'Candidat introuvable' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('deleteDocument error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Upload document via tracking token (no auth — candidate uses their link)
 // @route   POST /api/candidates/tracking/:token/documents
 // @access  Public

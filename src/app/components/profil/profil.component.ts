@@ -225,6 +225,11 @@ import { Candidate, CandidateStatus, Application } from '../../models';
                         (click)="generateSignedRequest(doc)">
                         Renvoyer signée
                       </button>
+                      <button class="btn-doc-delete" title="Supprimer" (click)="deleteDocument(doc)">
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -905,7 +910,15 @@ import { Candidate, CandidateStatus, Application } from '../../models';
     .ds-signe  { background: #d1fae5; color: #065f46; }
     .ds-en_attente { background: #f3f4f6; color: #6b7280; }
 
-    .experience-skills { display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+    .experience-skills { display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0; align-items: center; }
+    .btn-doc-delete {
+      width: 30px; height: 30px; border: none; border-radius: 8px;
+      background: #fee2e2; color: #dc2626; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-doc-delete:hover { background: #fca5a5; }
 
     .assignment-card { border: 1px dashed #c7d2fe; }
 
@@ -1643,6 +1656,16 @@ export class ProfilComponent implements OnInit {
   }
 
   getDocumentType(doc: any): string { return doc?.type || 'autre'; }
+
+  deleteDocument(doc: any): void {
+    if (!this.candidate || !confirm(`Supprimer "${doc.name}" ?`)) return;
+    this.candidateService.deleteDocument(this.candidate.id, doc.id).subscribe({
+      next: () => {
+        if (this.candidate) this.candidate.documents = (this.candidate.documents || []).filter((d: any) => d.id !== doc.id);
+      },
+      error: (err) => console.error('deleteDocument error', err),
+    });
+  }
 
   getDocumentStatus(doc: any): string { return doc?.status || 'soumis'; }
 

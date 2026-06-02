@@ -10,6 +10,7 @@ const {
   generateTrackingToken,
   uploadDocument,
   downloadDocument,
+  deleteDocument,
   downloadDocumentByTrackingToken,
   uploadDocumentByTrackingToken,
   generateSignedInternshipRequest,
@@ -46,8 +47,9 @@ router.post('/:id/documents/generate-assignment-letter', protect, authorize('rec
 // Update recruiter notes for a candidate
 router.put('/:id/notes', protect, authorize('recruiter', 'rh_candidatures'), updateCandidateNotes);
 
-// Download document
+// Download / delete document
 router.get('/:id/documents/:docId/download', protect, downloadDocument);
+router.delete('/:id/documents/:docId', protect, authorize('recruiter', 'admin', 'rh_candidatures'), deleteDocument);
 
 // Get CV from latest application (fallback when not in candidate.documents)
 router.get('/:id/resume', protect, authorize('recruiter', 'admin', 'rh_candidatures', 'rh_offres'), getCandidateResume);

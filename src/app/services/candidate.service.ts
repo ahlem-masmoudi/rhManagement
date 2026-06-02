@@ -160,6 +160,13 @@ export class CandidateService {
     );
   }
 
+  deleteDocument(candidateId: string, docId: string) {
+    return this.http.delete<{ success: boolean }>(
+      `${this.apiUrl}/candidates/${candidateId}/documents/${docId}`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
   // Get CV from the candidate's latest application (fallback when not in candidate.documents)
   getCandidateResume(candidateId: string) {
     return this.http.get<{ success: boolean; data: { name: string; content: string } }>(
