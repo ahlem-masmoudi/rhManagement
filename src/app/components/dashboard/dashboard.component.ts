@@ -47,7 +47,7 @@ const STATUS_COLORS: Record<string, string> = {
       <div class="dash-header">
         <div>
           <h1 class="dash-greeting">{{ getGreeting() }}, <span class="dash-name">{{ firstName }}</span> 👋</h1>
-          <p class="dash-sub">Tableau de bord RH — {{ today | date:'EEEE d MMMM yyyy' }}</p>
+          <p class="dash-sub">Tableau de bord RH — {{ today | date:'EEEE d MMMM yyyy':'':'fr-FR' }}</p>
         </div>
         <button class="btn-refresh" (click)="load()" [disabled]="loading">
           <svg [class.spin]="loading" width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
