@@ -142,12 +142,6 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
                 Accepté
               </div>
 
-              <div class="candidate-skills">
-                <span *ngFor="let skill of getCandidateSkills(application.candidateId).slice(0, 3)" class="skill-tag">
-                  {{ skill.name }}
-                </span>
-              </div>
-
               <div class="card-footer">
                 <div class="candidate-meta">
                   <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">

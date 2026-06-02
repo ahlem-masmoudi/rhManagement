@@ -180,23 +180,6 @@ import { Candidate, CandidateStatus, Application } from '../../models';
               </div>
             </div>
 
-            <!-- SKILLS TAB -->
-            <div *ngIf="activeTab === 'skills'">
-              <h3>Compétences techniques</h3>
-              <div *ngIf="!candidate.skills?.length" class="empty-message">Aucune compétence renseignée.</div>
-              <div class="skills-grid" *ngIf="candidate.skills?.length">
-                <div *ngFor="let skill of candidate.skills" class="skill-item-large">
-                  <div class="skill-header">
-                    <span class="skill-name">{{ skill.name }}</span>
-                    <span class="skill-level">{{ skill.level }}/5</span>
-                  </div>
-                  <div class="skill-bar">
-                    <div class="skill-progress" [style.width.%]="((skill.level || 0) / 5) * 100"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <!-- DOCUMENTS TAB -->
             <div *ngIf="activeTab === 'documents'">
               <h3>Documents RH</h3>
@@ -1376,7 +1359,6 @@ export class ProfilComponent implements OnInit {
 
   tabs = [
     { id: 'resume',    label: 'Résumé' },
-    { id: 'skills',    label: 'Compétences' },
     { id: 'interview', label: '📅 Entretien' },
     { id: 'evaluation', label: '⭐ Évaluation' },
     { id: 'documents', label: 'Documents RH' },
