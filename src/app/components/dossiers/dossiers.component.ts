@@ -291,22 +291,23 @@ interface DossierEntry {
         </div>
       </div>
 
-      <!-- Preview modal -->
-      <div *ngIf="preview.visible" class="modal-overlay" (click)="closePreview()">
-        <div class="modal" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3>{{ preview.name }}</h3>
-            <button class="btn-secondary" (click)="closePreview()">Fermer</button>
-          </div>
-          <div class="modal-body">
-            <img *ngIf="preview.mime && preview.mime.startsWith('image/')"
-                 [src]="preview.blobUrl" style="max-width:100%;max-height:600px;display:block;margin:auto"/>
-            <iframe *ngIf="!preview.mime?.startsWith('image/')"
-                    [src]="preview.blobUrl"
-                    width="100%" height="620"
-                    style="border:none;display:block">
-            </iframe>
-          </div>
+    </div>
+
+    <!-- Preview modal — outside animated parent so position:fixed works correctly -->
+    <div *ngIf="preview.visible" class="modal-overlay" (click)="closePreview()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ preview.name }}</h3>
+          <button class="btn-secondary" (click)="closePreview()">Fermer</button>
+        </div>
+        <div class="modal-body">
+          <img *ngIf="preview.mime && preview.mime.startsWith('image/')"
+               [src]="preview.blobUrl" style="max-width:100%;max-height:600px;display:block;margin:auto"/>
+          <iframe *ngIf="!preview.mime?.startsWith('image/')"
+                  [src]="preview.blobUrl"
+                  width="100%" height="620"
+                  style="border:none;display:block">
+          </iframe>
         </div>
       </div>
     </div>

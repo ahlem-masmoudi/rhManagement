@@ -332,8 +332,9 @@ interface RhUser {
     }
     .modal {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      width: 90%; max-width: 520px; background: white; border-radius: 20px;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.2); z-index: 301;
+      width: 90%; max-width: 440px; background: white; border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18); z-index: 301;
+      max-height: 85vh; overflow-y: auto;
       animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
     }
     .modal-sm { max-width: 400px; }
@@ -343,19 +344,19 @@ interface RhUser {
     }
     .modal-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 24px 16px; border-bottom: 1px solid #f1f5f9;
+      padding: 16px 20px 14px; border-bottom: 1px solid #f1f5f9;
     }
-    .modal-title { font-size: 17px; font-weight: 700; color: #1e293b; margin: 0; }
+    .modal-title { font-size: 15px; font-weight: 700; color: #1e293b; margin: 0; }
     .modal-close {
       width: 32px; height: 32px; border-radius: 8px; border: none;
       background: #f1f5f9; color: #64748b; cursor: pointer; display: flex;
       align-items: center; justify-content: center; transition: all 0.2s;
     }
     .modal-close:hover { background: #e2e8f0; }
-    .modal-body  { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+    .modal-body  { padding: 16px 20px; display: flex; flex-direction: column; gap: 13px; }
     .modal-footer {
       display: flex; justify-content: flex-end; gap: 10px;
-      padding: 16px 24px; border-top: 1px solid #f1f5f9;
+      padding: 12px 20px; border-top: 1px solid #f1f5f9;
     }
 
     .modal-error {
