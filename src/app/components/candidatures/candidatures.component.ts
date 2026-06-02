@@ -222,8 +222,9 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       100% { transform:translateX(260%)  skewX(-15deg); }
     }
 
-    :host { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-    .candidatures-page { display: flex; flex-direction: column; flex: 1; min-height: 0; max-width: 100%; animation: pageFadeIn 0.4s ease both; overflow: hidden; }
+    :host { display: flex; flex-direction: column; height: 100%; overflow-y: auto; scrollbar-width: none; }
+    :host::-webkit-scrollbar { display: none; }
+    .candidatures-page { display: flex; flex-direction: column; flex: 1; min-height: 0; max-width: 100%; animation: pageFadeIn 0.4s ease both; }
 
     /* ── Page Header ── */
     .page-header {
@@ -338,7 +339,7 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       display: flex;
       gap: 18px;
       flex: 1;
-      min-height: 0;
+      min-height: 340px;
       overflow-x: auto;
       overflow-y: hidden;
       padding-bottom: 16px;
