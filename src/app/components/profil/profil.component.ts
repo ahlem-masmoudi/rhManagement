@@ -217,7 +217,7 @@ import { Candidate, CandidateStatus, Application } from '../../models';
                   </div>
                 </div>
 
-                <div class="project-card assignment-card" *ngIf="candidate?.status === 'offre_acceptee'">
+                <div class="project-card assignment-card" *ngIf="['offre_acceptee','offre_envoyee'].includes(candidate?.status || '')" >
                   <h4>Lettre d'affectation</h4>
                   <p class="project-description">
                     Disponible pour les candidats dont l'offre a été acceptée.
@@ -1771,8 +1771,8 @@ export class ProfilComponent implements OnInit {
 
   shouldHideRhDocuments(): boolean {
     if (!this.candidate) return true;
-    const hiddenStatuses = ['nouveau', 'offre_refusee', 'rejete', 'abandonne'];
-    return hiddenStatuses.includes(this.candidate.status);
+    const showStatuses = ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'stage_termine'];
+    return !showStatuses.includes(this.candidate.status);
   }
 
   // ── Interview scheduling ────────────────────────────────────────────────────
