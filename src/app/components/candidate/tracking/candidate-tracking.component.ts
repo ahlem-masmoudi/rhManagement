@@ -690,6 +690,17 @@ export class CandidateTrackingComponent implements OnInit {
 
   private readonly statusOrder = ['nouveau','preselectionne','entretien_programme','offre_acceptee'];
 
+  private normalizeStatus(status: string): string {
+    const map: Record<string,string> = {
+      offre_envoyee:       'offre_acceptee',
+      entretien_realise:   'entretien_programme',
+      validation_finale:   'offre_acceptee',
+      en_attente_documents:'offre_acceptee',
+      documents_recus:     'offre_acceptee',
+    };
+    return map[status] ?? status;
+  }
+
   constructor(
     private route: ActivatedRoute,
     private candidateService: CandidateService
@@ -744,7 +755,7 @@ export class CandidateTrackingComponent implements OnInit {
 
   isStepDone(status: string): boolean {
     if (!this.candidate) return false;
-    const cur = this.candidate.status;
+    const cur = this.normalizeStatus(this.candidate.status);
     if (cur === 'offre_refusee') return status === 'nouveau' || status === 'preselectionne';
     const curIdx = this.statusOrder.indexOf(cur);
     const stepIdx = this.statusOrder.indexOf(status);
@@ -752,7 +763,7 @@ export class CandidateTrackingComponent implements OnInit {
   }
 
   isStepActive(status: string): boolean {
-    return this.candidate?.status === status;
+    return this.normalizeStatus(this.candidate?.status ?? '') === status;
   }
 
   hasInterviewInfo(): boolean {
@@ -760,7 +771,7 @@ export class CandidateTrackingComponent implements OnInit {
   }
 
   canUploadDemandeStage(): boolean {
-    return ['offre_acceptee','en_attente_documents','documents_recus'].includes(this.candidate?.status || '');
+    return this.normalizeStatus(this.candidate?.status || '') === 'offre_acceptee';
   }
 
   getUnsignedDemandeStage(): CandidateDocument | null {
@@ -847,33 +858,33 @@ export class CandidateTrackingComponent implements OnInit {
   }
 
   getStatusLabel(status: string): string {
-    return ({ nouveau:'Nouveau', preselectionne:'Présélectionné', en_attente_documents:'En attente de documents', documents_recus:'Documents reçus', entretien_programme:'Entretien programmé', entretien_realise:'Entretien réalisé', validation_finale:'Validation finale', offre_envoyee:'Offre envoyée', offre_acceptee:'Accepté(e)', offre_refusee:'Refusé(e)', rejete:'Rejeté', abandonne:'Abandonné', stage_termine:'Stage terminé' } as any)[status] || status;
+    return ({ nouveau:'Nouveau', preselectionne:'Présélectionné', entretien_programme:'Entretien programmé', offre_acceptee:'Accepté(e)', offre_refusee:'Refusé(e)' } as any)[this.normalizeStatus(status)] || this.normalizeStatus(status);
   }
 
   getStatusColor(status: string): string {
-    return ({ nouveau:'#6b7280', preselectionne:'#667eea', en_attente_documents:'#f59e0b', documents_recus:'#764ba2', entretien_programme:'#667eea', entretien_realise:'#7c6fd4', validation_finale:'#764ba2', offre_envoyee:'#10b981', offre_acceptee:'#059669', offre_refusee:'#ef4444', rejete:'#dc2626', abandonne:'#6b7280', stage_termine:'#059669' } as any)[status] || '#6b7280';
+    return ({ nouveau:'#6b7280', preselectionne:'#667eea', entretien_programme:'#667eea', offre_acceptee:'#059669', offre_refusee:'#ef4444' } as any)[this.normalizeStatus(status)] || '#6b7280';
   }
 
   getStatusGradient(status: string): string {
     const gradients: Record<string,string> = {
-      nouveau: 'linear-gradient(135deg,#4b5563,#6b7280)',
-      preselectionne: 'linear-gradient(135deg,#2563eb,#3b82f6)',
-      en_attente_documents: 'linear-gradient(135deg,#d97706,#f59e0b)',
-      documents_recus: 'linear-gradient(135deg,#7c3aed,#8b5cf6)',
-      entretien_programme: 'linear-gradient(135deg,#0891b2,#06b6d4)',
-      entretien_realise: 'linear-gradient(135deg,#0284c7,#0ea5e9)',
-      validation_finale: 'linear-gradient(135deg,#4f46e5,#6366f1)',
-      offre_envoyee: 'linear-gradient(135deg,#059669,#10b981)',
-      offre_acceptee: 'linear-gradient(135deg,#047857,#059669)',
-      offre_refusee: 'linear-gradient(135deg,#dc2626,#ef4444)',
-      rejete: 'linear-gradient(135deg,#b91c1c,#dc2626)',
-      stage_termine: 'linear-gradient(135deg,#047857,#059669)',
+      nouveau:            'linear-gradient(135deg,#4b5563,#6b7280)',
+      preselectionne:     'linear-gradient(135deg,#2563eb,#3b82f6)',
+      entretien_programme:'linear-gradient(135deg,#0891b2,#06b6d4)',
+      offre_acceptee:     'linear-gradient(135deg,#047857,#059669)',
+      offre_refusee:      'linear-gradient(135deg,#dc2626,#ef4444)',
     };
-    return gradients[status] || 'linear-gradient(135deg,#4b5563,#6b7280)';
+    return gradients[this.normalizeStatus(status)] || 'linear-gradient(135deg,#4b5563,#6b7280)';
   }
 
   getStatusDescription(status: string): string {
-    return ({ nouveau:'Votre candidature a bien été reçue et est en cours d\'examen.', preselectionne:'Félicitations ! Votre profil a retenu notre attention. Consultez ci-dessous la date et l\'heure de votre entretien.', en_attente_documents:'Votre candidature est acceptée. Veuillez déposer votre demande de stage (formulaire vierge) ci-dessous.', documents_recus:'Votre demande de stage a été reçue. Le service RH est en train de la traiter.', entretien_programme:'Votre entretien est confirmé. Consultez les détails ci-dessous.', entretien_realise:'Merci pour votre participation à l\'entretien. Nous revenons vers vous prochainement.', validation_finale:'Votre candidature est en cours de validation finale.', offre_envoyee:'Une offre vous a été envoyée !', offre_acceptee:'Bienvenue dans l\'équipe ! Rejoignez notre groupe Discord d\'encadrement.', offre_refusee:'Nous ne pouvons pas donner suite à votre candidature pour le moment.', rejete:'Nous ne pouvons pas donner suite pour le moment.', abandonne:'Votre candidature semble inactive.', stage_termine:'Votre stage est maintenant terminé. Merci pour votre engagement.' } as any)[status] || '';
+    const desc: Record<string,string> = {
+      nouveau:            'Votre candidature a bien été reçue et est en cours d\'examen.',
+      preselectionne:     'Félicitations ! Votre profil a retenu notre attention. Consultez ci-dessous la date et l\'heure de votre entretien.',
+      entretien_programme:'Votre entretien est confirmé. Consultez les détails ci-dessous.',
+      offre_acceptee:     'Bienvenue dans l\'équipe ! Rejoignez notre groupe Discord d\'encadrement.',
+      offre_refusee:      'Nous ne pouvons pas donner suite à votre candidature pour le moment.',
+    };
+    return desc[this.normalizeStatus(status)] || '';
   }
 
   formatDate(date: Date): string {
