@@ -896,56 +896,45 @@ exports.uploadDocumentByTrackingToken = async (req, res) => {
     const docType = type || 'demande_stage';
     const now = new Date();
 
-    // Check if an unsigned doc of the same type already exists (to replace it)
-    const existing = await Candidate.findOne({
-      trackingToken: req.params.token,
-      'documents.type': docType,
-      'documents.isSigned': false
-    }).select('_id documents');
+    // Find candidate by token
+    const candidate = await Candidate.findOne({ trackingToken: req.params.token }).select('_id documents').lean();
+    if (!candidate) return res.status(404).json({ success: false, message: 'Lien invalide ou expiré' });
 
-    let updated;
-    if (existing) {
-      // Replace the first matching unsigned doc in-place using positional $
-      updated = await Candidate.findOneAndUpdate(
-        {
-          trackingToken: req.params.token,
-          'documents.type': docType,
-          'documents.isSigned': false
-        },
-        {
-          $set: {
-            'documents.$.name':       name,
-            'documents.$.content':    content,
-            'documents.$.uploadedAt': now,
-            'documents.$.status':     'soumis'
-          }
-        },
-        { new: true }
+    const oid = candidate._id;
+
+    // Check if an unsigned doc of the same type already exists (to replace it)
+    const existingIdx = (candidate.documents || []).findIndex(d => d.type === docType && !d.isSigned);
+
+    // Use raw driver to avoid Mongoose CastError on large binary (PDF) content
+    let result;
+    if (existingIdx !== -1) {
+      result = await Candidate.collection.updateOne(
+        { _id: oid, 'documents.type': docType, 'documents.isSigned': false },
+        { $set: {
+          'documents.$.name':       name,
+          'documents.$.content':    content,
+          'documents.$.uploadedAt': now,
+          'documents.$.status':     'soumis'
+        }}
       );
     } else {
-      // Push a brand-new document entry
-      updated = await Candidate.findOneAndUpdate(
-        { trackingToken: req.params.token },
-        {
-          $push: {
-            documents: {
-              id: `${Date.now()}_${Math.random().toString(36).substr(2, 8)}`,
-              name,
-              type: docType,
-              content,
-              status: 'soumis',
-              isSigned: false,
-              uploadedAt: now
-            }
-          }
-        },
-        { new: true }
+      result = await Candidate.collection.updateOne(
+        { _id: oid },
+        { $push: { documents: {
+          id: `${Date.now()}_${Math.random().toString(36).substr(2, 8)}`,
+          name,
+          type: docType,
+          content,
+          status: 'soumis',
+          isSigned: false,
+          uploadedAt: now
+        }}}
       );
     }
 
-    if (!updated) return res.status(404).json({ success: false, message: 'Lien invalide ou expiré' });
+    if (!result.matchedCount) return res.status(404).json({ success: false, message: 'Lien invalide ou expiré' });
 
-    console.log(`uploadDocumentByTrackingToken: saved OK — candidate ${updated._id}, docs count ${(updated.documents || []).length}`);
+    console.log(`uploadDocumentByTrackingToken: saved OK — candidate ${oid}`);
     res.json({ success: true, message: 'Document déposé avec succès' });
   } catch (error) {
     console.error('uploadDocumentByTrackingToken error:', error);
