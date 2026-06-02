@@ -101,6 +101,11 @@ import { Offer } from '../../../models';
       </div>
 
       <!-- ── Error ── -->
+      <div *ngIf="limitError" class="limit-toast">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        {{ limitError }}
+      </div>
+
       <div *ngIf="errorMessage" class="error-banner">
         <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
@@ -854,6 +859,23 @@ import { Offer } from '../../../models';
     .btn-reset:hover { background: #eef2ff; }
 
     /* ── Error ── */
+    .limit-toast {
+      display: flex; align-items: center; gap: 10px;
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 9999;
+      padding: 14px 22px;
+      background: #fff7ed; border: 1.5px solid #fdba74;
+      border-radius: 14px; color: #92400e;
+      font-size: 14px; font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      animation: slideDown 0.3s ease;
+      max-width: 480px; width: 90%;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-16px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
     .error-banner {
       display: flex;
       align-items: center;
@@ -1085,6 +1107,8 @@ export class CandidateOffersComponent implements OnInit {
   applySuccess = false;
   applyError = '';
   isDraggingOver = false;
+  limitError = '';
+  private limitTimer: any = null;
 
   searchQuery = '';
   selectedDepartment = '';
@@ -1166,6 +1190,14 @@ export class CandidateOffersComponent implements OnInit {
   applyToOffer(offer: Offer): void {
     const user = this.authService.getCurrentUser();
     if (!user || user.role !== 'candidate') return;
+
+    if (this.appliedOffers.size >= 2) {
+      this.limitError = 'Vous avez atteint la limite de 2 candidatures. Il n\'est pas possible de postuler à une 3ème offre.';
+      clearTimeout(this.limitTimer);
+      this.limitTimer = setTimeout(() => { this.limitError = ''; }, 4000);
+      return;
+    }
+
     this.applyingToOffer = offer;
     this.cvFile = null;
     this.coverLetter = '';
