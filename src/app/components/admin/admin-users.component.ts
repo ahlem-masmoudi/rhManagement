@@ -334,7 +334,6 @@ interface RhUser {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
       width: 90%; max-width: 440px; background: white; border-radius: 16px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.18); z-index: 301;
-      max-height: 85vh; overflow-y: auto;
       animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
     }
     .modal-sm { max-width: 400px; }

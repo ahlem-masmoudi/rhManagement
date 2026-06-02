@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -99,6 +100,24 @@ router.delete('/users/:id', protect, authorize('recruiter', 'admin'), async (req
     }
     await user.deleteOne();
     res.json({ success: true, message: 'Utilisateur supprimé.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// DELETE /api/admin/cleanup-letters — remove all generated assignment letters (one-time migration)
+router.delete('/cleanup-letters', protect, authorize('recruiter', 'admin'), async (req, res) => {
+  try {
+    const col = mongoose.connection.collection('candidates');
+    const pull = await col.updateMany(
+      { 'documents.metadata.kind': 'assignment_letter' },
+      { $pull: { documents: { 'metadata.kind': 'assignment_letter' } } }
+    );
+    const status = await col.updateMany(
+      { status: 'offre_envoyee' },
+      { $set: { status: 'offre_acceptee' } }
+    );
+    res.json({ success: true, lettersRemoved: pull.modifiedCount, statusReverted: status.modifiedCount });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
