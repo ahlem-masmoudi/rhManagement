@@ -343,19 +343,19 @@ interface RhUser {
     }
     .modal-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 20px 14px; border-bottom: 1px solid #f1f5f9;
+      padding: 14px 18px 12px; border-bottom: 1px solid #f1f5f9;
     }
-    .modal-title { font-size: 15px; font-weight: 700; color: #1e293b; margin: 0; }
+    .modal-title { font-size: 14px; font-weight: 700; color: #1e293b; margin: 0; }
     .modal-close {
-      width: 32px; height: 32px; border-radius: 8px; border: none;
+      width: 28px; height: 28px; border-radius: 7px; border: none;
       background: #f1f5f9; color: #64748b; cursor: pointer; display: flex;
       align-items: center; justify-content: center; transition: all 0.2s;
     }
     .modal-close:hover { background: #e2e8f0; }
-    .modal-body  { padding: 16px 20px; display: flex; flex-direction: column; gap: 13px; }
+    .modal-body  { padding: 12px 18px; display: flex; flex-direction: column; gap: 10px; }
     .modal-footer {
-      display: flex; justify-content: flex-end; gap: 10px;
-      padding: 12px 20px; border-top: 1px solid #f1f5f9;
+      display: flex; justify-content: flex-end; gap: 8px;
+      padding: 10px 18px; border-top: 1px solid #f1f5f9;
     }
 
     .modal-error {
@@ -363,33 +363,33 @@ interface RhUser {
       padding: 10px 14px; border-radius: 8px; font-size: 13px;
     }
 
-    .form-row { display: flex; gap: 12px; }
+    .form-row { display: flex; gap: 10px; }
     .form-row .form-group { flex: 1; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 13px; font-weight: 600; color: #374151; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 12px; font-weight: 600; color: #374151; }
     .form-group input {
-      padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px;
-      font-size: 14px; color: #1e293b; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+      padding: 7px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+      font-size: 13px; color: #1e293b; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
     }
     .form-group input:focus {
       border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
     }
 
     /* Role selector */
-    .role-selector { display: flex; flex-direction: column; gap: 8px; }
+    .role-selector { display: flex; flex-direction: column; gap: 5px; }
     .role-option {
-      display: flex; align-items: center; gap: 12px; padding: 12px 14px;
-      border: 1.5px solid #e2e8f0; border-radius: 12px; cursor: pointer;
+      display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+      border: 1.5px solid #e2e8f0; border-radius: 9px; cursor: pointer;
       transition: all 0.2s;
     }
     .role-option input[type="radio"] { display: none; }
     .role-option.selected { border-color: #6366f1; background: #eef2ff; }
-    .role-option-name { font-size: 13.5px; font-weight: 600; color: #1e293b; display: block; }
-    .role-option-desc { font-size: 12px; color: #64748b; display: block; margin-top: 1px; }
+    .role-option-name { font-size: 12.5px; font-weight: 600; color: #1e293b; display: block; }
+    .role-option-desc { font-size: 11px; color: #64748b; display: block; margin-top: 1px; }
 
     .btn-cancel {
-      padding: 9px 18px; border: 1.5px solid #e2e8f0; border-radius: 10px;
-      background: white; color: #64748b; font-size: 14px; font-weight: 500;
+      padding: 7px 16px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+      background: white; color: #64748b; font-size: 13px; font-weight: 500;
       cursor: pointer; transition: all 0.2s;
     }
     .btn-cancel:hover { background: #f8fafc; }
