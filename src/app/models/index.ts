@@ -39,6 +39,7 @@ export interface Offer {
   matchingCriteria: MatchingCriteria;
   applicationsCount: number;
   viewsCount: number;
+  positions?: number;
   compatibilityScore?: number;
   matchedSkills?: string[];
   missingSkills?: string[];
