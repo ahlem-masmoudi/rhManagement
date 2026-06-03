@@ -12,6 +12,7 @@ interface DeptOffer {
   location: string;
   duration: string;
   type: string;
+  positions?: number;
 }
 
 interface Department {
@@ -218,6 +219,11 @@ interface Department {
                 <h3 class="moc-title">{{ offer.title }}</h3>
                 <span class="moc-type" [attr.data-type]="offer.type">{{ offer.type }}</span>
               </div>
+              <div class="moc-meta">
+                <span *ngIf="offer.location">📍 {{ offer.location }}</span>
+                <span *ngIf="offer.duration">🕐 {{ offer.duration }}</span>
+                <span *ngIf="offer.positions">👥 {{ offer.positions }} place{{ offer.positions > 1 ? 's' : '' }}</span>
+              </div>
               <p class="moc-desc" [class.expanded]="expandedOffers.has(offer._id)">{{ offer.description }}</p>
               <button class="moc-toggle" (click)="toggleOfferDesc(offer._id)">
                 {{ expandedOffers.has(offer._id) ? 'Voir moins ▲' : 'Voir plus ▼' }}
@@ -369,6 +375,8 @@ interface Department {
     .moc-type[data-type="stage"]      { background:rgba(0,160,220,0.12); color:#0074BC; }
     .moc-type[data-type="alternance"] { background:rgba(124,58,237,0.12); color:#7c3aed; }
     .moc-type[data-type="emploi"]     { background:rgba(5,150,105,0.12);  color:#059669; }
+    .moc-meta { display:flex; flex-wrap:wrap; gap:10px; margin:6px 0 8px; font-size:0.78rem; color:#6b7280; font-weight:500; }
+    .moc-meta span { display:flex; align-items:center; gap:3px; }
     .moc-desc { font-size:0.85rem; color:#4b5563; line-height:1.55; margin:0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
     .moc-desc.expanded { display:block; -webkit-line-clamp:unset; overflow:visible; }
     .moc-toggle { background:none; border:none; color:#00A0DC; font-size:0.78rem; font-weight:600; cursor:pointer; padding:0; font-family:'Inter',sans-serif; align-self:flex-start; transition:color 0.2s; }
@@ -480,7 +488,7 @@ export class HomeComponent implements OnInit {
             name: cfg.name, icon: cfg.icon, expanded: false,
             offers: active.filter(o => o.department === cfg.name).map(o => ({
               _id: o._id, title: o.title, description: o.description,
-              location: o.location, duration: o.duration, type: o.type
+              location: o.location, duration: o.duration, type: o.type, positions: o.positions
             }))
           }));
           this.loading = false;

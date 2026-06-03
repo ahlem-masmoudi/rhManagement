@@ -76,6 +76,12 @@ import { Offer } from '../../models';
               </svg>
               {{ offer.duration }}
             </div>
+            <div class="meta-item" *ngIf="offer.positions">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a4 4 0 00-3-3.87M4 18v-1a4 4 0 013-3.87"/>
+              </svg>
+              {{ offer.positions }} place{{ offer.positions > 1 ? 's' : '' }}
+            </div>
           </div>
           
           <div class="dept-badge">
@@ -155,7 +161,7 @@ import { Offer } from '../../models';
             </div>
 
             <div class="form-group">
-              <label>Nombre de places disponibles <span style="color:#6366f1;font-weight:700">(2 à 5)</span></label>
+              <label>Nombre de places disponibles</label>
               <input type="number" [(ngModel)]="newOffer.positions" min="2" max="5"
                      style="width:120px" placeholder="2">
             </div>
