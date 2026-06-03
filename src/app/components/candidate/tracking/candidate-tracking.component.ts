@@ -42,7 +42,12 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
         </div>
       </div>
 
-      <div class="container" *ngIf="candidate && candidate.status !== 'stage_termine'; else notFound">
+      <!-- Loading state -->
+      <div class="container" *ngIf="isLoading" style="display:flex;justify-content:center;align-items:center;min-height:300px">
+        <div class="spinner" style="width:48px;height:48px;border:4px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+      </div>
+
+      <div class="container" *ngIf="!isLoading && candidate && candidate.status !== 'stage_termine'; else notFoundBlock">
 
         <!-- Welcome card -->
         <div class="glass-card welcome-card" style="--delay:0.05s">
@@ -246,9 +251,9 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
 
       </div><!-- /container -->
 
-      <!-- Not found -->
-      <ng-template #notFound>
-        <div class="container">
+      <!-- Not found (only shown after loading completes) -->
+      <ng-template #notFoundBlock>
+        <div class="container" *ngIf="!isLoading">
           <div class="glass-card error-card" style="--delay:0.05s">
             <div class="error-icon">
               <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -674,6 +679,7 @@ export class CandidateTrackingComponent implements OnInit {
   candidate: Candidate | undefined;
   trackingToken: string = '';
   application: any = null;
+  isLoading = true;
 
   selectedFile: File | null = null;
   uploadLoading = false;
@@ -734,9 +740,12 @@ export class CandidateTrackingComponent implements OnInit {
             createdAt: candidate.createdAt,
             updatedAt: candidate.updatedAt
           };
+          this.isLoading = false;
         },
-        error: () => { this.candidate = undefined; }
+        error: () => { this.candidate = undefined; this.isLoading = false; }
       });
+    } else {
+      this.isLoading = false;
     }
   }
 
