@@ -217,7 +217,7 @@ import { Candidate, CandidateStatus, Application } from '../../models';
                   </div>
                 </div>
 
-                <div class="project-card assignment-card" *ngIf="['offre_acceptee','offre_envoyee'].includes(candidate?.status || '')">
+                <div class="project-card assignment-card" *ngIf="['offre_acceptee','offre_envoyee','en_attente_documents','documents_recus','stage_termine'].includes(candidate?.status || '')">
                   <h4>Lettre d'affectation</h4>
                   <p class="project-description">
                     Disponible pour les candidats dont l'offre a été acceptée.
@@ -1437,7 +1437,7 @@ export class ProfilComponent implements OnInit {
     return this.tabs.filter(t => {
       if (t.id === 'documents') return !this.shouldHideRhDocuments();
       if (t.id === 'interview') return !['nouveau', 'offre_acceptee', 'offre_refusee', 'rejete', 'abandonne'].includes(this.candidate?.status || '');
-      if (t.id === 'evaluation') return ['offre_acceptee', 'offre_envoyee', 'entretien_programme'].includes(this.candidate?.status || '');
+      if (t.id === 'evaluation') return ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'entretien_programme', 'stage_termine'].includes(this.candidate?.status || '');
       return true;
     });
   }
@@ -1766,7 +1766,7 @@ export class ProfilComponent implements OnInit {
 
   shouldHideRhDocuments(): boolean {
     if (!this.candidate) return true;
-    const showStatuses = ['offre_acceptee', 'offre_envoyee', 'stage_termine'];
+    const showStatuses = ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'stage_termine'];
     return !showStatuses.includes(this.candidate.status);
   }
 
