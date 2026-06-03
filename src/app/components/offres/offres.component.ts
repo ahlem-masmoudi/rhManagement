@@ -468,10 +468,11 @@ import { Offer } from '../../models';
     }
 
     .dept-badge {
-      display: inline-flex;
+      display: flex;
       align-items: center;
+      justify-content: center;
       gap: 5px;
-      padding: 4px 10px;
+      padding: 6px 10px;
       background: linear-gradient(135deg, rgba(102,51,153,0.08), rgba(155,68,204,0.08));
       color: #663399;
       border-radius: 8px;
@@ -479,7 +480,8 @@ import { Offer } from '../../models';
       font-weight: 700;
       border: 1px solid rgba(102,51,153,0.14);
       margin-bottom: 8px;
-      width: fit-content;
+      width: 100%;
+      text-align: center;
     }
 
     .offer-description {
@@ -510,7 +512,7 @@ import { Offer } from '../../models';
       margin-bottom: 10px;
       border: 1px solid rgba(102,51,153,0.07);
     }
-    .stat { display: flex; flex-direction: column; gap: 2px; animation: statPop 0.5s 0.3s both; }
+    .stat { display: flex; flex-direction: column; gap: 2px; animation: statPop 0.5s 0.3s both; align-items: center; width: 100%; text-align: center; }
     .stat-value {
       font-size: 20px;
       font-weight: 900;
@@ -547,6 +549,9 @@ import { Offer } from '../../models';
       cursor: pointer;
       transition: all 0.25s;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       letter-spacing: 0.1px;
     }
     .btn-secondary:hover {
@@ -567,6 +572,9 @@ import { Offer } from '../../models';
       cursor: pointer;
       transition: all 0.25s;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .btn-danger:hover { background: #fef2f2; border-color: #dc2626; transform: translateY(-1px); }
 
