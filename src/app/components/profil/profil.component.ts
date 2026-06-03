@@ -316,7 +316,7 @@ import { Candidate, CandidateStatus, Application } from '../../models';
                 <button class="btn btn-primary"
                         [disabled]="evalLoading || !evalForm.rating || !evalForm.outcome"
                         (click)="saveEvaluation()">
-                  {{ evalLoading ? 'Enregistrement...' : 'Sauvegarder l\'évaluation' }}
+                  {{ evalLoading ? "Enregistrement..." : "Sauvegarder l'évaluation" }}
                 </button>
               </div>
             </div>
@@ -1761,7 +1761,7 @@ export class ProfilComponent implements OnInit {
 
   canGenerateAssignmentLetter(): boolean {
     if (!this.candidate) return false;
-    return this.candidate.status === 'offre_acceptee';
+    return ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'stage_termine'].includes(this.candidate.status);
   }
 
   shouldHideRhDocuments(): boolean {

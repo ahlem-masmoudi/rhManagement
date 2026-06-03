@@ -225,7 +225,12 @@ exports.getAllApplications = async (req, res) => {
         appliedAt: app.appliedAt,
         matchingScore: formatMatchingScore(app),
         matchedSkills: app.matchedSkills || [],
-        missingSkills: app.missingSkills || []
+        missingSkills: app.missingSkills || [],
+        evaluation: app.evaluation || null,
+        interviewDate: app.interviewDate || null,
+        interviewTime: app.interviewTime || null,
+        interviewNotes: app.interviewNotes || null,
+        matchingBreakdown: app.matchingBreakdown || null
       };
     });
 
