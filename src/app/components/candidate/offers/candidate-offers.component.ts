@@ -183,6 +183,12 @@ import { Offer } from '../../../models';
                 </svg>
                 {{ offer.duration }}
               </span>
+              <span class="meta-item" *ngIf="offer.positions">
+                <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a4 4 0 00-3-3.87M4 18v-1a4 4 0 013-3.87"/>
+                </svg>
+                {{ offer.positions }} place{{ offer.positions > 1 ? 's' : '' }}
+              </span>
             </div>
 
             <p class="offer-desc">{{ offer.description }}</p>

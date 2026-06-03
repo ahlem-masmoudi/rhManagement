@@ -155,6 +155,12 @@ import { Offer } from '../../models';
             </div>
 
             <div class="form-group">
+              <label>Nombre de places disponibles <span style="color:#6366f1;font-weight:700">(2 à 5)</span></label>
+              <input type="number" [(ngModel)]="newOffer.positions" min="2" max="5"
+                     style="width:120px" placeholder="2">
+            </div>
+
+            <div class="form-group">
               <label>Description *</label>
               <textarea [(ngModel)]="newOffer.description" placeholder="Décrivez le poste..."></textarea>
             </div>
@@ -743,6 +749,7 @@ export class OffresComponent implements OnInit {
     type: 'stage',
     duration: '',
     startDate: '',
+    positions: 2,
     description: '',
     requirements: [],
     benefits: [],
@@ -885,6 +892,7 @@ export class OffresComponent implements OnInit {
       type: offer.type,
       duration: offer.duration,
       startDate: offer.startDate,
+      positions: offer.positions ?? 2,
       description: offer.description,
       requirements: [...offer.requirements],
       benefits: offer.benefits ? [...offer.benefits] : [],

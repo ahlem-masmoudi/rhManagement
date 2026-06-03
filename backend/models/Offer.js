@@ -66,6 +66,12 @@ const offerSchema = new mongoose.Schema({
   },
   deadline: {
     type: Date
+  },
+  positions: {
+    type: Number,
+    min: 2,
+    max: 5,
+    default: 2
   }
 });
 
