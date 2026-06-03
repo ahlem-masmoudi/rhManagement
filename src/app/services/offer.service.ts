@@ -146,6 +146,7 @@ export class OfferService {
     if (updates.location) offerData.location = updates.location;
     if (updates.type) offerData.type = updates.type;
     if (updates.duration) offerData.duration = updates.duration;
+    if (updates.positions != null) offerData.positions = updates.positions;
     if (updates.description) offerData.description = updates.description;
     if (updates.requirements) offerData.requirements = updates.requirements;
     if (updates.status) offerData.status = this.mapFrontendStatus(updates.status);
