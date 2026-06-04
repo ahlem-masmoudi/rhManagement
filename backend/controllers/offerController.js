@@ -378,7 +378,8 @@ exports.applyToOffer = async (req, res) => {
       notes: req.body.cvName ? `CV: ${req.body.cvName}` : ''
     });
 
-    // Also persist the CV in candidate.documents so the RH kanban can preview it
+    // Also persist the CV in candidate.documents — use raw driver to avoid
+    // Mongoose enum validation on stale status values (e.g. offre_envoyee)
     if (req.body.cvBase64 && req.body.cvName) {
       const existingCvIdx = (candidate.documents || []).findIndex(d => d.type === 'cv');
       const cvDoc = {
@@ -390,11 +391,16 @@ exports.applyToOffer = async (req, res) => {
         uploadedAt: new Date()
       };
       if (existingCvIdx >= 0) {
-        candidate.documents[existingCvIdx] = { ...candidate.documents[existingCvIdx].toObject(), ...cvDoc };
+        await Candidate.collection.updateOne(
+          { _id: candidate._id },
+          { $set: { [`documents.${existingCvIdx}`]: { ...(candidate.documents[existingCvIdx]?.toObject?.() || candidate.documents[existingCvIdx] || {}), ...cvDoc } } }
+        );
       } else {
-        candidate.documents.push(cvDoc);
+        await Candidate.collection.updateOne(
+          { _id: candidate._id },
+          { $push: { documents: cvDoc } }
+        );
       }
-      await candidate.save();
     }
 
     // Best-effort auto scoring: the application is still considered submitted
