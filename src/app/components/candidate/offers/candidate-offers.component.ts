@@ -1277,6 +1277,8 @@ export class CandidateOffersComponent implements OnInit {
             this.applyError = 'Profil incomplet. Complétez votre profil avant de postuler.';
           else if (error.message?.includes('limite') || error.message?.includes('2 candidatures'))
             this.applyError = '⚠️ Vous avez atteint la limite de 2 candidatures. Il n\'est pas possible de postuler à une 3ème offre.';
+          else if (error.message?.includes('not authorized') || error.message?.includes('Forbidden'))
+            this.applyError = 'Action non autorisée. Veuillez vous connecter avec votre compte candidat.';
           else
             this.applyError = error.message || 'Erreur lors de l\'envoi. Veuillez réessayer.';
         }
