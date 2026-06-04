@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Application = require('../models/Application');
+const User = require('../models/User');
 const { protect, authorize } = require('../middleware/auth');
 
 // GET /api/notifications — recent activity for RH recruiter
@@ -11,15 +12,36 @@ router.get('/', protect, authorize('recruiter', 'admin', 'rh_offres', 'rh_candid
       .limit(20)
       .populate({
         path: 'candidate',
+        select: 'userId statusHistory',
         populate: { path: 'userId', select: 'firstName lastName' }
       })
-      .populate('offer', 'title');
+      .populate('offer', 'title')
+      .lean();
+
+    // Collect all changedBy IDs from statusHistory
+    const actorIds = new Set();
+    applications.forEach(app => {
+      const history = app.candidate?.statusHistory || [];
+      const last = history[history.length - 1];
+      if (last?.changedBy) actorIds.add(last.changedBy.toString());
+    });
+    const actorUsers = await User.find({ _id: { $in: [...actorIds] } }).select('firstName lastName role').lean();
+    const actorMap = {};
+    actorUsers.forEach(u => { actorMap[u._id.toString()] = u; });
 
     const notifications = applications.map(app => {
       const firstName = app.candidate?.userId?.firstName || '';
       const lastName  = app.candidate?.userId?.lastName  || '';
       const fullName  = `${firstName} ${lastName}`.trim() || 'Candidat';
       const offerTitle = app.offer?.title || 'une offre';
+
+      // Find actor from last statusHistory entry
+      const history = app.candidate?.statusHistory || [];
+      const lastChange = history[history.length - 1];
+      const actorUser = lastChange?.changedBy ? actorMap[lastChange.changedBy.toString()] : null;
+      const actorName = actorUser
+        ? `${actorUser.firstName || ''} ${actorUser.lastName || ''}`.trim()
+        : null;
 
       let type = 'status';
       let text = '';
@@ -41,10 +63,6 @@ router.get('/', protect, authorize('recruiter', 'admin', 'rh_offres', 'rh_candid
           type = 'status';
           text = `Entretien programmé avec <strong>${fullName}</strong>${app.interviewDate ? ` — ${formatDate(app.interviewDate)}` : ''}`;
           break;
-        case 'entretien_realise':
-          type = 'status';
-          text = `Entretien réalisé avec <strong>${fullName}</strong>`;
-          break;
         case 'offre_acceptee':
           type = 'doc';
           text = `<strong>${fullName}</strong> a <strong style="color:#059669">accepté</strong> l'offre pour <strong>${offerTitle}</strong>`;
@@ -61,6 +79,7 @@ router.get('/', protect, authorize('recruiter', 'admin', 'rh_offres', 'rh_candid
         id: app._id.toString(),
         type,
         text,
+        actor: actorName,
         time: timeAgo(app.updatedAt),
         updatedAt: app.updatedAt
       };

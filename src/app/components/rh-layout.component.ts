@@ -272,7 +272,7 @@ interface SearchResult {
               <!-- Dropdown -->
               <div class="notif-panel" *ngIf="showNotifications">
                 <div class="notif-header">
-                  <span class="notif-title">Notifications</span>
+                  <span class="notif-title">Activité</span>
                   <button class="notif-mark-all" (click)="markAllRead()">Tout marquer lu</button>
                 </div>
                 <div class="notif-list">
@@ -284,7 +284,13 @@ interface SearchResult {
                     </div>
                     <div class="notif-body">
                       <p class="notif-text" [innerHTML]="n.text"></p>
-                      <span class="notif-time">{{ n.time }}</span>
+                      <div class="notif-meta">
+                        <span class="notif-actor" *ngIf="n.actor">
+                          <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                          {{ n.actor }}
+                        </span>
+                        <span class="notif-time">{{ n.time }}</span>
+                      </div>
                     </div>
                     <div class="notif-dot" *ngIf="!n.read"></div>
                   </div>
@@ -1118,6 +1124,13 @@ interface SearchResult {
       margin: 0 0 4px;
     }
 
+    .notif-meta {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .notif-actor {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 11px; color: #6366f1; font-weight: 600;
+    }
     .notif-time {
       font-size: 11.5px;
       color: #94a3b8;
