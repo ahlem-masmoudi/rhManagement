@@ -9,6 +9,7 @@ export interface AppNotification {
   id: string;
   type: 'new' | 'doc' | 'status';
   text: string;
+  actor?: string;
   time: string;
   updatedAt: string;
   read: boolean;
