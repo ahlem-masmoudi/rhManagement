@@ -216,12 +216,12 @@ interface Interview {
     :host { display: block; }
 
     /* ── Hero ── */
-    .cal-page { padding: 0; min-height: 100vh; background: #f1f5f9; }
+    .cal-page { padding: 0; background: #f1f5f9; }
 
     .cal-hero {
       position: relative; overflow: hidden;
       background: linear-gradient(135deg, #3b1f6b 0%, #4F46E5 50%, #7C3AED 100%);
-      padding: 36px 32px 40px; margin-bottom: -20px;
+      padding: 20px 32px 24px; margin-bottom: -12px;
     }
     .hero-bg { position: absolute; inset: 0; pointer-events: none; }
     .hero-orb {
@@ -237,14 +237,14 @@ interface Interview {
       50%      { transform: translateY(-12px) scale(1.04); }
     }
     .hero-content { position:relative;display:flex;align-items:center;gap:20px;flex-wrap:wrap; }
-    .hero-icon { font-size:48px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3));animation:pulse 2s ease-in-out infinite; }
+    .hero-icon { font-size:36px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3));animation:pulse 2s ease-in-out infinite; }
     @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
-    .hero-content h1 { color:white;font-size:26px;font-weight:800;margin:0 0 4px;letter-spacing:-.5px; }
-    .hero-sub { color:rgba(255,255,255,0.7);margin:0;font-size:14px; }
-    .hero-stats { display:flex;gap:20px;margin-left:auto; }
-    .hstat { text-align:center;background:rgba(255,255,255,0.12);border-radius:14px;padding:12px 20px;backdrop-filter:blur(8px); }
-    .hstat-val { display:block;font-size:28px;font-weight:900;color:white;line-height:1; }
-    .hstat-lab { display:block;font-size:11px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.8px;margin-top:4px; }
+    .hero-content h1 { color:white;font-size:22px;font-weight:800;margin:0 0 2px;letter-spacing:-.5px; }
+    .hero-sub { color:rgba(255,255,255,0.7);margin:0;font-size:13px; }
+    .hero-stats { display:flex;gap:14px;margin-left:auto; }
+    .hstat { text-align:center;background:rgba(255,255,255,0.12);border-radius:12px;padding:8px 16px;backdrop-filter:blur(8px); }
+    .hstat-val { display:block;font-size:22px;font-weight:900;color:white;line-height:1; }
+    .hstat-lab { display:block;font-size:10px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.8px;margin-top:3px; }
 
     /* ── Loading ── */
     .loading-wrap { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px;gap:16px;color:#94a3b8; }
@@ -252,10 +252,10 @@ interface Interview {
     @keyframes spin { to { transform:rotate(360deg); } }
 
     /* ── Body ── */
-    .cal-body { padding: 28px 32px 40px; }
+    .cal-body { padding: 16px 24px 16px; }
 
     /* ── Toolbar ── */
-    .cal-toolbar { display:flex;align-items:center;justify-content:space-between;margin-bottom:20px; }
+    .cal-toolbar { display:flex;align-items:center;justify-content:space-between;margin-bottom:12px; }
     .nav-arrows { display:flex;align-items:center;gap:12px; }
     .nav-btn {
       width:38px;height:38px;border-radius:10px;border:1.5px solid #e2e8f0;
@@ -271,18 +271,18 @@ interface Interview {
     .today-btn:hover { background:#4F46E5;color:white; }
 
     /* ── Layout ── */
-    .cal-layout { display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start; }
+    .cal-layout { display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start; }
 
     /* ── Grid ── */
     .cal-grid-wrap { background:white;border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.07);overflow:hidden; }
     .day-headers { display:grid;grid-template-columns:repeat(7,1fr);background:linear-gradient(135deg,#4F46E5,#7C3AED); }
-    .day-header { padding:12px 0;text-align:center;font-size:11.5px;font-weight:700;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.6px; }
+    .day-header { padding:8px 0;text-align:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.6px; }
     .weeks { display:flex;flex-direction:column; }
     .week-row { display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid #f1f5f9; }
     .week-row:last-child { border-bottom:none; }
 
     .day-cell {
-      min-height:110px;padding:8px;border-right:1px solid #f1f5f9;cursor:pointer;
+      min-height:78px;padding:6px;border-right:1px solid #f1f5f9;cursor:pointer;
       transition:background .15s;position:relative;overflow:hidden;
     }
     .day-cell:last-child { border-right:none; }
