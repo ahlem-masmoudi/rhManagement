@@ -440,6 +440,7 @@ export class AdminUsersComponent implements OnInit {
   deletingUser: RhUser | null = null;
   saving = false;
   modalError = '';
+  private pendingCredentials: { email: string; password: string; role: string; firstName: string; lastName: string } | null = null;
 
   form = { firstName: '', lastName: '', email: '', password: '', role: 'rh_offres' as string };
   showPw = false;
@@ -476,6 +477,7 @@ export class AdminUsersComponent implements OnInit {
     this.form = { firstName: '', lastName: '', email: '', password: '', role: 'rh_offres' };
     this.modalError = '';
     this.showPw = false;
+    this.pendingCredentials = null;
     this.showModal = true;
   }
 
@@ -537,20 +539,10 @@ export class AdminUsersComponent implements OnInit {
           this.users.unshift(r.data);
           this.saving = false;
           this.showModal = false;
+          // Store credentials so the mail icon in the table row can use them
+          this.pendingCredentials = { email: createdEmail, password: createdPassword, role: createdRole, firstName: createdFirst, lastName: createdLast };
           // Auto-open Gmail compose with credentials pre-filled
-          const roleLabels: any = { recruiter: 'Admin RH — Accès complet', rh_offres: 'Resp. Offres — Gestion des offres de stage', rh_candidatures: 'Resp. Candidatures — Gestion des candidatures' };
-          const subject = encodeURIComponent(`Espace RH — Vos identifiants de connexion`);
-          const body = encodeURIComponent(
-            `Bonjour ${createdFirst} ${createdLast},\n\n` +
-            `Votre compte sur l'Espace RH a été créé avec succès.\n\n` +
-            `Vos identifiants de connexion :\n` +
-            `• Email : ${createdEmail}\n` +
-            `• Mot de passe : ${createdPassword}\n` +
-            `• Rôle : ${roleLabels[createdRole] || createdRole}\n\n` +
-            `Connectez-vous sur : https://rh-management-97bu.vercel.app\n\n` +
-            `Cordialement,\nL'équipe RH`
-          );
-          const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(createdEmail)}&su=${subject}&body=${body}`;
+          const gmailUrl = this.buildMailtoLink(createdEmail, createdPassword, createdRole, createdFirst, createdLast);
           window.open(gmailUrl, '_blank');
         },
         error: e => { this.modalError = e?.error?.message || 'Erreur.'; this.saving = false; }
@@ -575,9 +567,31 @@ export class AdminUsersComponent implements OnInit {
 
   initials(u: RhUser) { return `${u.firstName[0]}${u.lastName[0]}`.toUpperCase(); }
 
+  private buildMailtoLink(email: string, password: string, role: string, firstName: string, lastName: string): string {
+    const roleLabels: any = { recruiter: 'Admin RH — Accès complet', rh_offres: 'Resp. Offres — Gestion des offres de stage', rh_candidatures: 'Resp. Candidatures — Gestion des candidatures' };
+    const subject = encodeURIComponent(`Espace RH — Vos identifiants de connexion`);
+    const body = encodeURIComponent(
+      `Bonjour ${firstName} ${lastName},\n\n` +
+      `Votre compte sur l'Espace RH a été créé avec succès.\n\n` +
+      `Vos identifiants de connexion :\n` +
+      `• Email : ${email}\n` +
+      `• Mot de passe : ${password}\n` +
+      `• Rôle : ${roleLabels[role] || role}\n\n` +
+      `Connectez-vous sur : https://rh-management-97bu.vercel.app\n\n` +
+      `Cordialement,\nL'équipe RH`
+    );
+    return `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${subject}&body=${body}`;
+  }
+
   mailtoLink(u: RhUser): string {
+    // If this user was just created, use the full credentials body
+    if (this.pendingCredentials && this.pendingCredentials.email === u.email) {
+      const c = this.pendingCredentials;
+      return this.buildMailtoLink(c.email, c.password, c.role, c.firstName, c.lastName);
+    }
+    // Fallback for existing users (password not available)
     const subject = encodeURIComponent(`Espace RH — Votre compte ${u.firstName} ${u.lastName}`);
-    const body = encodeURIComponent(`Bonjour ${u.firstName},\n\n`);
+    const body = encodeURIComponent(`Bonjour ${u.firstName} ${u.lastName},\n\nN'hésitez pas à nous contacter si vous avez besoin d'assistance.\n\nCordialement,\nL'équipe RH`);
     return `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(u.email)}&su=${subject}&body=${body}`;
   }
 
