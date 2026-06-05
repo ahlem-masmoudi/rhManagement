@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const { protect, authorize } = require('../middleware/auth');
+const { sendNewRhUserEmail, sendRhUserUpdatedEmail } = require('../utils/mailer');
 
 const RH_ROLES = ['recruiter', 'rh_offres', 'rh_candidatures'];
 
@@ -40,6 +41,10 @@ router.post('/users', protect, authorize('recruiter', 'admin'), async (req, res)
     }
 
     const user = await User.create({ firstName, lastName, email, password, role, profileComplete: true });
+
+    // Send welcome email with credentials (best-effort)
+    sendNewRhUserEmail({ to: email, firstName, lastName, email, password, role }).catch(() => {});
+
     res.status(201).json({
       success: true,
       data: { _id: user._id, firstName, lastName, email, role, createdAt: user.createdAt }
@@ -78,6 +83,24 @@ router.put('/users/:id', protect, authorize('recruiter', 'admin'), async (req, r
     }
 
     await user.save();
+
+    // Build change list for notification email
+    const RH_ROLE_LABELS = { recruiter: 'Admin RH', rh_offres: 'Resp. Offres', rh_candidatures: 'Resp. Candidatures' };
+    const changes = [];
+    if (firstName)  changes.push({ field: 'Prénom',           value: firstName });
+    if (lastName)   changes.push({ field: 'Nom',              value: lastName });
+    if (email)      changes.push({ field: 'Email',            value: email });
+    if (password)   changes.push({ field: 'Mot de passe',     value: password });
+    if (role)       changes.push({ field: 'Rôle',             value: RH_ROLE_LABELS[role] || role });
+    if (changes.length) {
+      sendRhUserUpdatedEmail({
+        to: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        changes
+      }).catch(() => {});
+    }
+
     res.json({
       success: true,
       data: { _id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role, createdAt: user.createdAt }
