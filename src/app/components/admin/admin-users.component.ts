@@ -514,7 +514,12 @@ export class AdminUsersComponent implements OnInit {
 
     this.saving = true;
     if (this.editingUser) {
-      const roleChanged = this.editingUser.role !== this.form.role;
+      const roleChanged     = this.editingUser.role !== this.form.role;
+      const updatedEmail    = this.form.email;
+      const updatedPassword = this.form.password;
+      const updatedRole     = this.form.role;
+      const updatedFirst    = this.form.firstName;
+      const updatedLast     = this.form.lastName;
       this.http.put<any>(`${environment.apiUrl}/admin/users/${this.editingUser._id}`, payload, this.headers).subscribe({
         next: r => {
           const idx = this.users.findIndex(u => u._id === this.editingUser!._id);
@@ -524,6 +529,12 @@ export class AdminUsersComponent implements OnInit {
           if (roleChanged) {
             this.error = `Rôle modifié. L'utilisateur doit se reconnecter pour que le changement prenne effet.`;
             setTimeout(() => this.error = '', 6000);
+          }
+          // If password was changed, store credentials and auto-open Gmail
+          if (updatedPassword) {
+            this.pendingCredentials = { email: updatedEmail, password: updatedPassword, role: updatedRole, firstName: updatedFirst, lastName: updatedLast };
+            const gmailUrl = this.buildMailtoLink(updatedEmail, updatedPassword, updatedRole, updatedFirst, updatedLast);
+            window.open(gmailUrl, '_blank');
           }
         },
         error: e => { this.modalError = e?.error?.message || 'Erreur.'; this.saving = false; }
