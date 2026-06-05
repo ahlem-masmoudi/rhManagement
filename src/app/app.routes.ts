@@ -67,6 +67,10 @@ export const routes: Routes = [
         loadComponent: () => import('./components/dossiers/dossiers.component').then(m => m.DossiersComponent)
       },
       {
+        path: 'calendrier',
+        loadComponent: () => import('./components/calendar/interview-calendar.component').then(m => m.InterviewCalendarComponent)
+      },
+      {
         path: 'profil/:id',
         loadComponent: () => import('./components/profil/profil.component').then(m => m.ProfilComponent)
       },

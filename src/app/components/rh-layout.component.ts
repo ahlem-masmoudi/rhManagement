@@ -96,8 +96,19 @@ interface SearchResult {
             <span class="nav-glow"></span>
           </a>
 
-          <a *ngIf="isAdmin()" routerLink="/rh/admin/users" routerLinkActive="active"
+          <a *ngIf="canAccessCandidatures()" routerLink="/rh/calendrier" routerLinkActive="active"
              class="nav-item" (click)="closeSidebar()" style="--i:4">
+            <span class="nav-icon">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+              </svg>
+            </span>
+            <span class="nav-label">Calendrier</span>
+            <span class="nav-glow"></span>
+          </a>
+
+          <a *ngIf="isAdmin()" routerLink="/rh/admin/users" routerLinkActive="active"
+             class="nav-item" (click)="closeSidebar()" style="--i:5">
             <span class="nav-icon">
               <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
