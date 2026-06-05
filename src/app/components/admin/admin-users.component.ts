@@ -108,9 +108,12 @@ interface RhUser {
                 <td class="date-cell">{{ u.lastLoginAt ? formatDate(u.lastLoginAt) : '—' }}</td>
                 <td>
                   <div class="action-btns">
-                    <button class="btn-icon btn-edit" (click)="openEdit(u)" title="Modifier le rôle">
+                    <button class="btn-icon btn-edit" (click)="openEdit(u)" title="Modifier">
                       <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
                     </button>
+                    <a class="btn-icon btn-mail" [href]="mailtoLink(u)" target="_blank" title="Envoyer un email">
+                      <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+                    </a>
                     <button class="btn-icon btn-delete" (click)="confirmDelete(u)" title="Supprimer">
                       <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                     </button>
@@ -324,6 +327,8 @@ interface RhUser {
     .btn-edit:hover   { background: #dbeafe; }
     .btn-delete { border-color: #fecaca; color: #dc2626; }
     .btn-delete:hover { background: #fee2e2; }
+    .btn-mail   { border-color: #bbf7d0; color: #16a34a; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+    .btn-mail:hover   { background: #dcfce7; }
 
     /* Modal */
     .modal-backdrop {
@@ -545,6 +550,12 @@ export class AdminUsersComponent implements OnInit {
   }
 
   initials(u: RhUser) { return `${u.firstName[0]}${u.lastName[0]}`.toUpperCase(); }
+
+  mailtoLink(u: RhUser): string {
+    const subject = encodeURIComponent(`Espace RH — Votre compte ${u.firstName} ${u.lastName}`);
+    const body = encodeURIComponent(`Bonjour ${u.firstName},\n\n`);
+    return `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(u.email)}&su=${subject}&body=${body}`;
+  }
 
   roleLabel(role: string) {
     return { recruiter: 'Admin RH', rh_offres: 'Resp. Offres', rh_candidatures: 'Resp. Candidatures' }[role] ?? role;
