@@ -27,7 +27,7 @@ import { Candidate, StatusChange, CandidateDocument } from '../../../models';
             </svg>
           </div>
           <span class="header-title">
-            🎓&nbsp;Suivi de candidature
+            <span *ngIf="isLastYear()">🎓</span><span *ngIf="!isLastYear()">📋</span>&nbsp;Suivi de candidature
           </span>
         </div>
       </header>
