@@ -527,8 +527,32 @@ export class AdminUsersComponent implements OnInit {
         error: e => { this.modalError = e?.error?.message || 'Erreur.'; this.saving = false; }
       });
     } else {
+      const createdEmail    = this.form.email;
+      const createdPassword = this.form.password;
+      const createdRole     = this.form.role;
+      const createdFirst    = this.form.firstName;
+      const createdLast     = this.form.lastName;
       this.http.post<any>(`${environment.apiUrl}/admin/users`, payload, this.headers).subscribe({
-        next: r => { this.users.unshift(r.data); this.saving = false; this.showModal = false; },
+        next: r => {
+          this.users.unshift(r.data);
+          this.saving = false;
+          this.showModal = false;
+          // Auto-open Gmail compose with credentials pre-filled
+          const roleLabels: any = { recruiter: 'Admin RH — Accès complet', rh_offres: 'Resp. Offres — Gestion des offres de stage', rh_candidatures: 'Resp. Candidatures — Gestion des candidatures' };
+          const subject = encodeURIComponent(`Espace RH — Vos identifiants de connexion`);
+          const body = encodeURIComponent(
+            `Bonjour ${createdFirst} ${createdLast},\n\n` +
+            `Votre compte sur l'Espace RH a été créé avec succès.\n\n` +
+            `Vos identifiants de connexion :\n` +
+            `• Email : ${createdEmail}\n` +
+            `• Mot de passe : ${createdPassword}\n` +
+            `• Rôle : ${roleLabels[createdRole] || createdRole}\n\n` +
+            `Connectez-vous sur : https://rh-management-97bu.vercel.app\n\n` +
+            `Cordialement,\nL'équipe RH`
+          );
+          const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(createdEmail)}&su=${subject}&body=${body}`;
+          window.open(gmailUrl, '_blank');
+        },
         error: e => { this.modalError = e?.error?.message || 'Erreur.'; this.saving = false; }
       });
     }
