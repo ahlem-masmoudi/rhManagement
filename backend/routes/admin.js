@@ -105,37 +105,6 @@ router.delete('/users/:id', protect, authorize('recruiter', 'admin'), async (req
   }
 });
 
-// DELETE /api/admin/delete-candidate — remove a candidate + user + applications by name
-router.delete('/delete-candidate', protect, async (req, res) => {
-  try {
-    const { firstName, lastName } = req.query;
-    if (!firstName || !lastName) return res.status(400).json({ success: false, message: 'firstName and lastName required' });
-
-    const Candidate = require('../models/Candidate');
-    const Application = require('../models/Application');
-
-    // Find the user
-    const users = await User.find({ firstName: new RegExp(`^${firstName}$`, 'i'), lastName: new RegExp(`^${lastName}$`, 'i') }).lean();
-    if (!users.length) return res.status(404).json({ success: false, message: 'User not found' });
-
-    const deleted = [];
-    for (const user of users) {
-      const candidate = await Candidate.findOne({ userId: user._id }).lean();
-      if (candidate) {
-        const apps = await Application.deleteMany({ candidate: candidate._id });
-        await Candidate.deleteOne({ _id: candidate._id });
-        deleted.push({ candidateId: candidate._id, applicationsDeleted: apps.deletedCount });
-      }
-      await User.deleteOne({ _id: user._id });
-      deleted.push({ userId: user._id, email: user.email });
-    }
-
-    res.json({ success: true, deleted });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
 // DELETE /api/admin/fix-candidate-applications — keep only the 2 oldest apps per candidate
 router.delete('/fix-candidate-applications', protect, async (req, res) => {
   try {
