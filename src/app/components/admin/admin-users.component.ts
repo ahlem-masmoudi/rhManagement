@@ -158,10 +158,10 @@ interface RhUser {
         </div>
 
         <div class="form-group">
-          <label>{{ editingUser ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe' }}</label>
+          <label>{{ editingUser ? 'Nouveau mot de passe' : 'Mot de passe' }}</label>
           <div class="input-pw-wrap">
             <input [type]="showPw ? 'text' : 'password'" [(ngModel)]="form.password"
-                   [placeholder]="editingUser ? 'Laisser vide pour conserver' : 'Minimum 6 caractères'">
+                   [placeholder]="editingUser ? 'Laisser vide pour ne pas changer' : 'Minimum 6 caractères'">
             <button type="button" class="btn-pw-toggle" (click)="showPw = !showPw" tabindex="-1">
               <svg *ngIf="!showPw" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
