@@ -1322,49 +1322,15 @@ import { Candidate, CandidateStatus, Application } from '../../models';
       .action-btns button { font-size: 12px; padding: 7px 10px; }
     }
 
-    /* ── Confirm Dialog ── */
-    @keyframes confirmPop { from{opacity:0;transform:scale(0.92) translateY(16px)} to{opacity:1;transform:none} }
-    .confirm-overlay {
-      position:fixed; top:0; left:0; width:100vw; height:100vh;
-      background:rgba(0,0,0,0.42); backdrop-filter:blur(4px);
-      display:flex; align-items:center; justify-content:center;
-      z-index:9999; padding:20px; box-sizing:border-box;
-    }
-    .confirm-box {
-      background:#fff; border-radius:20px; padding:36px 32px 28px;
-      max-width:420px; width:100%; text-align:center;
-      box-shadow:0 24px 64px rgba(0,0,0,0.18);
-      animation:confirmPop 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
-    }
-    .confirm-icon {
-      width:64px; height:64px; border-radius:50%; margin:0 auto 18px;
-      display:flex; align-items:center; justify-content:center;
-      box-shadow:0 4px 16px rgba(0,0,0,0.12);
-    }
-    .confirm-icon.danger  { background:linear-gradient(135deg,#FEE2E2,#FECACA); color:#DC2626; }
-    .confirm-icon.warning { background:linear-gradient(135deg,#FEF3C7,#FDE68A); color:#D97706; }
-    .confirm-icon.info    { background:linear-gradient(135deg,#DBEAFE,#BFDBFE); color:#1565C0; }
-    .confirm-title { font-size:18px; font-weight:800; color:#111827; margin:0 0 10px; }
-    .confirm-msg   { font-size:13.5px; color:#6B7280; line-height:1.6; margin:0 0 26px; }
-    .confirm-msg strong { color:#374151; }
-    .confirm-actions { display:flex; gap:10px; }
-    .confirm-cancel {
-      flex:1; padding:11px 0; border-radius:12px;
-      border:1.5px solid #E5E7EB; background:#F9FAFB; color:#374151;
-      font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s;
-    }
-    .confirm-cancel:hover { background:#F3F4F6; border-color:#D1D5DB; }
-    .confirm-ok {
-      flex:1; padding:11px 0; border-radius:12px;
-      border:none; color:#fff; font-size:14px; font-weight:700;
-      cursor:pointer; transition:all 0.25s;
-    }
-    .confirm-ok.danger  { background:linear-gradient(135deg,#DC2626,#EF4444); box-shadow:0 4px 14px rgba(220,38,38,0.32); }
-    .confirm-ok.danger:hover  { background:linear-gradient(135deg,#B91C1C,#DC2626); transform:translateY(-1px); }
-    .confirm-ok.warning { background:linear-gradient(135deg,#D97706,#F59E0B); box-shadow:0 4px 14px rgba(217,119,6,0.32); }
-    .confirm-ok.warning:hover { background:linear-gradient(135deg,#B45309,#D97706); transform:translateY(-1px); }
-    .confirm-ok.info    { background:linear-gradient(135deg,#1565C0,#1976D2); box-shadow:0 4px 14px rgba(21,101,192,0.32); }
-    .confirm-ok.info:hover    { background:linear-gradient(135deg,#0D47A1,#1565C0); transform:translateY(-1px); }
+    .confirm-overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.42);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;box-sizing:border-box}
+    .confirm-box{background:#fff;border-radius:20px;padding:32px 28px 24px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 56px rgba(0,0,0,.18)}
+    .confirm-icon{width:60px;height:60px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#FEE2E2,#FECACA);color:#DC2626}
+    .confirm-title{font-size:17px;font-weight:800;color:#111827;margin:0 0 8px}
+    .confirm-msg{font-size:13px;color:#6B7280;line-height:1.6;margin:0 0 22px}
+    .confirm-msg strong{color:#374151}
+    .confirm-actions{display:flex;gap:10px}
+    .confirm-cancel{flex:1;padding:10px 0;border-radius:11px;border:1.5px solid #E5E7EB;background:#F9FAFB;color:#374151;font-size:14px;font-weight:600;cursor:pointer}
+    .confirm-ok{flex:1;padding:10px 0;border-radius:11px;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#DC2626,#EF4444)}
   `]
 })
 export class ProfilComponent implements OnInit {
