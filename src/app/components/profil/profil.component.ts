@@ -530,6 +530,23 @@ import { Candidate, CandidateStatus, Application } from '../../models';
         </div>
       </div>
     </div>
+
+    <!-- Confirm Dialog -->
+    <div class="confirm-overlay" *ngIf="confirmDialog.show" (click)="closeConfirmDialog()">
+      <div class="confirm-box" (click)="$event.stopPropagation()">
+        <div class="confirm-icon" [ngClass]="confirmDialog.iconType">
+          <svg *ngIf="confirmDialog.iconType==='danger'" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          <svg *ngIf="confirmDialog.iconType==='warning'" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <svg *ngIf="confirmDialog.iconType==='info'" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+        </div>
+        <h3 class="confirm-title">{{ confirmDialog.title }}</h3>
+        <p class="confirm-msg" [innerHTML]="confirmDialog.message"></p>
+        <div class="confirm-actions">
+          <button class="confirm-cancel" (click)="closeConfirmDialog()">Annuler</button>
+          <button class="confirm-ok" [ngClass]="confirmDialog.iconType" (click)="executeConfirm()">{{ confirmDialog.confirmLabel }}</button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     .profil-page {
@@ -1304,12 +1321,70 @@ import { Candidate, CandidateStatus, Application } from '../../models';
       .doc-header { flex-direction: column; }
       .action-btns button { font-size: 12px; padding: 7px 10px; }
     }
+
+    /* ── Confirm Dialog ── */
+    @keyframes confirmPop { from{opacity:0;transform:scale(0.92) translateY(16px)} to{opacity:1;transform:none} }
+    .confirm-overlay {
+      position:fixed; top:0; left:0; width:100vw; height:100vh;
+      background:rgba(0,0,0,0.42); backdrop-filter:blur(4px);
+      display:flex; align-items:center; justify-content:center;
+      z-index:9999; padding:20px; box-sizing:border-box;
+    }
+    .confirm-box {
+      background:#fff; border-radius:20px; padding:36px 32px 28px;
+      max-width:420px; width:100%; text-align:center;
+      box-shadow:0 24px 64px rgba(0,0,0,0.18);
+      animation:confirmPop 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .confirm-icon {
+      width:64px; height:64px; border-radius:50%; margin:0 auto 18px;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 16px rgba(0,0,0,0.12);
+    }
+    .confirm-icon.danger  { background:linear-gradient(135deg,#FEE2E2,#FECACA); color:#DC2626; }
+    .confirm-icon.warning { background:linear-gradient(135deg,#FEF3C7,#FDE68A); color:#D97706; }
+    .confirm-icon.info    { background:linear-gradient(135deg,#DBEAFE,#BFDBFE); color:#1565C0; }
+    .confirm-title { font-size:18px; font-weight:800; color:#111827; margin:0 0 10px; }
+    .confirm-msg   { font-size:13.5px; color:#6B7280; line-height:1.6; margin:0 0 26px; }
+    .confirm-msg strong { color:#374151; }
+    .confirm-actions { display:flex; gap:10px; }
+    .confirm-cancel {
+      flex:1; padding:11px 0; border-radius:12px;
+      border:1.5px solid #E5E7EB; background:#F9FAFB; color:#374151;
+      font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s;
+    }
+    .confirm-cancel:hover { background:#F3F4F6; border-color:#D1D5DB; }
+    .confirm-ok {
+      flex:1; padding:11px 0; border-radius:12px;
+      border:none; color:#fff; font-size:14px; font-weight:700;
+      cursor:pointer; transition:all 0.25s;
+    }
+    .confirm-ok.danger  { background:linear-gradient(135deg,#DC2626,#EF4444); box-shadow:0 4px 14px rgba(220,38,38,0.32); }
+    .confirm-ok.danger:hover  { background:linear-gradient(135deg,#B91C1C,#DC2626); transform:translateY(-1px); }
+    .confirm-ok.warning { background:linear-gradient(135deg,#D97706,#F59E0B); box-shadow:0 4px 14px rgba(217,119,6,0.32); }
+    .confirm-ok.warning:hover { background:linear-gradient(135deg,#B45309,#D97706); transform:translateY(-1px); }
+    .confirm-ok.info    { background:linear-gradient(135deg,#1565C0,#1976D2); box-shadow:0 4px 14px rgba(21,101,192,0.32); }
+    .confirm-ok.info:hover    { background:linear-gradient(135deg,#0D47A1,#1565C0); transform:translateY(-1px); }
   `]
 })
 export class ProfilComponent implements OnInit {
   candidate: Candidate | undefined;
   activeTab = 'resume';
   showAssignmentModal = false;
+
+  confirmDialog: { show: boolean; title: string; message: string; confirmLabel: string; iconType: 'danger'|'warning'|'info'; action: (() => void) | null } =
+    { show: false, title: '', message: '', confirmLabel: 'Confirmer', iconType: 'danger', action: null };
+
+  openConfirmDialog(cfg: { title: string; message: string; confirmLabel: string; iconType: 'danger'|'warning'|'info'; action: () => void }): void {
+    this.confirmDialog = { show: true, ...cfg };
+  }
+  closeConfirmDialog(): void {
+    this.confirmDialog = { show: false, title: '', message: '', confirmLabel: 'Confirmer', iconType: 'danger', action: null };
+  }
+  executeConfirm(): void {
+    if (this.confirmDialog.action) this.confirmDialog.action();
+    this.closeConfirmDialog();
+  }
   todayLabel = new Date().toLocaleDateString('fr-FR');
 
   selectedStatus: string = 'nouveau';
@@ -1635,12 +1710,21 @@ export class ProfilComponent implements OnInit {
   getDocumentType(doc: any): string { return doc?.type || 'autre'; }
 
   deleteDocument(doc: any): void {
-    if (!this.candidate || !confirm(`Supprimer "${doc.name}" ?`)) return;
-    this.candidateService.deleteDocument(this.candidate.id, doc.id).subscribe({
-      next: () => {
-        if (this.candidate) this.candidate.documents = (this.candidate.documents || []).filter((d: any) => d.id !== doc.id);
-      },
-      error: (err) => console.error('deleteDocument error', err),
+    if (!this.candidate) return;
+    const candidateId = this.candidate.id;
+    this.openConfirmDialog({
+      title: 'Supprimer ce document ?',
+      message: `Vous êtes sur le point de supprimer définitivement <strong>« ${doc.name} »</strong>. Cette action est irréversible.`,
+      confirmLabel: 'Supprimer',
+      iconType: 'danger',
+      action: () => {
+        this.candidateService.deleteDocument(candidateId, doc.id).subscribe({
+          next: () => {
+            if (this.candidate) this.candidate.documents = (this.candidate.documents || []).filter((d: any) => d.id !== doc.id);
+          },
+          error: (err) => console.error('deleteDocument error', err),
+        });
+      }
     });
   }
 

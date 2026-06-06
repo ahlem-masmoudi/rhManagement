@@ -105,7 +105,7 @@ import { Offer } from '../../models';
 
           <div class="offer-actions">
             <button class="btn btn-secondary btn-sm" (click)="openEditModal(offer)">Modifier</button>
-            <button class="btn btn-danger btn-sm" (click)="deleteOffer(offer.id)">Supprimer</button>
+            <button class="btn btn-danger btn-sm" (click)="askDelete(offer.id, offer.title)">Supprimer</button>
           </div>
         </div>
       </div>
@@ -198,11 +198,32 @@ import { Offer } from '../../models';
           </div>
         </div>
       </div>
+      <!-- Delete Confirmation Modal -->
+      <div class="modal del-modal" *ngIf="showDeleteModal" (click)="cancelDelete()">
+        <div class="del-modal-box" (click)="$event.stopPropagation()">
+          <div class="del-icon-wrap">
+            <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </div>
+          <h3 class="del-title">Supprimer cette offre ?</h3>
+          <p class="del-msg">Vous êtes sur le point de supprimer <strong>« {{ offerToDeleteTitle }} »</strong>. Cette action est irréversible.</p>
+          <div class="del-actions">
+            <button class="del-btn-cancel" (click)="cancelDelete()">Annuler</button>
+            <button class="del-btn-confirm" (click)="confirmDelete()">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6"/>
+              </svg>
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
     /* ── Blue Edition — Offres ── */
-    @keyframes pageFadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+    @keyframes pageFadeIn { from{opacity:0} to{opacity:1} }
     @keyframes fadeIn     { from{opacity:0} to{opacity:1} }
     @keyframes cardIn     { from{opacity:0;transform:translateY(30px) scale(0.94)} to{opacity:1;transform:none} }
     @keyframes modalPop   { from{opacity:0;transform:scale(0.93) translateY(22px)} to{opacity:1;transform:none} }
@@ -269,14 +290,14 @@ import { Offer } from '../../models';
     .search-input {
       width:100%; padding:10px 14px 10px 36px;
       border:1.5px solid #BFDBFE; border-radius:10px;
-      font-size:14px; background:#F0F8FF; color:#1E40AF;
+      font-size:14px; background:#F0F8FF; color:#111827;
       transition:all 0.2s; outline:none; box-sizing:border-box;
     }
-    .search-input::placeholder { color:#93C5FD; }
+    .search-input::placeholder { color:#9CA3AF; }
     .filters-bar-card select {
       width:100%; padding:10px 14px;
       border:1.5px solid #BFDBFE; border-radius:10px;
-      font-size:14px; background:#F0F8FF; color:#1E40AF;
+      font-size:14px; background:#F0F8FF; color:#111827;
       transition:all 0.2s; outline:none; box-sizing:border-box;
     }
     .search-input:focus, .filters-bar-card select:focus {
@@ -293,7 +314,7 @@ import { Offer } from '../../models';
 
     /* ── Offer Card ── */
     .offer-card {
-      background:#E5F3FD; border-radius:22px; padding:0;
+      background:#EBF5FD; border-radius:22px; padding:0;
       border:1px solid rgba(21,101,192,0.14);
       box-shadow:0 3px 18px rgba(21,101,192,0.1),0 1px 4px rgba(21,101,192,0.06);
       display:flex; flex-direction:column;
@@ -320,7 +341,7 @@ import { Offer } from '../../models';
     .offer-card:hover {
       transform:translateY(-10px) scale(1.015);
       box-shadow:0 22px 56px rgba(21,101,192,0.2),0 6px 18px rgba(21,101,192,0.1);
-      border-color:rgba(21,101,192,0.28); background:#D6EAFB;
+      border-color:rgba(21,101,192,0.28); background:#DFF0FB;
     }
     .offer-card.highlighted { animation:offerGlow 3.5s ease forwards; z-index:5; }
 
@@ -362,16 +383,17 @@ import { Offer } from '../../models';
 
     .offer-stats {
       display:flex; padding:8px 12px;
-      background:rgba(255,255,255,0.55); border-radius:10px;
-      margin-bottom:12px; border:1px solid rgba(21,101,192,0.12);
+      background:linear-gradient(135deg,#EEF1F5,#E2E7EE); border-radius:10px;
+      margin-bottom:12px; border:1px solid #C8D0DC;
+      box-shadow:inset 0 1px 3px rgba(0,0,0,0.06);
     }
     .stat { display:flex; flex-direction:column; gap:2px; animation:statPop 0.5s 0.3s both; align-items:center; width:100%; text-align:center; }
     .stat-value {
       font-size:22px; font-weight:900; letter-spacing:-1px; line-height:1;
-      background:linear-gradient(135deg,#1565C0,#42A5F5);
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      color:#3D4E63;
+      -webkit-text-fill-color:#3D4E63;
     }
-    .stat-label { font-size:10px; color:#1976D2; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-top:2px; }
+    .stat-label { font-size:10px; color:#64748B; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-top:2px; }
 
     .offer-actions { display:flex; gap:8px; margin-top:auto; }
     .btn-secondary {
@@ -396,15 +418,16 @@ import { Offer } from '../../models';
 
     /* ── Modal ── */
     .modal {
-      position:fixed; inset:0;
-      background:rgba(13,71,161,0.48); backdrop-filter:blur(6px);
+      position:fixed; top:0; left:0; width:100vw; height:100vh;
+      background:rgba(0,0,0,0.38); backdrop-filter:blur(4px);
       display:flex; align-items:center; justify-content:center;
-      z-index:1000; padding:20px; animation:fadeIn 0.2s ease both;
+      z-index:9999; padding:20px; animation:fadeIn 0.2s ease both;
+      box-sizing:border-box;
     }
     .modal-content {
       background:#fff; border-radius:20px; max-width:800px; width:100%;
-      max-height:90vh; overflow:hidden; display:flex; flex-direction:column;
-      box-shadow:0 28px 80px rgba(13,71,161,0.22);
+      max-height:88vh; overflow:hidden; display:flex; flex-direction:column;
+      box-shadow:0 20px 60px rgba(0,0,0,0.22);
       animation:modalPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
     }
     .modal-header {
@@ -465,6 +488,40 @@ import { Offer } from '../../models';
     .remove-skill:hover { opacity:1; }
     .text-sm.text-muted { font-size:12px; color:#93C5FD; margin-top:6px; }
 
+    /* ── Delete Confirmation Modal ── */
+    .del-modal { background:rgba(0,0,0,0.42); backdrop-filter:blur(4px); }
+    .del-modal-box {
+      background:#fff; border-radius:20px; padding:36px 32px 28px;
+      max-width:420px; width:100%; text-align:center;
+      box-shadow:0 24px 64px rgba(0,0,0,0.18);
+      animation:modalPop 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .del-icon-wrap {
+      width:64px; height:64px; border-radius:50%; margin:0 auto 18px;
+      background:linear-gradient(135deg,#FEE2E2,#FECACA);
+      display:flex; align-items:center; justify-content:center;
+      color:#DC2626;
+      box-shadow:0 4px 16px rgba(220,38,38,0.18);
+    }
+    .del-title { font-size:18px; font-weight:800; color:#111827; margin:0 0 10px; }
+    .del-msg { font-size:13.5px; color:#6B7280; line-height:1.6; margin:0 0 26px; }
+    .del-msg strong { color:#374151; }
+    .del-actions { display:flex; gap:10px; }
+    .del-btn-cancel {
+      flex:1; padding:11px 0; border-radius:12px;
+      border:1.5px solid #E5E7EB; background:#F9FAFB; color:#374151;
+      font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s;
+    }
+    .del-btn-cancel:hover { background:#F3F4F6; border-color:#D1D5DB; }
+    .del-btn-confirm {
+      flex:1; padding:11px 0; border-radius:12px;
+      border:none; background:linear-gradient(135deg,#DC2626,#EF4444); color:#fff;
+      font-size:14px; font-weight:700; cursor:pointer; transition:all 0.25s;
+      display:flex; align-items:center; justify-content:center; gap:7px;
+      box-shadow:0 4px 14px rgba(220,38,38,0.32);
+    }
+    .del-btn-confirm:hover { background:linear-gradient(135deg,#B91C1C,#DC2626); transform:translateY(-1px); box-shadow:0 7px 20px rgba(220,38,38,0.42); }
+
     @media (max-width:768px) {
       .filters-bar-card { grid-template-columns:1fr; }
       .page-header { flex-direction:column; gap:16px; padding:20px; }
@@ -490,6 +547,9 @@ export class OffresComponent implements OnInit {
   truncatedOffers = new Set<string>();
   showModal = false;
   editingOffer: Offer | null = null;
+  showDeleteModal = false;
+  offerToDeleteId: string | null = null;
+  offerToDeleteTitle: string = '';
   
   // Filtres
   searchTerm: string = '';
@@ -713,20 +773,37 @@ export class OffresComponent implements OnInit {
     }
   }
 
-  deleteOffer(offerId: string): void {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette offre ?')) {
-      return;
-    }
+  askDelete(offerId: string, title: string): void {
+    this.offerToDeleteId = offerId;
+    this.offerToDeleteTitle = title;
+    this.showDeleteModal = true;
+  }
 
-    this.offerService.deleteOffer(offerId).subscribe({
+  cancelDelete(): void {
+    this.showDeleteModal = false;
+    this.offerToDeleteId = null;
+    this.offerToDeleteTitle = '';
+  }
+
+  confirmDelete(): void {
+    if (!this.offerToDeleteId) return;
+    this.offerService.deleteOffer(this.offerToDeleteId).subscribe({
       next: () => {
-        console.log('Offer deleted successfully');
+        this.cancelDelete();
         this.loadOffers();
       },
       error: (error) => {
         console.error('Error deleting offer:', error);
+        this.cancelDelete();
         alert('Erreur lors de la suppression de l\'offre. Veuillez réessayer.');
       }
+    });
+  }
+
+  deleteOffer(offerId: string): void {
+    this.offerService.deleteOffer(offerId).subscribe({
+      next: () => this.loadOffers(),
+      error: (error) => console.error('Error deleting offer:', error)
     });
   }
 

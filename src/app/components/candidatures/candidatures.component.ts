@@ -262,12 +262,12 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     .search-input {
       flex:1; min-width:120px; padding:9px 14px;
       border:1.5px solid #BFDBFE; border-radius:10px;
-      font-size:13px; background:#F0F8FF; color:#1E40AF; outline:none; transition:all 0.2s;
+      font-size:13px; background:#F0F8FF; color:#111827; outline:none; transition:all 0.2s;
     }
-    .search-input::placeholder { color:#93C5FD; }
+    .search-input::placeholder { color:#9CA3AF; }
     .filters-bar select {
       padding:9px 14px; border:1.5px solid #BFDBFE; border-radius:10px;
-      font-size:13px; background:#F0F8FF; color:#1E40AF; outline:none; transition:all 0.2s; white-space:nowrap;
+      font-size:13px; background:#F0F8FF; color:#111827; outline:none; transition:all 0.2s; white-space:nowrap;
     }
     .search-input:focus, .filters-bar select:focus {
       border-color:#1976D2; background:#fff; box-shadow:0 0 0 3px rgba(25,118,210,0.12);
@@ -386,10 +386,10 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
     .cv-btn:hover { background:#1976D2; color:#fff; }
 
     .column-pagination { display:flex; align-items:center; justify-content:center; gap:8px; padding:10px; border-top:1px solid rgba(21,101,192,0.06); background:#fff; border-radius:0 0 16px 16px; }
-    .pag-btn { width:28px; height:28px; border:1.5px solid #BFDBFE; border-radius:8px; background:#fff; cursor:pointer; font-size:15px; color:#93C5FD; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+    .pag-btn { width:28px; height:28px; border:1.5px solid #BFDBFE; border-radius:8px; background:#fff; cursor:pointer; font-size:15px; color:#374151; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
     .pag-btn:hover:not(:disabled) { background:#DBEAFE; border-color:#1976D2; color:#1565C0; }
     .pag-btn:disabled { opacity:0.3; cursor:default; }
-    .pag-info { font-size:12px; color:#93C5FD; min-width:40px; text-align:center; }
+    .pag-info { font-size:12px; color:#374151; font-weight:600; min-width:40px; text-align:center; }
 
     /* Location filter */
     .location-filter { display:flex; align-items:center; gap:6px; font-size:13px; color:#374151; cursor:pointer; white-space:nowrap; user-select:none; padding:9px 12px; border:1.5px solid #BFDBFE; border-radius:10px; background:#F0F8FF; transition:all 0.15s; }
