@@ -566,14 +566,14 @@ import { Candidate, CandidateStatus, Application } from '../../models';
 
     .profil-layout {
       display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: var(--spacing-lg);
+      grid-template-columns: 280px 1fr;
+      gap: 16px;
     }
 
     .profil-sidebar {
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-lg);
+      gap: 12px;
     }
 
     /* ── Profile card ── */
@@ -650,12 +650,11 @@ import { Candidate, CandidateStatus, Application } from '../../models';
     }
 
     .info-label {
-      font-size: 10px; color: #1565C0;
-      text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700;
+      font-size: 13px; color: #1565C0; font-weight: 700;
     }
 
     .info-value {
-      font-size: 14px; font-weight: 600; color: #111827;
+      font-size: 11.5px; font-weight: 500; color: #64748B;
     }
 
     .cv-card { text-align: center; }
@@ -678,7 +677,7 @@ import { Candidate, CandidateStatus, Application } from '../../models';
     /* Tabs — pill style */
     .tabs {
       display: flex; gap: 4px; flex-wrap: wrap;
-      margin-bottom: var(--spacing-lg);
+      margin-bottom: 12px;
       background: #EEF2FF; border-radius: 14px; padding: 5px;
       border-bottom: none;
     }
@@ -699,18 +698,18 @@ import { Candidate, CandidateStatus, Application } from '../../models';
     .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.55); color: #374151; }
 
     .tab-content {
-      margin-bottom: var(--spacing-lg);
-      min-height: 240px;
+      margin-bottom: 10px;
+      min-height: 180px;
     }
 
     .tab-content h3 {
-      margin: 0 0 var(--spacing-lg) 0;
-      font-size: 16px;
+      margin: 0 0 12px;
+      font-size: 15px;
     }
 
     .resume-section {
-      margin-bottom: var(--spacing-lg);
-      padding-bottom: var(--spacing-lg);
+      margin-bottom: 14px;
+      padding-bottom: 14px;
       border-bottom: 1px solid var(--gray-100);
     }
 
