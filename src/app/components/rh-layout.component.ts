@@ -984,12 +984,9 @@ interface SearchResult {
       overflow-y: auto;
       background: #f1f5f9;
       padding: 28px;
-      scrollbar-width: thin;
-      scrollbar-color: #CBD5E1 transparent;
+      scrollbar-width: none;
     }
-    .main-content::-webkit-scrollbar { width: 5px; }
-    .main-content::-webkit-scrollbar-track { background: transparent; }
-    .main-content::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 99px; }
+    .main-content::-webkit-scrollbar { display: none; }
 
     /* ===================== OVERLAY ===================== */
     .sidebar-overlay {
