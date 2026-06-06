@@ -219,7 +219,8 @@ exports.getAllApplications = async (req, res) => {
           company: offerObj.company || '',
           location: offerObj.location || '',
           type: offerObj.type || '',
-          status: offerObj.status || ''
+          status: offerObj.status || '',
+          department: offerObj.department || ''
         },
         status: app.status,
         appliedAt: app.appliedAt,

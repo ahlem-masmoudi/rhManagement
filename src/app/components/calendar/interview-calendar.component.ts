@@ -559,10 +559,13 @@ export class InterviewCalendarComponent implements OnInit {
           .filter((a: any) => a.interviewDate && a.status === 'entretien_programme')
           .map((a: any) => ({
             id: a._id || a.id,
-            candidateName: a.candidate?.userId
-              ? `${a.candidate.userId.firstName} ${a.candidate.userId.lastName}`.trim()
+            candidateName: (a.candidate?.firstName || a.candidate?.userId?.firstName)
+              ? `${a.candidate.firstName || a.candidate.userId.firstName} ${a.candidate.lastName || a.candidate.userId.lastName}`.trim()
               : (a.candidateName || 'Candidat'),
-            initials: this.getInitials(a.candidate?.userId?.firstName, a.candidate?.userId?.lastName),
+            initials: this.getInitials(
+              a.candidate?.firstName || a.candidate?.userId?.firstName,
+              a.candidate?.lastName  || a.candidate?.userId?.lastName
+            ),
             offerTitle: a.offer?.title || 'Offre',
             department: a.offer?.department || '',
             date: this.normalizeDate(a.interviewDate),
