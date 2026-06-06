@@ -50,7 +50,7 @@ interface SearchResult {
         <nav class="sidebar-nav">
           <div class="nav-section-label">Navigation</div>
 
-          <a routerLink="/rh" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+          <a *ngIf="isAdmin()" routerLink="/rh" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
              class="nav-item" (click)="closeSidebar()" style="--i:0">
             <span class="nav-icon">
               <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">

@@ -1,5 +1,8 @@
 import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { authGuard, roleGuard } from './guards/auth.guard';
+import { AuthService } from './services/auth.service';
 
 export const routes: Routes = [
   // Home page (public - new landing page)
@@ -52,6 +55,13 @@ export const routes: Routes = [
     children: [
       {
         path: '',
+        canActivate: [() => {
+          const role = inject(AuthService).getCurrentUser()?.role;
+          const router = inject(Router);
+          if (role === 'rh_offres')        return router.createUrlTree(['/rh/offres']);
+          if (role === 'rh_candidatures')  return router.createUrlTree(['/rh/candidatures']);
+          return true;
+        }],
         loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
