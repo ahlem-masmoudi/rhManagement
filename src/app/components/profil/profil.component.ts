@@ -549,9 +549,20 @@ import { Candidate, CandidateStatus, Application } from '../../models';
     </div>
   `,
   styles: [`
-    .profil-page {
-      max-width: 1400px;
-    }
+    .profil-page { max-width: 1400px; }
+
+    /* ── Animations ── */
+    @keyframes fadeSlideIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+    @keyframes sidebarIn   { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:none} }
+    @keyframes cardPop     { from{opacity:0;transform:scale(0.95) translateY(10px)} to{opacity:1;transform:none} }
+
+    .profil-sidebar { animation: sidebarIn 0.42s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .profil-main    { animation: fadeSlideIn 0.42s 0.1s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .profile-card   { animation: cardPop 0.4s 0.05s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .info-card      { animation: cardPop 0.4s 0.13s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .score-card     { animation: cardPop 0.4s 0.20s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .cv-card        { animation: cardPop 0.4s 0.26s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .tab-content    { animation: fadeSlideIn 0.32s ease both; }
 
     .profil-layout {
       display: grid;
@@ -565,42 +576,35 @@ import { Candidate, CandidateStatus, Application } from '../../models';
       gap: var(--spacing-lg);
     }
 
+    /* ── Profile card ── */
     .profile-card {
       text-align: center;
+      border-top: 4px solid transparent;
+      background: #fff;
+      border-image: linear-gradient(90deg,#1565C0,#42A5F5) 1;
+      border-radius: 16px;
+      overflow: hidden;
     }
 
     .profile-avatar-large {
-      width: 88px;
-      height: 88px;
-      border-radius: 50%;
-      background: var(--primary-color);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      font-weight: 700;
-      margin: 0 auto var(--spacing-sm);
+      width: 88px; height: 88px; border-radius: 50%;
+      background: linear-gradient(135deg, #1565C0, #42A5F5);
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 800; margin: 0 auto var(--spacing-sm);
+      box-shadow: 0 6px 20px rgba(21,101,192,0.35);
     }
 
     .profile-name {
-      font-size: 18px;
-      font-weight: 600;
-      margin: 0 0 2px 0;
+      font-size: 17px; font-weight: 700; margin: 0 0 2px; color: #111827;
     }
 
     .profile-school {
-      color: var(--gray-500);
-      margin: 0 0 8px 0;
-      font-size: 13px;
+      color: #64748B; margin: 0 0 8px; font-size: 13px;
     }
 
     .status-pill {
-      display: inline-block;
-      padding: 4px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
+      display: inline-block; padding: 5px 16px;
+      border-radius: 999px; font-size: 12px; font-weight: 700;
       margin-bottom: var(--spacing-md);
     }
 
@@ -646,16 +650,12 @@ import { Candidate, CandidateStatus, Application } from '../../models';
     }
 
     .info-label {
-      font-size: 11px;
-      color: var(--gray-400);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      font-size: 10px; color: #1565C0;
+      text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700;
     }
 
     .info-value {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--gray-900);
+      font-size: 14px; font-weight: 600; color: #111827;
     }
 
     .cv-card { text-align: center; }
@@ -675,34 +675,28 @@ import { Candidate, CandidateStatus, Application } from '../../models';
     .score-pill-red { background: #fee2e2; color: #991b1b; }
     .score-offer-label { font-size: 11.5px; color: #64748b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
 
-    /* Tabs */
+    /* Tabs — pill style */
     .tabs {
-      display: flex;
-      gap: 0;
+      display: flex; gap: 4px; flex-wrap: wrap;
       margin-bottom: var(--spacing-lg);
-      border-bottom: 2px solid var(--gray-200);
-      flex-wrap: wrap;
+      background: #EEF2FF; border-radius: 14px; padding: 5px;
+      border-bottom: none;
     }
 
     .tab-btn {
-      padding: 10px 18px;
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 14px;
-      color: var(--gray-500);
-      transition: all 0.15s;
+      padding: 9px 18px;
+      background: transparent; border: none; border-bottom: none; margin-bottom: 0;
+      cursor: pointer; font-weight: 600; font-size: 13.5px;
+      color: #64748B; border-radius: 10px; transition: all 0.2s;
     }
 
     .tab-btn.active {
-      color: var(--primary-color);
-      border-bottom-color: var(--primary-color);
+      background: #fff; color: #1565C0;
+      box-shadow: 0 2px 10px rgba(21,101,192,0.14);
+      border-bottom-color: transparent;
     }
 
-    .tab-btn:hover:not(.active) { color: var(--gray-800); }
+    .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.55); color: #374151; }
 
     .tab-content {
       margin-bottom: var(--spacing-lg);
@@ -723,12 +717,14 @@ import { Candidate, CandidateStatus, Application } from '../../models';
     .resume-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 
     .resume-section h4 {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--gray-400);
-      margin: 0 0 10px 0;
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: #1565C0; margin: 0 0 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .resume-section h4::after {
+      content:''; flex:1; height:1.5px;
+      background: linear-gradient(90deg,#BFDBFE,transparent);
     }
 
     .resume-section p { margin: 0 0 4px; font-size: 14px; }
@@ -1475,12 +1471,23 @@ export class ProfilComponent implements OnInit {
   }
 
   visibleTabs() {
-    return this.tabs.filter(t => {
+    const filtered = this.tabs.filter(t => {
       if (t.id === 'documents') return !this.shouldHideRhDocuments();
       if (t.id === 'interview') return !['nouveau', 'offre_acceptee', 'offre_refusee', 'rejete', 'abandonne'].includes(this.candidate?.status || '');
       if (t.id === 'evaluation') return ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'entretien_programme', 'stage_termine'].includes(this.candidate?.status || '');
       return true;
     });
+    // For accepted statuses: evaluation comes after documents RH
+    const acceptedStatuses = ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'stage_termine'];
+    if (acceptedStatuses.includes(this.candidate?.status || '')) {
+      const evalIdx = filtered.findIndex(t => t.id === 'evaluation');
+      const docsIdx = filtered.findIndex(t => t.id === 'documents');
+      if (evalIdx !== -1 && docsIdx !== -1 && evalIdx < docsIdx) {
+        const [evalTab] = filtered.splice(evalIdx, 1);
+        filtered.splice(filtered.findIndex(t => t.id === 'documents') + 1, 0, evalTab);
+      }
+    }
+    return filtered;
   }
 
   getReversedHistory(): any[] {
