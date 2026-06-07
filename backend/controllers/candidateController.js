@@ -531,12 +531,23 @@ exports.bulkUpdateStatus = async (req, res) => {
       console.log(`[BULK] candidate=${candidate._id} sendEmail=${sendEmail} hasUserId=${!!candidate.userId} email=${candidate.userId?.email || 'none'}`);
       if (sendEmail && candidate.userId && candidate.userId.email) {
         const baseUrl = process.env.FRONTEND_URL || 'https://rh-management-97bu.vercel.app';
+
+        // Auto-generate tracking token if missing so the email link always works
+        let token = candidate.trackingToken;
+        if (!token) {
+          token = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          await Candidate.collection.updateOne(
+            { _id: candidate._id },
+            { $set: { trackingToken: token } }
+          );
+        }
+
         emails.push({
           to: candidate.userId.email,
           candidateName: `${candidate.userId.firstName} ${candidate.userId.lastName}`,
           previousStatus: previous,
           newStatus,
-          trackingUrl: candidate.trackingToken ? `${baseUrl}/candidat/suivi/${candidate.trackingToken}` : undefined,
+          trackingUrl: `${baseUrl}/candidat/suivi/${token}`,
           comment,
           documents: candidate.documents || []
         });
