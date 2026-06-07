@@ -550,7 +550,10 @@ export class BulkStatusUpdateComponent {
             En attendant, vous pouvez suivre l'avancement de votre candidature via votre espace personnel.
           </p>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:22px 0"/>
-          <p style="color:#9ca3af;font-size:11px;text-align:center">${APP_NAME} — Institut National d'Études Technologiques</p>
+          <div style="text-align:center;margin-top:8px">
+            <img src="/assets/logo-inet.png" alt="iNET" style="height:52px;width:52px;border-radius:8px;display:block;margin:0 auto 8px"/>
+            <p style="color:#9ca3af;font-size:11px;margin:0">${APP_NAME} — Institut National d'Études Technologiques</p>
+          </div>
         </div>`;
     }
 
@@ -577,7 +580,10 @@ export class BulkStatusUpdateComponent {
           </p>
           <p style="color:#374151;line-height:1.6">Nous vous souhaitons pleine réussite dans vos démarches.</p>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:22px 0"/>
-          <p style="color:#9ca3af;font-size:11px;text-align:center">${APP_NAME} — Institut National d'Études Technologiques</p>
+          <div style="text-align:center;margin-top:8px">
+            <img src="/assets/logo-inet.png" alt="iNET" style="height:52px;width:52px;border-radius:8px;display:block;margin:0 auto 8px"/>
+            <p style="color:#9ca3af;font-size:11px;margin:0">${APP_NAME} — Institut National d'Études Technologiques</p>
+          </div>
         </div>`;
     }
 
@@ -618,7 +624,10 @@ export class BulkStatusUpdateComponent {
             </div>
           </div>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:22px 0"/>
-          <p style="color:#9ca3af;font-size:11px;text-align:center">${APP_NAME} — Institut National d'Études Technologiques</p>
+          <div style="text-align:center;margin-top:8px">
+            <img src="/assets/logo-inet.png" alt="iNET" style="height:52px;width:52px;border-radius:8px;display:block;margin:0 auto 8px"/>
+            <p style="color:#9ca3af;font-size:11px;margin:0">${APP_NAME} — Institut National d'Études Technologiques</p>
+          </div>
         </div>`;
     }
 

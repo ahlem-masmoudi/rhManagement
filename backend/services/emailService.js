@@ -66,7 +66,10 @@ exports.sendInterviewEmail = async ({ to, firstName, lastName, interviewDate, in
           Merci de vous présenter à l'heure indiquée. En cas d'empêchement, veuillez nous contacter dans les plus brefs délais.
         </p>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-        <p style="color:#9ca3af;font-size:12px;text-align:center">${APP_NAME} — Institut National d'Études Technologiques</p>
+        <div style="text-align:center;margin-top:8px">
+          <img src="https://rh-management-97bu.vercel.app/assets/logo-inet.png" alt="iNET" style="height:52px;width:52px;border-radius:8px;display:block;margin:0 auto 8px"/>
+          <p style="color:#9ca3af;font-size:12px;margin:0">${APP_NAME} — Institut National d'Études Technologiques</p>
+        </div>
       </div>
     `,
   });
@@ -109,7 +112,10 @@ exports.sendPreselectionEmail = async ({ to, firstName, lastName, offerTitle, tr
           En attendant, vous pouvez suivre l'avancement de votre candidature via votre espace personnel.
         </p>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-        <p style="color:#9ca3af;font-size:12px;text-align:center">${APP_NAME} — Institut National d'Études Technologiques</p>
+        <div style="text-align:center;margin-top:8px">
+          <img src="https://rh-management-97bu.vercel.app/assets/logo-inet.png" alt="iNET" style="height:52px;width:52px;border-radius:8px;display:block;margin:0 auto 8px"/>
+          <p style="color:#9ca3af;font-size:12px;margin:0">${APP_NAME} — Institut National d'Études Technologiques</p>
+        </div>
       </div>
     `,
   });
@@ -150,7 +156,10 @@ exports.sendRejectionEmail = async ({ to, firstName, lastName, offerTitle, comme
           Nous vous souhaitons pleine réussite dans vos démarches.
         </p>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-        <p style="color:#9ca3af;font-size:12px;text-align:center">${APP_NAME} — Institut National d'Études Technologiques</p>
+        <div style="text-align:center;margin-top:8px">
+          <img src="https://rh-management-97bu.vercel.app/assets/logo-inet.png" alt="iNET" style="height:52px;width:52px;border-radius:8px;display:block;margin:0 auto 8px"/>
+          <p style="color:#9ca3af;font-size:12px;margin:0">${APP_NAME} — Institut National d'Études Technologiques</p>
+        </div>
       </div>
     `,
   });
@@ -206,7 +215,10 @@ exports.sendAcceptanceEmail = async ({ to, firstName, lastName, offerTitle, trac
           </div>
         </div>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-        <p style="color:#9ca3af;font-size:12px;text-align:center">${APP_NAME} — Institut National d'Études Technologiques</p>
+        <div style="text-align:center;margin-top:8px">
+          <img src="https://rh-management-97bu.vercel.app/assets/logo-inet.png" alt="iNET" style="height:52px;width:52px;border-radius:8px;display:block;margin:0 auto 8px"/>
+          <p style="color:#9ca3af;font-size:12px;margin:0">${APP_NAME} — Institut National d'Études Technologiques</p>
+        </div>
       </div>
     `,
   });
