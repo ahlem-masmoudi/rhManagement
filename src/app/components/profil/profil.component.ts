@@ -148,23 +148,6 @@ import { Candidate, CandidateStatus, Application } from '../../models';
                 </div>
               </div>
 
-              <div class="resume-section" *ngIf="(candidate.statusHistory || []).length > 0">
-                <h4>Historique du statut</h4>
-                <div class="timeline">
-                  <div class="timeline-item" *ngFor="let h of getReversedHistory()">
-                    <div class="tl-dot" [style.background]="getStatusColor(h.newStatus)"></div>
-                    <div class="tl-body">
-                      <span class="tl-badge" [ngStyle]="{ background: getStatusBg(h.newStatus), color: getStatusColor(h.newStatus) }">
-                        {{ getStatusLabel(h.newStatus) }}
-                      </span>
-                      <div class="tl-meta">
-                        {{ h.changedAt | date:'dd/MM/yyyy HH:mm' }}
-                        <span *ngIf="h.comment"> — {{ h.comment }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               <div *ngIf="!(candidate.statusHistory || []).length && !candidate.skills?.length" class="empty-message">
                 Profil incomplet — le candidat n'a pas encore renseigné toutes ses informations.
