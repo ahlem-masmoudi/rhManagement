@@ -73,6 +73,90 @@ exports.sendInterviewEmail = async ({ to, firstName, lastName, interviewDate, in
   console.log(`[EMAIL SENT] Interview email → ${to}`);
 };
 
+// ── Candidate pre-selected ───────────────────────────────────────────────────
+exports.sendPreselectionEmail = async ({ to, firstName, lastName, offerTitle, trackingUrl }) => {
+  if (!process.env.RESEND_API_KEY) {
+    console.log(`[EMAIL SKIP] Preselection email to ${to} — RESEND_API_KEY not configured`);
+    return;
+  }
+  await resendPost({
+    from: FROM,
+    to:   [to],
+    subject: `Votre candidature a été présélectionnée – ${offerTitle || 'Stage'}`,
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;background:#f9fafb;border-radius:12px">
+        <div style="background:#4f46e5;border-radius:8px;padding:20px 24px;margin-bottom:24px">
+          <h1 style="color:#fff;margin:0;font-size:20px">${APP_NAME}</h1>
+        </div>
+        <h2 style="color:#111827">Bonjour ${firstName} ${lastName},</h2>
+        <p style="color:#374151;line-height:1.6">
+          Nous avons le plaisir de vous informer que votre candidature pour le poste de
+          <strong>${offerTitle || 'stage'}</strong> a été <strong style="color:#4f46e5">présélectionnée</strong>.
+        </p>
+        <div style="background:#eef2ff;border-left:4px solid #4f46e5;padding:16px 20px;border-radius:6px;margin:20px 0">
+          <p style="margin:0;font-weight:700;color:#3730a3">📅 Prochaine étape : Entretien</p>
+          <p style="margin:8px 0 0;color:#3730a3;line-height:1.5">
+            Notre équipe RH vous contactera prochainement pour vous communiquer les détails de votre entretien.
+            Vous serez notifié(e) par email dès la planification.
+          </p>
+        </div>
+        <div style="text-align:center;margin:24px 0">
+          <a href="${trackingUrl || '#'}" style="background:#4f46e5;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px">
+            Accéder à mon espace de suivi
+          </a>
+        </div>
+        <p style="color:#6b7280;font-size:13px">
+          En attendant, vous pouvez suivre l'avancement de votre candidature via votre espace personnel.
+        </p>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+        <p style="color:#9ca3af;font-size:12px;text-align:center">${APP_NAME} — Institut National d'Études Technologiques</p>
+      </div>
+    `,
+  });
+  console.log(`[EMAIL SENT] Preselection email → ${to}`);
+};
+
+// ── Candidate rejected ────────────────────────────────────────────────────────
+exports.sendRejectionEmail = async ({ to, firstName, lastName, offerTitle, comment }) => {
+  if (!process.env.RESEND_API_KEY) {
+    console.log(`[EMAIL SKIP] Rejection email to ${to} — RESEND_API_KEY not configured`);
+    return;
+  }
+  await resendPost({
+    from: FROM,
+    to:   [to],
+    subject: `Suite à votre candidature – ${offerTitle || 'Stage'}`,
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;background:#f9fafb;border-radius:12px">
+        <div style="background:#64748b;border-radius:8px;padding:20px 24px;margin-bottom:24px">
+          <h1 style="color:#fff;margin:0;font-size:20px">${APP_NAME}</h1>
+        </div>
+        <h2 style="color:#111827">Bonjour ${firstName} ${lastName},</h2>
+        <p style="color:#374151;line-height:1.6">
+          Nous vous remercions de l'intérêt que vous portez à notre établissement et du temps consacré
+          à votre candidature pour le poste de <strong>${offerTitle || 'stage'}</strong>.
+        </p>
+        <p style="color:#374151;line-height:1.6">
+          Après examen attentif de votre dossier, nous avons le regret de vous informer que votre candidature
+          n'a pas été retenue pour cette offre.
+        </p>
+        ${comment ? `<div style="background:#f1f5f9;border-left:4px solid #94a3b8;padding:14px 18px;border-radius:6px;margin:20px 0">
+          <p style="margin:0;color:#374151;font-size:13px;line-height:1.6">${comment}</p>
+        </div>` : ''}
+        <p style="color:#374151;line-height:1.6">
+          Nous vous encourageons à candidater à de futures offres qui pourraient correspondre à votre profil.
+        </p>
+        <p style="color:#374151;line-height:1.6">
+          Nous vous souhaitons pleine réussite dans vos démarches.
+        </p>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+        <p style="color:#9ca3af;font-size:12px;text-align:center">${APP_NAME} — Institut National d'Études Technologiques</p>
+      </div>
+    `,
+  });
+  console.log(`[EMAIL SENT] Rejection email → ${to}`);
+};
+
 // ── Offer accepted ───────────────────────────────────────────────────────────
 exports.sendAcceptanceEmail = async ({ to, firstName, lastName, offerTitle, trackingUrl }) => {
   if (!process.env.RESEND_API_KEY) {

@@ -3,7 +3,7 @@ const Candidate = require('../models/Candidate');
 const User = require('../models/User');
 const Application = require('../models/Application');
 const { scoreResumeAgainstOffer } = require('../utils/scoring');
-const { sendAcceptanceEmail } = require('../services/emailService');
+const { sendAcceptanceEmail, sendPreselectionEmail, sendRejectionEmail } = require('../services/emailService');
 const path = require('path');
 const fs = require('fs');
 
@@ -545,22 +545,23 @@ exports.bulkUpdateStatus = async (req, res) => {
       }
     }
 
-    // Send acceptance emails for offre_acceptee
+    // Send emails based on new status
     if (emails.length > 0) {
       for (const e of emails) {
+        const nameParts = e.candidateName.split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName  = nameParts.slice(1).join(' ') || '';
         if (e.newStatus === 'offre_acceptee') {
-          const nameParts = e.candidateName.split(' ');
-          const firstName = nameParts[0] || '';
-          const lastName = nameParts.slice(1).join(' ') || '';
-          sendAcceptanceEmail({
-            to: e.to,
-            firstName,
-            lastName,
-            offerTitle: '',
-            trackingUrl: e.trackingUrl || ''
-          }).catch(err => console.error(`[EMAIL ERROR] Acceptance email to ${e.to}:`, err.message));
+          sendAcceptanceEmail({ to: e.to, firstName, lastName, offerTitle: '', trackingUrl: e.trackingUrl || '' })
+            .catch(err => console.error(`[EMAIL ERROR] Acceptance to ${e.to}:`, err.message));
+        } else if (e.newStatus === 'preselectionne') {
+          sendPreselectionEmail({ to: e.to, firstName, lastName, offerTitle: '', trackingUrl: e.trackingUrl || '' })
+            .catch(err => console.error(`[EMAIL ERROR] Preselection to ${e.to}:`, err.message));
+        } else if (e.newStatus === 'offre_refusee') {
+          sendRejectionEmail({ to: e.to, firstName, lastName, offerTitle: '', comment: e.comment || '' })
+            .catch(err => console.error(`[EMAIL ERROR] Rejection to ${e.to}:`, err.message));
         } else {
-          console.log(`[EMAIL] ${e.to}: ${e.previousStatus} → ${e.newStatus}`);
+          console.log(`[EMAIL] ${e.to}: ${e.previousStatus} → ${e.newStatus} (no template)`);
         }
       }
     }
