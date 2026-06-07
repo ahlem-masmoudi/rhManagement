@@ -435,6 +435,7 @@ const APP_NAME = 'I.NET – Gestion des Stages';
 })
 export class BulkStatusUpdateComponent {
   @Input() selectedCandidates: Candidate[] = [];
+  @Input() applications: any[] = [];
   @Output() selectionCleared = new EventEmitter<void>();
   @Output() statusUpdated = new EventEmitter<void>();
 
@@ -502,13 +503,22 @@ export class BulkStatusUpdateComponent {
   }
 
   private refreshPreviewHtml(): void {
-    const c = this.selectedCandidates[this.previewIndex] || { firstName: 'Prénom', lastName: 'Nom' };
+    const c = this.selectedCandidates[this.previewIndex] || { firstName: 'Prénom', lastName: 'Nom', id: '' };
     const fn = (c as any).firstName || 'Prénom';
     const ln = (c as any).lastName  || 'Nom';
-    this.previewHtml = this.sanitizer.bypassSecurityTrustHtml(this.buildEmailHtml(fn, ln));
+    const app = this.applications.find(a => a.candidateId === (c as any).id);
+    const offerTitle = app?.offer?.title || '';
+    const token = (c as any).trackingToken;
+    const baseUrl = 'https://rh-management-97bu.vercel.app';
+    const trackingUrl = token ? `${baseUrl}/candidat/suivi/${token}` : '';
+    this.previewHtml = this.sanitizer.bypassSecurityTrustHtml(this.buildEmailHtml(fn, ln, offerTitle, trackingUrl));
   }
 
-  private buildEmailHtml(firstName: string, lastName: string): string {
+  private buildEmailHtml(firstName: string, lastName: string, offerTitle: string, trackingUrl: string): string {
+    const offer = offerTitle || '[Titre de l\'offre]';
+    const btnHref = trackingUrl || '#';
+    const btnStyle = `padding:11px 26px;border-radius:8px;font-weight:700;font-size:14px;display:inline-block;text-decoration:none;`;
+
     if (this.newStatus === 'preselectionne') {
       return `
         <div style="font-family:Arial,sans-serif;max-width:580px;margin:auto;padding:28px;background:#f9fafb;border-radius:12px">
@@ -518,7 +528,7 @@ export class BulkStatusUpdateComponent {
           <h2 style="color:#111827;font-size:18px">Bonjour ${firstName} ${lastName},</h2>
           <p style="color:#374151;line-height:1.6">
             Nous avons le plaisir de vous informer que votre candidature pour le poste de
-            <strong>[Titre de l'offre]</strong> a été <strong style="color:#4f46e5">présélectionnée</strong>.
+            <strong>${offer}</strong> a été <strong style="color:#4f46e5">présélectionnée</strong>.
           </p>
           <div style="background:#eef2ff;border-left:4px solid #4f46e5;padding:14px 18px;border-radius:6px;margin:18px 0">
             <p style="margin:0;font-weight:700;color:#3730a3">📅 Prochaine étape : Entretien</p>
@@ -528,9 +538,9 @@ export class BulkStatusUpdateComponent {
             </p>
           </div>
           <div style="text-align:center;margin:22px 0">
-            <span style="background:#4f46e5;color:#fff;padding:11px 26px;border-radius:8px;font-weight:700;font-size:14px;display:inline-block">
+            <a href="${btnHref}" style="${btnStyle}background:#4f46e5;color:#fff;">
               Accéder à mon espace de suivi
-            </span>
+            </a>
           </div>
           <p style="color:#6b7280;font-size:13px">
             En attendant, vous pouvez suivre l'avancement de votre candidature via votre espace personnel.
@@ -549,7 +559,7 @@ export class BulkStatusUpdateComponent {
           <h2 style="color:#111827;font-size:18px">Bonjour ${firstName} ${lastName},</h2>
           <p style="color:#374151;line-height:1.6">
             Nous vous remercions de l'intérêt que vous portez à notre établissement et du temps consacré
-            à votre candidature pour le poste de <strong>[Titre de l'offre]</strong>.
+            à votre candidature pour le poste de <strong>${offer}</strong>.
           </p>
           <p style="color:#374151;line-height:1.6">
             Après examen attentif de votre dossier, nous avons le regret de vous informer que votre candidature
@@ -576,7 +586,7 @@ export class BulkStatusUpdateComponent {
           <h2 style="color:#111827;font-size:18px">Félicitations, ${firstName} ${lastName} !</h2>
           <p style="color:#374151;line-height:1.6">
             Nous avons le plaisir de vous annoncer que votre candidature pour le poste de
-            <strong>[Titre de l'offre]</strong> a été <strong style="color:#059669">acceptée</strong>.
+            <strong>${offer}</strong> a été <strong style="color:#059669">acceptée</strong>.
           </p>
           <div style="background:#d1fae5;border-left:4px solid #059669;padding:14px 18px;border-radius:6px;margin:18px 0">
             <p style="margin:0;font-weight:700;color:#065f46">📄 Action requise</p>
@@ -586,9 +596,9 @@ export class BulkStatusUpdateComponent {
             </p>
           </div>
           <div style="text-align:center;margin:22px 0">
-            <span style="background:#059669;color:#fff;padding:11px 26px;border-radius:8px;font-weight:700;font-size:14px;display:inline-block">
+            <a href="${btnHref}" style="${btnStyle}background:#059669;color:#fff;">
               Déposer ma demande de stage
-            </span>
+            </a>
           </div>
           <p style="color:#6b7280;font-size:13px">
             Après dépôt, le service RH traitera votre document dans les meilleurs délais.
@@ -600,9 +610,7 @@ export class BulkStatusUpdateComponent {
               N'hésitez pas à rejoindre ce groupe pour échanger avec votre encadrant.
             </p>
             <div style="text-align:center;margin-top:14px">
-              <span style="background:#fff;color:#5865f2;padding:9px 22px;border-radius:8px;font-weight:700;font-size:13px;display:inline-block">
-                Rejoindre le Discord
-              </span>
+              <span style="background:#fff;color:#5865f2;${btnStyle}">Rejoindre le Discord</span>
             </div>
           </div>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:22px 0"/>

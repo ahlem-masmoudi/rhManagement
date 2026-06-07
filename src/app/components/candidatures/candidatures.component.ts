@@ -177,6 +177,7 @@ import { BulkStatusUpdateComponent } from '../bulk-status/bulk-status-update.com
       <!-- Composant de mise à jour en masse -->
       <app-bulk-status-update
         [selectedCandidates]="getSelectedCandidates()"
+        [applications]="applications"
         (selectionCleared)="clearSelection()"
         (statusUpdated)="onStatusUpdated()">
       </app-bulk-status-update>
