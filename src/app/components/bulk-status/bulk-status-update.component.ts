@@ -123,7 +123,15 @@ const APP_NAME = 'I.NET – Gestion des Stages';
         </div>
 
         <div class="email-preview-footer">
-          <span class="email-preview-note">
+          <div class="email-nav" *ngIf="hasEmailForStatus() && selectedCandidates.length > 1">
+            <button class="email-nav-btn" (click)="prevCandidate()" [disabled]="previewIndex === 0">‹</button>
+            <span class="email-nav-label">
+              {{ selectedCandidates[previewIndex]?.firstName }} {{ selectedCandidates[previewIndex]?.lastName }}
+              <span class="email-nav-count">{{ previewIndex + 1 }} / {{ selectedCandidates.length }}</span>
+            </span>
+            <button class="email-nav-btn" (click)="nextCandidate()" [disabled]="previewIndex === selectedCandidates.length - 1">›</button>
+          </div>
+          <span class="email-preview-note" *ngIf="!hasEmailForStatus() || selectedCandidates.length === 1">
             📧 Cet email sera envoyé à {{ selectedCandidates.length }} candidat(s) avec leur prénom/nom respectifs.
           </span>
           <button class="btn-secondary" (click)="closeEmailPreview()">Fermer</button>
@@ -383,9 +391,37 @@ const APP_NAME = 'I.NET – Gestion des Stages';
       flex-shrink: 0;
     }
 
-    .email-preview-note {
-      font-size: 12px;
-      color: #64748B;
+    .email-preview-note { font-size: 12px; color: #64748B; }
+
+    .email-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .email-nav-btn {
+      width: 30px; height: 30px;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 8px;
+      background: #F8FAFC;
+      color: #374151;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .email-nav-btn:hover:not(:disabled) { background: #EEF2FF; border-color: #A5B4FC; color: #4338CA; }
+    .email-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .email-nav-label {
+      display: flex; flex-direction: column; align-items: center;
+      font-size: 13px; font-weight: 600; color: #1E293B;
+      min-width: 160px; text-align: center;
+    }
+
+    .email-nav-count {
+      font-size: 11px; font-weight: 400; color: #94A3B8; margin-top: 1px;
     }
 
     @media (max-width: 768px) {
@@ -411,6 +447,7 @@ export class BulkStatusUpdateComponent {
 
   showEmailPreview = false;
   previewHtml: SafeHtml | null = null;
+  previewIndex = 0;
 
   constructor(
     private candidateService: CandidateService,
@@ -441,15 +478,34 @@ export class BulkStatusUpdateComponent {
   }
 
   openEmailPreview(): void {
-    const c = this.selectedCandidates[0] || { firstName: 'Prénom', lastName: 'Nom' };
-    const fn = (c as any).firstName || 'Prénom';
-    const ln = (c as any).lastName  || 'Nom';
-    this.previewHtml = this.sanitizer.bypassSecurityTrustHtml(this.buildEmailHtml(fn, ln));
+    this.previewIndex = 0;
+    this.refreshPreviewHtml();
     this.showEmailPreview = true;
   }
 
   closeEmailPreview(): void {
     this.showEmailPreview = false;
+  }
+
+  prevCandidate(): void {
+    if (this.previewIndex > 0) {
+      this.previewIndex--;
+      this.refreshPreviewHtml();
+    }
+  }
+
+  nextCandidate(): void {
+    if (this.previewIndex < this.selectedCandidates.length - 1) {
+      this.previewIndex++;
+      this.refreshPreviewHtml();
+    }
+  }
+
+  private refreshPreviewHtml(): void {
+    const c = this.selectedCandidates[this.previewIndex] || { firstName: 'Prénom', lastName: 'Nom' };
+    const fn = (c as any).firstName || 'Prénom';
+    const ln = (c as any).lastName  || 'Nom';
+    this.previewHtml = this.sanitizer.bypassSecurityTrustHtml(this.buildEmailHtml(fn, ln));
   }
 
   private buildEmailHtml(firstName: string, lastName: string): string {
