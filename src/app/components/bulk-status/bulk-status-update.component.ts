@@ -367,6 +367,10 @@ const APP_NAME = 'I.NET – Gestion des Stages';
       padding: 20px;
       flex: 1;
     }
+    .email-preview-body a {
+      pointer-events: none;
+      cursor: default;
+    }
 
     .no-email-notice {
       display: flex;
