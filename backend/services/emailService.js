@@ -196,32 +196,16 @@ exports.sendAcceptanceEmail = async ({ to, firstName, lastName, offerTitle, trac
           <strong>${offerTitle || 'stage'}</strong> a été <strong style="color:#059669">acceptée</strong>.
         </p>
         <div style="background:#d1fae5;border-left:4px solid #059669;padding:16px 20px;border-radius:6px;margin:20px 0">
-          <p style="margin:0;font-weight:700;color:#065f46">📄 Action requise</p>
-          <p style="margin:8px 0 0;color:#065f46">
-            Veuillez déposer votre <strong>demande de stage</strong> (formulaire vierge fourni par votre établissement)
-            via votre espace de suivi ci-dessous. Le service RH la complétera et vous la renverra signée.
+          <p style="margin:0;font-weight:700;color:#065f46">📄 Prochaine étape</p>
+          <p style="margin:8px 0 0;color:#065f46;line-height:1.6">
+            Connectez-vous à votre espace de suivi pour déposer votre <strong>demande de stage</strong>
+            et rejoindre le groupe Discord d'encadrement.
           </p>
         </div>
         <div style="text-align:center;margin:24px 0">
           <a href="${trackingUrl}" style="background:#059669;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px">
-            Déposer ma demande de stage
+            Accéder à mon espace de suivi
           </a>
-        </div>
-        <p style="color:#6b7280;font-size:13px">
-          Après dépôt, le service RH traitera votre document dans les meilleurs délais.
-        </p>
-        <div style="background:#5865f2;border-radius:8px;padding:20px 24px;margin:24px 0">
-          <p style="margin:0;font-weight:700;color:#fff;font-size:15px">💬 Groupe Discord d'encadrement</p>
-          <p style="margin:10px 0;color:#e0e7ff;line-height:1.6;font-size:14px">
-            Afin de faciliter la communication durant votre encadrement, nous avons créé un groupe Discord.<br/>
-            N'hésitez pas à rejoindre ce groupe pour échanger avec votre encadrant.
-          </p>
-          <div style="text-align:center;margin-top:16px">
-            <a href="https://discord.gg/aeFTt2AgpA"
-               style="background:#fff;color:#5865f2;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block">
-              Rejoindre le Discord
-            </a>
-          </div>
         </div>
         ${emailFooter()}
       </div>`,

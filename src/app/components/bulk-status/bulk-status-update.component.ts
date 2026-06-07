@@ -599,29 +599,16 @@ export class BulkStatusUpdateComponent {
             <strong>${offer}</strong> a été <strong style="color:#059669">acceptée</strong>.
           </p>
           <div style="background:#d1fae5;border-left:4px solid #059669;padding:14px 18px;border-radius:6px;margin:18px 0">
-            <p style="margin:0;font-weight:700;color:#065f46">📄 Action requise</p>
-            <p style="margin:8px 0 0;color:#065f46">
-              Veuillez déposer votre <strong>demande de stage</strong> (formulaire vierge fourni par votre établissement)
-              via votre espace de suivi ci-dessous. Le service RH la complétera et vous la renverra signée.
+            <p style="margin:0;font-weight:700;color:#065f46">📄 Prochaine étape</p>
+            <p style="margin:8px 0 0;color:#065f46;line-height:1.6">
+              Connectez-vous à votre espace de suivi pour déposer votre <strong>demande de stage</strong>
+              et rejoindre le groupe Discord d'encadrement.
             </p>
           </div>
           <div style="text-align:center;margin:22px 0">
             <a href="${btnHref}" style="${btnStyle}background:#059669;color:#fff;">
-              Déposer ma demande de stage
+              Accéder à mon espace de suivi
             </a>
-          </div>
-          <p style="color:#6b7280;font-size:13px">
-            Après dépôt, le service RH traitera votre document dans les meilleurs délais.
-          </p>
-          <div style="background:#5865f2;border-radius:8px;padding:18px 22px;margin:22px 0">
-            <p style="margin:0;font-weight:700;color:#fff;font-size:14px">💬 Groupe Discord d'encadrement</p>
-            <p style="margin:10px 0;color:#e0e7ff;line-height:1.6;font-size:13px">
-              Afin de faciliter la communication durant votre encadrement, nous avons créé un groupe Discord.
-              N'hésitez pas à rejoindre ce groupe pour échanger avec votre encadrant.
-            </p>
-            <div style="text-align:center;margin-top:14px">
-              <span style="background:#fff;color:#5865f2;${btnStyle}">Rejoindre le Discord</span>
-            </div>
           </div>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:22px 0"/>
           <div style="text-align:center;margin-top:8px">
