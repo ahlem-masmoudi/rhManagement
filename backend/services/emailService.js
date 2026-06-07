@@ -71,6 +71,19 @@ async function resendPost(payload) {
   });
 }
 
+function emailBtn(url, label, color) {
+  return `
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0">
+      <tr>
+        <td align="center">
+          <a href="${url}" style="background:${color};color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;line-height:1.4;font-family:Arial,sans-serif">
+            ${label}
+          </a>
+        </td>
+      </tr>
+    </table>`;
+}
+
 function emailFooter() {
   return `
     <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
@@ -101,11 +114,7 @@ exports.sendInterviewEmail = async ({ to, firstName, lastName, interviewDate, in
           <p style="margin:0;font-weight:700;color:#1e40af">📅 Date de l'entretien : ${dateStr}</p>
           <p style="margin:8px 0 0;font-weight:700;color:#1e40af">🕐 Heure : ${interviewTime}</p>
         </div>
-        <div style="text-align:center;margin:24px 0">
-          <a href="${trackingUrl}" style="background:#1d4ed8;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px">
-            Accéder à mon espace de suivi
-          </a>
-        </div>
+        ${emailBtn(trackingUrl, 'Accéder à mon espace de suivi', '#1d4ed8')}
         <p style="color:#6b7280;font-size:13px">
           Merci de vous présenter à l'heure indiquée. En cas d'empêchement, veuillez nous contacter dans les plus brefs délais.
         </p>
@@ -136,11 +145,7 @@ exports.sendPreselectionEmail = async ({ to, firstName, lastName, offerTitle, tr
             Vous serez notifié(e) par email dès la planification.
           </p>
         </div>
-        <div style="text-align:center;margin:24px 0">
-          <a href="${trackingUrl || '#'}" style="background:#4f46e5;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px">
-            Accéder à mon espace de suivi
-          </a>
-        </div>
+        ${emailBtn(trackingUrl || '#', 'Accéder à mon espace de suivi', '#4f46e5')}
         <p style="color:#6b7280;font-size:13px">
           En attendant, vous pouvez suivre l'avancement de votre candidature via votre espace personnel.
         </p>
@@ -202,11 +207,7 @@ exports.sendAcceptanceEmail = async ({ to, firstName, lastName, offerTitle, trac
             et rejoindre le groupe Discord d'encadrement.
           </p>
         </div>
-        <div style="text-align:center;margin:24px 0">
-          <a href="${trackingUrl}" style="background:#059669;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px">
-            Accéder à mon espace de suivi
-          </a>
-        </div>
+        ${emailBtn(trackingUrl, 'Accéder à mon espace de suivi', '#059669')}
         ${emailFooter()}
       </div>`,
   });
