@@ -1499,12 +1499,24 @@ export class ProfilComponent implements OnInit {
 
   openCv(): void {
     const doc = this.getCvDocument();
-    if (!doc?.content) return;
-    const content = doc.content.startsWith('data:') ? doc.content : `data:application/pdf;base64,${doc.content}`;
-    const win = window.open();
-    if (win) {
-      win.document.write(`<iframe src="${content}" style="width:100%;height:100%;border:none;"></iframe>`);
-    }
+    if (!doc || !this.candidate) return;
+    this.candidateService.downloadDocument(this.candidate.id, doc.id).subscribe(response => {
+      const content = response.content || '';
+      if (!content) return;
+      const isBase64 = content.length > 0 && /^[A-Za-z0-9+/=\r\n]+$/.test(content.trim());
+      let url: string;
+      if (isBase64) {
+        const binary = atob(content.replace(/\s/g, ''));
+        const arr = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+        const blob = new Blob([arr], { type: 'application/pdf' });
+        url = window.URL.createObjectURL(blob);
+      } else {
+        url = content.startsWith('data:') ? content : `data:application/pdf;base64,${content}`;
+      }
+      window.open(url, '_blank');
+      if (url.startsWith('blob:')) setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+    });
   }
 
   getStatusLabel(status: string): string {
