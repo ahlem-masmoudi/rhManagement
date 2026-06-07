@@ -1,18 +1,57 @@
+const nodemailer = require('nodemailer');
 const https = require('https');
 
 const APP_NAME = 'I.NET – Gestion des Stages';
-const FROM     = `${APP_NAME} <onboarding@resend.dev>`;
+const LOGO_URL = 'https://rh-management-97bu.vercel.app/assets/logo-inet.png';
+
+// ── Transport selection ───────────────────────────────────────────────────────
+// Prefer Gmail SMTP (available locally and on Vercel if env vars set).
+// Falls back to Resend if RESEND_API_KEY is set and SMTP is not.
+
+function getTransporter() {
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '465'),
+      secure: parseInt(process.env.SMTP_PORT || '465') === 465,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  }
+  return null; // will use Resend
+}
+
+async function sendMail({ to, subject, html }) {
+  const transporter = getTransporter();
+
+  if (transporter) {
+    const from = process.env.SMTP_FROM || `${APP_NAME} <${process.env.SMTP_USER}>`;
+    await transporter.sendMail({ from, to, subject, html });
+    console.log(`[EMAIL SENT via SMTP] ${subject} → ${to}`);
+    return;
+  }
+
+  if (process.env.RESEND_API_KEY) {
+    await resendPost({ from: `${APP_NAME} <onboarding@resend.dev>`, to: [to], subject, html });
+    console.log(`[EMAIL SENT via Resend] ${subject} → ${to}`);
+    return;
+  }
+
+  console.log(`[EMAIL SKIP] No SMTP or Resend credentials configured — skipping email to ${to}`);
+}
 
 async function resendPost(payload) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(payload);
-    const req  = https.request({
+    const req = https.request({
       hostname: 'api.resend.com',
-      path:     '/emails',
-      method:   'POST',
-      headers:  {
+      path: '/emails',
+      method: 'POST',
+      headers: {
         'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-        'Content-Type':  'application/json',
+        'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(body),
       },
     }, (res) => {
@@ -32,16 +71,21 @@ async function resendPost(payload) {
   });
 }
 
-// ── Interview scheduled ──────────────────────────────────────────────────────
+function emailFooter() {
+  return `
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+    <div style="text-align:center;margin-top:8px">
+      <img src="${LOGO_URL}" alt="iNET" style="height:52px;width:52px;border-radius:8px;display:block;margin:0 auto 8px"/>
+      <p style="color:#9ca3af;font-size:12px;margin:0">${APP_NAME} — Institut National d'Études Technologiques</p>
+    </div>
+  `;
+}
+
+// ── Interview scheduled ───────────────────────────────────────────────────────
 exports.sendInterviewEmail = async ({ to, firstName, lastName, interviewDate, interviewTime, offerTitle, trackingUrl }) => {
-  if (!process.env.RESEND_API_KEY) {
-    console.log(`[EMAIL SKIP] Interview email to ${to} — RESEND_API_KEY not configured`);
-    return;
-  }
   const dateStr = new Date(interviewDate).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  await resendPost({
-    from: FROM,
-    to:   [to],
+  await sendMail({
+    to,
     subject: `Convocation à l'entretien – ${offerTitle || 'Stage'}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;background:#f9fafb;border-radius:12px">
@@ -65,26 +109,15 @@ exports.sendInterviewEmail = async ({ to, firstName, lastName, interviewDate, in
         <p style="color:#6b7280;font-size:13px">
           Merci de vous présenter à l'heure indiquée. En cas d'empêchement, veuillez nous contacter dans les plus brefs délais.
         </p>
-        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-        <div style="text-align:center;margin-top:8px">
-          <img src="https://rh-management-97bu.vercel.app/assets/logo-inet.png" alt="iNET" style="height:52px;width:52px;border-radius:8px;display:block;margin:0 auto 8px"/>
-          <p style="color:#9ca3af;font-size:12px;margin:0">${APP_NAME} — Institut National d'Études Technologiques</p>
-        </div>
-      </div>
-    `,
+        ${emailFooter()}
+      </div>`,
   });
-  console.log(`[EMAIL SENT] Interview email → ${to}`);
 };
 
-// ── Candidate pre-selected ───────────────────────────────────────────────────
+// ── Candidate pre-selected ────────────────────────────────────────────────────
 exports.sendPreselectionEmail = async ({ to, firstName, lastName, offerTitle, trackingUrl }) => {
-  if (!process.env.RESEND_API_KEY) {
-    console.log(`[EMAIL SKIP] Preselection email to ${to} — RESEND_API_KEY not configured`);
-    return;
-  }
-  await resendPost({
-    from: FROM,
-    to:   [to],
+  await sendMail({
+    to,
     subject: `Votre candidature a été présélectionnée – ${offerTitle || 'Stage'}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;background:#f9fafb;border-radius:12px">
@@ -111,26 +144,15 @@ exports.sendPreselectionEmail = async ({ to, firstName, lastName, offerTitle, tr
         <p style="color:#6b7280;font-size:13px">
           En attendant, vous pouvez suivre l'avancement de votre candidature via votre espace personnel.
         </p>
-        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-        <div style="text-align:center;margin-top:8px">
-          <img src="https://rh-management-97bu.vercel.app/assets/logo-inet.png" alt="iNET" style="height:52px;width:52px;border-radius:8px;display:block;margin:0 auto 8px"/>
-          <p style="color:#9ca3af;font-size:12px;margin:0">${APP_NAME} — Institut National d'Études Technologiques</p>
-        </div>
-      </div>
-    `,
+        ${emailFooter()}
+      </div>`,
   });
-  console.log(`[EMAIL SENT] Preselection email → ${to}`);
 };
 
 // ── Candidate rejected ────────────────────────────────────────────────────────
 exports.sendRejectionEmail = async ({ to, firstName, lastName, offerTitle, comment }) => {
-  if (!process.env.RESEND_API_KEY) {
-    console.log(`[EMAIL SKIP] Rejection email to ${to} — RESEND_API_KEY not configured`);
-    return;
-  }
-  await resendPost({
-    from: FROM,
-    to:   [to],
+  await sendMail({
+    to,
     subject: `Suite à votre candidature – ${offerTitle || 'Stage'}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;background:#f9fafb;border-radius:12px">
@@ -152,29 +174,16 @@ exports.sendRejectionEmail = async ({ to, firstName, lastName, offerTitle, comme
         <p style="color:#374151;line-height:1.6">
           Nous vous encourageons à candidater à de futures offres qui pourraient correspondre à votre profil.
         </p>
-        <p style="color:#374151;line-height:1.6">
-          Nous vous souhaitons pleine réussite dans vos démarches.
-        </p>
-        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-        <div style="text-align:center;margin-top:8px">
-          <img src="https://rh-management-97bu.vercel.app/assets/logo-inet.png" alt="iNET" style="height:52px;width:52px;border-radius:8px;display:block;margin:0 auto 8px"/>
-          <p style="color:#9ca3af;font-size:12px;margin:0">${APP_NAME} — Institut National d'Études Technologiques</p>
-        </div>
-      </div>
-    `,
+        <p style="color:#374151;line-height:1.6">Nous vous souhaitons pleine réussite dans vos démarches.</p>
+        ${emailFooter()}
+      </div>`,
   });
-  console.log(`[EMAIL SENT] Rejection email → ${to}`);
 };
 
-// ── Offer accepted ───────────────────────────────────────────────────────────
+// ── Offer accepted ────────────────────────────────────────────────────────────
 exports.sendAcceptanceEmail = async ({ to, firstName, lastName, offerTitle, trackingUrl }) => {
-  if (!process.env.RESEND_API_KEY) {
-    console.log(`[EMAIL SKIP] Acceptance email to ${to} — RESEND_API_KEY not configured`);
-    return;
-  }
-  await resendPost({
-    from: FROM,
-    to:   [to],
+  await sendMail({
+    to,
     subject: `Félicitations ! Votre candidature a été acceptée – ${offerTitle || 'Stage'}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;background:#f9fafb;border-radius:12px">
@@ -214,13 +223,7 @@ exports.sendAcceptanceEmail = async ({ to, firstName, lastName, offerTitle, trac
             </a>
           </div>
         </div>
-        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-        <div style="text-align:center;margin-top:8px">
-          <img src="https://rh-management-97bu.vercel.app/assets/logo-inet.png" alt="iNET" style="height:52px;width:52px;border-radius:8px;display:block;margin:0 auto 8px"/>
-          <p style="color:#9ca3af;font-size:12px;margin:0">${APP_NAME} — Institut National d'Études Technologiques</p>
-        </div>
-      </div>
-    `,
+        ${emailFooter()}
+      </div>`,
   });
-  console.log(`[EMAIL SENT] Acceptance email → ${to}`);
 };
