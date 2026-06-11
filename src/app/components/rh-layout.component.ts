@@ -73,17 +73,36 @@ interface SearchResult {
             <span class="nav-glow"></span>
           </a>
 
-          <a *ngIf="canAccessCandidatures()" routerLink="/rh/candidatures" routerLinkActive="active"
-             class="nav-item" (click)="closeSidebar()" style="--i:2">
-            <span class="nav-icon">
-              <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
-              </svg>
-            </span>
-            <span class="nav-label">Candidatures</span>
-            <span class="nav-glow"></span>
-          </a>
+          <div *ngIf="canAccessCandidatures()" class="nav-group" style="--i:2">
+            <a routerLink="/rh/candidatures" routerLinkActive="active"
+               class="nav-item nav-parent" (click)="toggleCandidatures()">
+              <span class="nav-icon">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                  <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                </svg>
+              </span>
+              <span class="nav-label">Candidatures</span>
+              <span class="nav-chevron" [class.rotated]="candidaturesExpanded">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
+              </span>
+              <span class="nav-glow"></span>
+            </a>
+
+            <div class="nav-submenu" [class.open]="candidaturesExpanded">
+              <a routerLink="/rh/calendrier" routerLinkActive="active"
+                 class="nav-item nav-sub-item" (click)="closeSidebar()">
+                <span class="nav-icon">
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                  </svg>
+                </span>
+                <span class="nav-label">Calendrier</span>
+              </a>
+            </div>
+          </div>
 
           <a *ngIf="canAccessCandidatures()" routerLink="/rh/dossiers" routerLinkActive="active"
              class="nav-item" (click)="closeSidebar()" style="--i:3">
@@ -93,17 +112,6 @@ interface SearchResult {
               </svg>
             </span>
             <span class="nav-label">Dossiers accept&eacute;s</span>
-            <span class="nav-glow"></span>
-          </a>
-
-          <a *ngIf="canAccessCandidatures()" routerLink="/rh/calendrier" routerLinkActive="active"
-             class="nav-item" (click)="closeSidebar()" style="--i:4">
-            <span class="nav-icon">
-              <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-              </svg>
-            </span>
-            <span class="nav-label">Calendrier</span>
             <span class="nav-glow"></span>
           </a>
 
@@ -488,6 +496,35 @@ interface SearchResult {
       color: #ffffff;
       box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
     }
+
+    .nav-group { display: flex; flex-direction: column; }
+
+    .nav-parent { justify-content: flex-start; }
+
+    .nav-chevron {
+      margin-left: auto;
+      opacity: 0.6;
+      transition: transform 0.25s ease;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .nav-chevron.rotated { transform: rotate(180deg); }
+
+    .nav-submenu {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.28s ease;
+    }
+    .nav-submenu.open { max-height: 120px; }
+
+    .nav-sub-item {
+      padding-left: 44px !important;
+      font-size: 13px !important;
+      opacity: 0.85;
+    }
+    .nav-sub-item:hover { opacity: 1; }
+    .nav-sub-item .nav-icon { width: 18px; height: 18px; min-width: 18px; }
 
     .nav-item.active .nav-glow {
       display: none;
@@ -1177,6 +1214,7 @@ interface SearchResult {
 })
 export class RhLayoutComponent implements OnInit, OnDestroy {
   isSidebarOpen = false;
+  candidaturesExpanded = false;
   isFingerprintSupported = typeof PublicKeyCredential !== 'undefined';
   hasCredentials = false;
   fpLoading = false;
@@ -1378,6 +1416,11 @@ export class RhLayoutComponent implements OnInit, OnDestroy {
   canAccessOffers(): boolean {
     const role = this.authService.getCurrentUser()?.role;
     return ['recruiter', 'admin', 'rh_offres'].includes(role ?? '');
+  }
+
+  toggleCandidatures(): void {
+    this.candidaturesExpanded = !this.candidaturesExpanded;
+    this.closeSidebar();
   }
 
   canAccessCandidatures(): boolean {
