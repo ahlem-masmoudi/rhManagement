@@ -26,7 +26,7 @@ interface RhUser {
       <div class="page-header">
         <div>
           <h1 class="page-title">Gestion des utilisateurs RH</h1>
-          <p class="page-sub">Créez et gérez les comptes de l'équipe recrutement</p>
+          <p class="page-sub">Créez et gérez les comptes de l'équipe ressources humaines</p>
         </div>
         <button class="btn-primary" (click)="openCreate()">
           <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
