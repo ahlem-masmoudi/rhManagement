@@ -90,7 +90,10 @@ interface Interview {
           <!-- Calendar grid -->
           <div class="cal-grid-wrap">
             <div class="day-headers">
-              <div *ngFor="let d of dayNames; let i = index" class="day-header" [class.weekend]="i >= 5">{{ d }}</div>
+              <div *ngFor="let d of dayNames; let i = index" class="day-header" [class.weekend]="i >= 5">
+                <span class="day-full">{{ d }}</span>
+                <span class="day-short">{{ d.charAt(0) }}</span>
+              </div>
             </div>
             <div class="weeks">
               <div *ngFor="let week of calendarWeeks; let wi = index" class="week-row">
@@ -346,6 +349,11 @@ interface Interview {
       color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.7px;
     }
     .day-header.weekend { color:rgba(253,186,116,.9); }
+    .day-short { display:none; }
+    @media (max-width:600px) {
+      .day-full { display:none; }
+      .day-short { display:inline; }
+    }
     .weeks { display:flex;flex-direction:column; }
     .week-row { display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid #f1f5f9; }
     .week-row:last-child { border-bottom:none; }
@@ -526,6 +534,30 @@ interface Interview {
       .cal-layout { grid-template-columns:1fr; }
       .hero-stats { display:none; }
       .cal-body { padding:12px; }
+    }
+
+    @media (max-width:600px) {
+      .cal-body { padding:8px; }
+      .nav-controls { padding:10px 12px; }
+      .month-label { font-size:16px; }
+
+      /* Compact day headers */
+      .day-header { padding:6px 0;font-size:9px;letter-spacing:0; }
+
+      /* Compact cells */
+      .day-cell { min-height:52px;padding:4px 3px 3px; }
+
+      /* Smaller day numbers */
+      .day-num { font-size:10.5px;width:20px;height:20px; }
+      .today-num { font-size:10.5px; }
+      .event-count-dot { display:none; }
+
+      /* Pills: show only time, hide name */
+      .event-pill { padding:2px 3px;font-size:9px;gap:2px;border-left-width:2px; }
+      .pill-dot { width:4px;height:4px; }
+      .pill-name { display:none; }
+      .pill-time { font-size:9px; }
+      .pill-more { font-size:8.5px; }
     }
   `]
 })
