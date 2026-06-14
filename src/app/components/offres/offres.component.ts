@@ -443,7 +443,7 @@ import { Offer } from '../../models';
     }
     .close-btn:hover { background:rgba(255,255,255,0.28); }
 
-    .modal-body { padding:24px 28px; overflow-y:auto; }
+    .modal-body { padding:24px 28px; overflow-y:auto; flex:1; min-height:0; }
     .form-group { margin-bottom:18px; }
     .form-group label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:#374151; }
     .form-group input, .form-group select, .form-group textarea {
@@ -528,14 +528,16 @@ import { Offer } from '../../models';
       .modal-content { max-height:95vh; border-radius:14px; }
       .modal-header, .modal-body, .modal-footer { padding:16px; }
     }
-    @media (max-width:480px) {
+    @media (max-width:600px) {
       .modal { padding:0; align-items:flex-end; }
       .modal-content { border-radius:20px 20px 0 0; max-height:96vh; width:100%; }
+      .modal-header, .modal-body, .modal-footer { padding:14px 16px; }
       .modal-footer { flex-direction:column; }
       .modal-footer button { width:100%; justify-content:center; }
       .skills-input { flex-direction:column; }
       .grid-2 { grid-template-columns:1fr; }
       .page-header h1 { font-size:20px; }
+      .form-group input[type="number"] { width:100% !important; }
     }
   `]
 })
@@ -707,7 +709,7 @@ export class OffresComponent implements OnInit {
       location: offer.location,
       type: offer.type,
       duration: offer.duration,
-      startDate: offer.startDate,
+      startDate: offer.startDate ? offer.startDate.substring(0, 10) : '',
       positions: offer.positions ?? 2,
       description: offer.description,
       requirements: [...offer.requirements],
