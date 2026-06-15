@@ -111,6 +111,22 @@ const STATUS_COLORS: Record<string, string> = {
         </div>
       </div>
 
+      <!-- ── Alerts Panel ── -->
+      <div class="alerts-panel" *ngIf="alerts.length > 0">
+        <div class="alerts-heading">
+          <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          Actions prioritaires
+        </div>
+        <div class="alerts-list">
+          <div *ngFor="let a of alerts" class="alert-item alert-{{a.type}}">
+            <span class="alert-icon">{{ a.icon }}</span>
+            <span class="alert-text">{{ a.title }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- ── Tab Nav ── -->
       <div class="tab-nav" *ngIf="dataReady">
         <button class="tab-btn" [class.active]="activeTab==='overview'" (click)="setTab('overview')">
@@ -779,7 +795,36 @@ const STATUS_COLORS: Record<string, string> = {
     @media (max-width:480px) {
       .kpi-grid { grid-template-columns: 1fr; }
       .kpi-val { font-size: 1.7rem; }
+      .alerts-list { flex-direction: column; }
     }
+
+    /* ── Alerts Panel ── */
+    .alerts-panel {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 16px rgba(79,70,229,.07);
+      border: 1px solid #E2E8F0;
+    }
+    .alerts-heading {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .7px; color: #475569;
+      margin-bottom: 12px;
+    }
+    .alerts-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .alert-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 10px;
+      font-size: 13px; font-weight: 600; flex: 1; min-width: 220px;
+    }
+    .alert-icon { font-size: 16px; flex-shrink: 0; }
+    .alert-text { line-height: 1.4; }
+    .alert-danger  { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+    .alert-warning { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+    .alert-info    { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
+    .alert-success { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
   `]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
@@ -793,6 +838,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   error     = '';
   kpi: any  = null;
   activeTab: 'overview' | 'pipeline' | 'profiles' = 'overview';
+
+  alerts: { type: 'danger' | 'warning' | 'info' | 'success'; icon: string; title: string }[] = [];
   periodMode: 'year' | 'semester' | 'quarter' = 'year';
 
   monthlyTableData: { label: string; total: number; accepted: number; rate: number }[] = [];
@@ -874,11 +921,47 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.allSchools     = (res.data.schools || []).slice(0, 12);
         this.buildMonthlyTable(res.data.monthly);
         setTimeout(() => this.renderTab(this.activeTab), 80);
+        this.loadAlerts();
       },
       error: (err) => {
         this.loading = false;
         this.error   = err.error?.message || err.message || 'Erreur serveur';
       },
+    });
+  }
+
+  private loadAlerts(): void {
+    const headers = new HttpHeaders({ Authorization: `Bearer ${localStorage.getItem('authToken')}` });
+    this.http.get<any>(`${environment.apiUrl}/applications`, { headers }).subscribe({
+      next: (res) => {
+        const apps: any[] = res.data || [];
+        const now = new Date();
+        const in3days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+
+        const upcoming = apps.filter(a =>
+          a.status === 'entretien_programme' && a.interviewDate &&
+          new Date(a.interviewDate) >= now && new Date(a.interviewDate) <= in3days
+        ).length;
+
+        const newAlerts: typeof this.alerts = [];
+
+        if (upcoming > 0)
+          newAlerts.push({ type: 'warning', icon: '🗓', title: `${upcoming} entretien(s) prévu(s) dans les 3 prochains jours` });
+
+        if (this.kpi?.pendingDocuments > 0)
+          newAlerts.push({ type: 'danger', icon: '📄', title: `${this.kpi.pendingDocuments} candidat(s) accepté(s) en attente de dépôt de documents` });
+
+        const nouveaux = apps.filter(a => a.status === 'nouveau').length;
+        if (nouveaux > 0)
+          newAlerts.push({ type: 'info', icon: '👤', title: `${nouveaux} candidature(s) en statut Nouveau à traiter` });
+
+        const preselected = apps.filter(a => a.status === 'preselectionne').length;
+        if (preselected > 0)
+          newAlerts.push({ type: 'info', icon: '✅', title: `${preselected} candidat(s) présélectionné(s) en attente d'entretien` });
+
+        this.alerts = newAlerts;
+      },
+      error: () => {}
     });
   }
 
