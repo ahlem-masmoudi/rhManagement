@@ -31,7 +31,7 @@ import { CandidateProfile } from '../../../models/auth.models';
               <div class="progress-line" [class.complete]="currentStep > 2"></div>
               <div class="progress-step" [class.active]="currentStep >= 3" [class.complete]="currentStep > 3">
                 <span class="step-number">3</span>
-                <span class="step-label">Skills</span>
+                <span class="step-label">Compétences</span>
               </div>
             </div>
             <h1>Complétez votre profil</h1>
@@ -39,7 +39,7 @@ import { CandidateProfile } from '../../../models/auth.models';
             <div class="step-caption">
               <span class="caption-chip" [class.active]="currentStep === 1">PROFIL</span>
               <span class="caption-chip" [class.active]="currentStep === 2">ETUDES</span>
-              <span class="caption-chip" [class.active]="currentStep === 3">SKILLS</span>
+              <span class="caption-chip" [class.active]="currentStep === 3">COMPÉTENCES</span>
             </div>
           </div>
 
