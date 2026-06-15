@@ -147,7 +147,7 @@ const STATUS_COLORS: Record<string, string> = {
       <div class="charts-grid" *ngIf="dataReady && activeTab==='overview'">
 
         <!-- Donut + Filters -->
-        <div class="chart-card chart-span-12" style="--ca:#8B5CF6">
+        <div class="chart-card chart-span-6" style="--ca:#8B5CF6">
           <div class="chart-header">
             <div class="chart-title-wrap">
               <div class="chart-icon" style="background:linear-gradient(135deg,#8B5CF6,#A78BFA)">
@@ -198,13 +198,13 @@ const STATUS_COLORS: Record<string, string> = {
             </div>
             <div class="filter-chart-area">
               <div class="filter-loading-overlay" *ngIf="donutFiltering"><div class="filter-spinner"></div></div>
-              <div id="chart-donut" style="height:340px"></div>
+              <div id="chart-donut" style="height:280px"></div>
             </div>
           </div>
         </div>
 
         <!-- Monthly -->
-        <div class="chart-card chart-span-12" style="--ca:#10B981">
+        <div class="chart-card chart-span-6" style="--ca:#10B981">
           <div class="chart-header">
             <div class="chart-title-wrap">
               <div class="chart-icon" style="background:linear-gradient(135deg,#10B981,#34D399)">
