@@ -41,7 +41,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
           </div>
           <div class="brand-text">
             <h1 class="brand-name">I.NET</h1>
-            <p class="brand-tagline">Gestion des candidatures de stage</p>
+            <p class="brand-tagline">Gestion des stages</p>
           </div>
           <div class="brand-divider"></div>
           <p class="brand-desc">
