@@ -20,6 +20,7 @@ app.set('trust proxy', 1);
 // Configure CORS to accept common local dev origins (localhost and 127.0.0.1)
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:4200',
+  'http://localhost:4200',
   'http://127.0.0.1:4200',
   'https://rhmanagement.netlify.app'
 ];
