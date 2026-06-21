@@ -294,7 +294,7 @@ interface Department {
     .dept-dropdown-count.empty { background: rgba(255,255,255,0.08); color: #64748b; }
 
     /* ── Hero ── */
-    .hero { background: linear-gradient(135deg,#00A0DC 0%,#0074BC 100%); color: white; padding: 4rem 0; position: relative; overflow: hidden; min-height: 100vh; display: flex; align-items: center; }
+    .hero { background: linear-gradient(135deg,#00A0DC 0%,#0074BC 100%); color: white; padding: 2rem 0; position: relative; overflow: hidden; min-height: calc(100vh - 120px); display: flex; align-items: center; }
     .hero::before { content:''; position:absolute; inset:0; background: radial-gradient(circle at 20% 50%,rgba(255,255,255,0.1) 0%,transparent 50%), radial-gradient(circle at 80% 80%,rgba(255,255,255,0.1) 0%,transparent 50%); animation: heroShine 10s infinite ease-in-out; }
     @keyframes heroShine { 0%,100%{opacity:0.5} 50%{opacity:1} }
     .hero-container { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; width: 100%; }
@@ -304,10 +304,10 @@ interface Department {
     @keyframes floatImage { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
     .fade-in-up { animation: fadeInUp 1s ease-out; }
     @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
-    .hero-title { font-size:3rem; margin-bottom:1.5rem; line-height:1.2; font-weight:800; }
+    .hero-title { font-size:2.2rem; margin-bottom:1rem; line-height:1.25; font-weight:800; }
     .gradient-text { background:linear-gradient(to right,#ffffff,#e0f2fe,#ffffff); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:gradientShift 3s ease infinite; }
     @keyframes gradientShift { 0%,100%{background-position:0% center} 50%{background-position:100% center} }
-    .hero-subtitle { font-size:1.2rem; margin-bottom:2.5rem; opacity:0.95; line-height:1.6; }
+    .hero-subtitle { font-size:1.1rem; margin-bottom:1.8rem; opacity:0.95; line-height:1.6; }
 
     /* ── Pourquoi nous rejoindre ── */
     .why-join { padding:2.5rem 0; background:white; }
