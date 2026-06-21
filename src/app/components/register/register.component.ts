@@ -53,11 +53,12 @@ import { AuthService } from '../../services/auth.service';
 
             <div class="form-group">
               <label>Email *</label>
-              <input 
-                type="email" 
-                [(ngModel)]="registerData.email" 
+              <input
+                type="email"
+                [(ngModel)]="registerData.email"
                 name="email"
                 placeholder="votre.email@example.com"
+                autocomplete="off"
                 required>
             </div>
 
