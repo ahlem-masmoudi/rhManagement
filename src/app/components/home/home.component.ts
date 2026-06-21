@@ -307,7 +307,7 @@ interface Department {
     .hero-title { font-size:2.2rem; margin-bottom:1rem; line-height:1.25; font-weight:800; }
     .gradient-text { background:linear-gradient(to right,#ffffff,#e0f2fe,#ffffff); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:gradientShift 3s ease infinite; }
     @keyframes gradientShift { 0%,100%{background-position:0% center} 50%{background-position:100% center} }
-    .hero-subtitle { font-size:1.1rem; margin-bottom:1.8rem; opacity:0.95; line-height:1.6; }
+    .hero-subtitle { font-size:1.1rem; margin-bottom:0.8rem; opacity:0.95; line-height:1.6; }
 
     /* ── Pourquoi nous rejoindre ── */
     .why-join { padding:2.5rem 0; background:white; }
