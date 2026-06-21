@@ -75,7 +75,7 @@ import { CandidateProfile } from '../../../models/auth.models';
               <div class="grid-2">
                 <div class="form-group">
                   <label>Email *</label>
-                  <input type="email" [(ngModel)]="profile.email" name="candidate-email" required autocomplete="off" [readonly]="emailReadonly" (focus)="emailReadonly=false" (click)="emailReadonly=false">
+                  <input type="email" [(ngModel)]="profile.email" name="candidate-email" required autocomplete="new-password" [readonly]="emailReadonly" (focus)="emailReadonly=false" (click)="emailReadonly=false">
                   <small class="field-error" *ngIf="shouldShowRequiredError(profile.email)">Ce champ est obligatoire.</small>
                 </div>
                 <div class="form-group">
