@@ -1,6 +1,8 @@
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 const isMailConfigured = () => {
+  if (process.env.RESEND_API_KEY) return true;
   return !!(
     process.env.SMTP_HOST &&
     process.env.SMTP_PORT &&
@@ -13,68 +15,62 @@ const isMailConfigured = () => {
 let cachedTransport;
 const getTransport = () => {
   if (cachedTransport) return cachedTransport;
-
   const port = Number(process.env.SMTP_PORT);
   cachedTransport = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port,
     secure: port === 465,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
   });
-
   return cachedTransport;
 };
 
-const sendRiskOtpEmail = async ({ to, otp, expiresInSeconds }) => {
-  if (!isMailConfigured()) {
-    return { sent: false, reason: 'SMTP_NOT_CONFIGURED' };
+// Unified send — uses Resend HTTP API if RESEND_API_KEY is set, otherwise SMTP
+const sendMail = async ({ to, subject, text, html }) => {
+  if (process.env.RESEND_API_KEY) {
+    const response = await axios.post(
+      'https://api.resend.com/emails',
+      {
+        from: 'RH Management <onboarding@resend.dev>',
+        to: [to],
+        subject,
+        ...(html ? { html } : { text })
+      },
+      { headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}` } }
+    );
+    return response.data;
   }
-
   const transport = getTransport();
+  return transport.sendMail({ from: process.env.SMTP_FROM, to, subject, text, html });
+};
+
+const sendRiskOtpEmail = async ({ to, otp, expiresInSeconds }) => {
+  if (!isMailConfigured()) return { sent: false, reason: 'NOT_CONFIGURED' };
   const minutes = Math.max(1, Math.ceil(Number(expiresInSeconds || 600) / 60));
-
-  const subject = 'Code de vérification (connexion)';
-  const text = `Votre code de vérification est : ${otp}\n\nCe code expire dans ${minutes} minute(s).\n\nSi vous n\'êtes pas à l\'origine de cette tentative de connexion, vous pouvez ignorer cet email.`;
-
-  await transport.sendMail({
-    from: process.env.SMTP_FROM,
+  await sendMail({
     to,
-    subject,
-    text
+    subject: 'Code de vérification (connexion)',
+    text: `Votre code de vérification est : ${otp}\n\nCe code expire dans ${minutes} minute(s).\n\nSi vous n\'êtes pas à l\'origine de cette tentative de connexion, vous pouvez ignorer cet email.`
   });
-
   return { sent: true };
 };
 
 const sendPasswordResetEmail = async ({ to, resetUrl, expiresInSeconds }) => {
-  if (!isMailConfigured()) {
-    return { sent: false, reason: 'SMTP_NOT_CONFIGURED' };
-  }
-
-  const transport = getTransport();
+  if (!isMailConfigured()) return { sent: false, reason: 'NOT_CONFIGURED' };
   const minutes = Math.max(1, Math.ceil(Number(expiresInSeconds || 3600) / 60));
-
-  const subject = 'Reinitialisation de votre mot de passe';
-  const text = [
-    'Vous avez demande la reinitialisation de votre mot de passe.',
-    '',
-    `Ouvrez ce lien pour definir un nouveau mot de passe : ${resetUrl}`,
-    '',
-    `Ce lien expire dans ${minutes} minute(s).`,
-    '',
-    'Si vous n etes pas a l origine de cette demande, vous pouvez ignorer cet email.'
-  ].join('\n');
-
-  await transport.sendMail({
-    from: process.env.SMTP_FROM,
+  await sendMail({
     to,
-    subject,
-    text
+    subject: 'Réinitialisation de votre mot de passe',
+    text: [
+      'Vous avez demandé la réinitialisation de votre mot de passe.',
+      '',
+      `Ouvrez ce lien pour définir un nouveau mot de passe : ${resetUrl}`,
+      '',
+      `Ce lien expire dans ${minutes} minute(s).`,
+      '',
+      "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email."
+    ].join('\n')
   });
-
   return { sent: true };
 };
 
@@ -85,8 +81,7 @@ const RH_ROLE_LABELS = {
 };
 
 const sendNewRhUserEmail = async ({ to, firstName, lastName, email, password, role, appUrl }) => {
-  if (!isMailConfigured()) return { sent: false, reason: 'SMTP_NOT_CONFIGURED' };
-  const transport = getTransport();
+  if (!isMailConfigured()) return { sent: false, reason: 'NOT_CONFIGURED' };
   const roleLabel = RH_ROLE_LABELS[role] || role;
   const url = appUrl || 'https://rh-management-97bu.vercel.app';
 
@@ -114,13 +109,12 @@ const sendNewRhUserEmail = async ({ to, firstName, lastName, email, password, ro
       </div>
     </div>`;
 
-  await transport.sendMail({ from: process.env.SMTP_FROM, to, subject: '🎉 Votre accès Espace RH — Identifiants de connexion', html });
+  await sendMail({ to, subject: 'Votre accès Espace RH — Identifiants de connexion', html });
   return { sent: true };
 };
 
 const sendRhUserUpdatedEmail = async ({ to, firstName, lastName, changes }) => {
-  if (!isMailConfigured()) return { sent: false, reason: 'SMTP_NOT_CONFIGURED' };
-  const transport = getTransport();
+  if (!isMailConfigured()) return { sent: false, reason: 'NOT_CONFIGURED' };
 
   const changeLines = changes.map(c => `<tr><td style="padding:8px 12px;color:#6b7280;font-size:13px;border-bottom:1px solid #f3f4f6">${c.field}</td><td style="padding:8px 12px;color:#1f2937;font-weight:600;font-size:13px;border-bottom:1px solid #f3f4f6">${c.value}</td></tr>`).join('');
 
@@ -141,7 +135,7 @@ const sendRhUserUpdatedEmail = async ({ to, firstName, lastName, changes }) => {
       </div>
     </div>`;
 
-  await transport.sendMail({ from: process.env.SMTP_FROM, to, subject: '🔔 Mise à jour de votre compte Espace RH', html });
+  await sendMail({ to, subject: 'Mise à jour de votre compte Espace RH', html });
   return { sent: true };
 };
 
