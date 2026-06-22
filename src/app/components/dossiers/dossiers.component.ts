@@ -1024,15 +1024,20 @@ export class DossiersComponent implements OnInit {
 
   downloadDoc(entry: DossierEntry, doc: any): void {
     const doDownload = (name: string, content: string) => {
+      const lower = (name || '').toLowerCase();
+      const mime = lower.endsWith('.pdf') ? 'application/pdf'
+        : lower.endsWith('.png') ? 'image/png'
+        : (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) ? 'image/jpeg'
+        : 'application/octet-stream';
       const isBase64 = /^[A-Za-z0-9+/=\r\n]+$/.test(content.trim());
       let blob: Blob;
       if (isBase64) {
         const bytes = atob(content.replace(/\s/g, ''));
         const arr = new Uint8Array(bytes.length);
         for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-        blob = new Blob([arr]);
+        blob = new Blob([arr], { type: mime });
       } else {
-        blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+        blob = new Blob([content], { type: mime.startsWith('text') ? mime + ';charset=utf-8' : mime });
       }
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
