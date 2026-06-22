@@ -1773,7 +1773,7 @@ export class ProfilComponent implements OnInit {
   }
 
   openAssignmentLetterModal(): void {
-    if (!this.candidate || !this.canGenerateAssignmentLetter()) return;
+    if (!this.candidate) return;
     const existingEval = (this.candidateApplications[0] as any)?.evaluation;
     this.assignmentForm = {
       instituteNameFr: this.candidate?.school || '',
@@ -1796,7 +1796,7 @@ export class ProfilComponent implements OnInit {
   closeAssignmentLetterModal(): void { this.showAssignmentModal = false; }
 
   submitAssignmentLetter(): void {
-    if (!this.candidate || !this.canGenerateAssignmentLetter()) return;
+    if (!this.candidate) return;
     this.candidateService.generateAssignmentLetter(this.candidate.id, {
       ...this.assignmentForm,
       outcome: this.assignmentForm.outcome || undefined
