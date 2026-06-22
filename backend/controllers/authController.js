@@ -629,6 +629,7 @@ exports.forgotPassword = async (req, res) => {
     let delivery = 'unconfigured';
 
     if (isMailConfigured()) {
+      console.log('[SMTP] Config OK — sending reset email to:', user.email);
       try {
         await sendPasswordResetEmail({
           to: user.email,
@@ -636,9 +637,13 @@ exports.forgotPassword = async (req, res) => {
           expiresInSeconds
         });
         delivery = 'email';
+        console.log('[SMTP] Reset email sent successfully to:', user.email);
       } catch (error) {
-        console.warn('Failed to send reset password email:', error?.message);
+        console.error('[SMTP] Failed to send reset email — code:', error?.code, '| response:', error?.responseCode, '| message:', error?.message);
       }
+    } else {
+      const missing = ['SMTP_HOST','SMTP_PORT','SMTP_USER','SMTP_PASS','SMTP_FROM'].filter(k => !process.env[k]);
+      console.warn('[SMTP] Not configured — missing vars:', missing.join(', ') || 'none (unexpected)');
     }
 
     const includeDevToken = process.env.AUTH_RESET_DEV_RETURN_TOKEN === 'true' || process.env.NODE_ENV === 'development';
