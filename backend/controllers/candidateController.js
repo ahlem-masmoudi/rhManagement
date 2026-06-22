@@ -293,6 +293,89 @@ function buildAssignmentLetterHtml({
 </html>`;
 }
 
+function buildAssignmentLetterPdf({ candidate, instituteNameFr, letterDate, companyName,
+  internshipTitle, startDate, endDate, specialty, signatoryName, signatoryTitle, outcomeComment }) {
+  return new Promise((resolve, reject) => {
+    const PDFDocument = require('pdfkit');
+    const doc = new PDFDocument({ size: 'A4', margins: { top: 50, bottom: 50, left: 55, right: 55 } });
+    const chunks = [];
+    doc.on('data', chunk => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    const firstName = sanitize(candidate.userId?.firstName);
+    const lastName  = sanitize(candidate.userId?.lastName);
+    const fullName  = `${firstName} ${lastName}`.trim();
+    const field     = sanitize(specialty || candidate.expectedDegree || candidate.educationLevel || '');
+    const instFr    = sanitize(instituteNameFr || candidate.school || '');
+    const date      = sanitize(letterDate || new Date().toLocaleDateString('fr-FR'));
+    const company   = sanitize(companyName || 'A completer');
+    const title     = sanitize(internshipTitle || 'Stage');
+    const start     = sanitize(startDate || '');
+    const end       = sanitize(endDate || '');
+    const signName  = sanitize(signatoryName || 'Direction des stages');
+    const signTitle = sanitize(signatoryTitle || 'La Direction des Stages');
+    const W = 485; // A4 width minus margins (55+55)
+
+    // ── Header ──────────────────────────────────────────────────────────────
+    doc.fontSize(9).font('Helvetica-Bold').fillColor('#1a56a0')
+       .text('Republique Tunisienne', 55, 50, { width: 200 })
+       .text("Ministere de l'Enseignement Superieur et de la Recherche Scientifique", { width: 200 })
+       .text(instFr, { width: 200 });
+
+    doc.fontSize(9).font('Helvetica').fillColor('#000000')
+       .text(`Date : ${date}`, 55, 50, { width: W, align: 'right' });
+
+    const lineY = 108;
+    doc.moveTo(55, lineY).lineTo(540, lineY).strokeColor('#1a56a0').lineWidth(2).stroke();
+
+    // ── Reference table ──────────────────────────────────────────────────────
+    const tableY = lineY + 14;
+    const col1W = W * 0.60;
+    doc.rect(55, tableY, W, 48).strokeColor('#777777').lineWidth(0.5).stroke();
+    doc.moveTo(55 + col1W, tableY).lineTo(55 + col1W, tableY + 48).strokeColor('#777777').lineWidth(0.5).stroke();
+    doc.fontSize(11.5).font('Helvetica-Bold').fillColor('#000000')
+       .text("Lettre d'affectation a un stage", 62, tableY + 14, { width: col1W - 14 });
+    doc.fontSize(8.5).font('Helvetica')
+       .text('Ref : ID.FO15', 55 + col1W + 8, tableY + 6)
+       .text('Version : 01')
+       .text(`Date : ${date}`);
+
+    // ── Addressee ────────────────────────────────────────────────────────────
+    doc.moveDown(1.2);
+    doc.fontSize(11).font('Helvetica-Bold').fillColor('#000000')
+       .text(`A l'attention de M. le Directeur de la societe : ${company}`, 55, doc.y, { width: W, align: 'center' });
+
+    // ── Body ─────────────────────────────────────────────────────────────────
+    doc.moveDown(1.2);
+    doc.fontSize(11).font('Helvetica').text('Monsieur,');
+    doc.moveDown(0.8);
+
+    const para1 = `Suite a l'offre de stage que vous avez eu l'amabilite d'accorder a ${fullName} etudiant(e) a l'${instFr}, inscrit(e) en ${field}, j'ai le plaisir de confirmer par la presente son affectation a votre honorable etablissement et ce pour un stage ${title} du ${start} au ${end}.`;
+    doc.text(para1, { align: 'justify', indent: 20, lineGap: 2 });
+    doc.moveDown(0.8);
+    doc.text("Je saisis cette occasion pour vous exprimer mes vifs remerciements pour votre precieuse collaboration.", { align: 'justify', indent: 20, lineGap: 2 });
+    doc.moveDown(0.8);
+    doc.text("Nous vous signalons, que durant la periode de stage, l'etudiant est couvert par la Mutuelle Accident Scolaire et Universitaire-MASU.", { align: 'justify', indent: 20, lineGap: 2 });
+    doc.moveDown(0.8);
+    doc.text("Par ailleurs, je me tiens a votre entiere disposition pour tout autre renseignement concernant les stages.", { align: 'justify', indent: 20, lineGap: 2 });
+    doc.moveDown(0.8);
+    if (outcomeComment) {
+      doc.font('Helvetica-Oblique').text(outcomeComment, { align: 'justify', indent: 20 });
+      doc.font('Helvetica').moveDown(0.8);
+    }
+    doc.text("Veuillez croire, Madame, Monsieur, a l'expression de ma haute consideration.", { align: 'justify', indent: 20, lineGap: 2 });
+
+    // ── Signature ─────────────────────────────────────────────────────────────
+    doc.moveDown(2.5);
+    doc.fontSize(12).font('Helvetica-Bold').text(signTitle, { width: W, align: 'center' });
+    doc.moveDown(0.5);
+    doc.fontSize(11).font('Helvetica').text(signName, { width: W, align: 'center' });
+
+    doc.end();
+  });
+}
+
 // @desc    Get candidate profile
 // @route   GET /api/candidates/profile
 // @access  Private (Candidate only)
@@ -795,13 +878,11 @@ exports.generateAssignmentLetter = async (req, res) => {
     };
     const outcomeComment = req.body.outcomeComment || (req.body.outcome ? outcomeCommentMap[req.body.outcome] || '' : '');
 
-    const html = buildAssignmentLetterHtml({
+    const pdfBuffer = await buildAssignmentLetterPdf({
       candidate,
       companyName: req.body.companyName,
       instituteNameFr: req.body.instituteNameFr,
-      instituteNameAr: req.body.instituteNameAr,
       letterDate: req.body.letterDate,
-      directorName: req.body.directorName,
       internshipTitle: req.body.internshipTitle,
       startDate: req.body.startDate,
       endDate: req.body.endDate,
@@ -813,9 +894,9 @@ exports.generateAssignmentLetter = async (req, res) => {
 
     const assignmentDoc = {
       id: `${Date.now()}_${Math.random().toString(36).substr(2,8)}`,
-      name: `Lettre_affectation_${sanitize(candidate.userId?.lastName || 'candidat')}_${sanitize(candidate.userId?.firstName || '')}.html`,
+      name: `Lettre_affectation_${sanitize(candidate.userId?.lastName || 'candidat')}_${sanitize(candidate.userId?.firstName || '')}.pdf`,
       type: 'attestation',
-      content: html,
+      content: pdfBuffer.toString('base64'),
       status: 'valide',
       isSigned: false,
       signedBy: undefined,
