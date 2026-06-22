@@ -1446,7 +1446,12 @@ export class ProfilComponent implements OnInit {
   visibleTabs() {
     const filtered = this.tabs.filter(t => {
       if (t.id === 'documents') return !this.shouldHideRhDocuments();
-      if (t.id === 'interview') return !['nouveau', 'offre_acceptee', 'offre_refusee', 'rejete', 'abandonne'].includes(this.candidate?.status || '');
+      if (t.id === 'interview') {
+        const appStatus = (this.candidateApplications[0] as any)?.status || '';
+        const candidateStatus = this.candidate?.status || '';
+        const hidden = ['nouveau', 'offre_acceptee', 'offre_refusee', 'rejete', 'abandonne'];
+        return !hidden.includes(candidateStatus) && !hidden.includes(appStatus);
+      }
       if (t.id === 'evaluation') return ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'entretien_programme', 'stage_termine'].includes(this.candidate?.status || '');
       return true;
     });

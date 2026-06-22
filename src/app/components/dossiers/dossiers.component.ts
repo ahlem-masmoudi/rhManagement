@@ -182,7 +182,7 @@ interface DossierEntry {
                 <div class="doc-meta">
                   <span [class]="'doc-type type-' + doc.type">{{ getDocTypeLabel(doc.type) }}</span>
                   <span *ngIf="doc.isSigned" class="signed-chip">Signé</span>
-                  <span *ngIf="!doc.isSigned && doc.status === 'soumis'" class="pending-chip">En attente de signature</span>
+                  <span *ngIf="!doc.isSigned && doc.status === 'soumis' && doc.type !== 'cv' && doc.type !== 'lettre_motivation'" class="pending-chip">En attente de signature</span>
                 </div>
               </div>
               <div class="doc-actions">
