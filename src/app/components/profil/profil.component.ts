@@ -191,7 +191,7 @@ import { Candidate, CandidateStatus, Application } from '../../models';
                   </div>
                 </div>
 
-                <div class="project-card assignment-card" *ngIf="['offre_acceptee','offre_envoyee','en_attente_documents','documents_recus','stage_termine'].includes(candidate?.status || '')">
+                <div class="project-card assignment-card" *ngIf="['offre_acceptee','offre_envoyee','en_attente_documents','documents_recus','stage_termine'].includes(effectiveStatus)">
                   <h4>Lettre d'affectation</h4>
                   <p class="project-description">
                     Disponible pour les candidats dont l'offre a été acceptée.
@@ -1452,12 +1452,12 @@ export class ProfilComponent implements OnInit {
         const hidden = ['nouveau', 'offre_acceptee', 'offre_refusee', 'rejete', 'abandonne'];
         return !hidden.includes(candidateStatus) && !hidden.includes(appStatus);
       }
-      if (t.id === 'evaluation') return ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'entretien_programme', 'stage_termine'].includes(this.candidate?.status || '');
+      if (t.id === 'evaluation') return ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'entretien_programme', 'stage_termine'].includes(this.effectiveStatus);
       return true;
     });
     // For accepted statuses: evaluation comes after documents RH
     const acceptedStatuses = ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'stage_termine'];
-    if (acceptedStatuses.includes(this.candidate?.status || '')) {
+    if (acceptedStatuses.includes(this.effectiveStatus)) {
       const evalIdx = filtered.findIndex(t => t.id === 'evaluation');
       const docsIdx = filtered.findIndex(t => t.id === 'documents');
       if (evalIdx !== -1 && docsIdx !== -1 && evalIdx < docsIdx) {
@@ -1806,15 +1806,19 @@ export class ProfilComponent implements OnInit {
     });
   }
 
+  get effectiveStatus(): string {
+    return (this.candidateApplications[0] as any)?.status || this.candidate?.status || '';
+  }
+
   canGenerateAssignmentLetter(): boolean {
     if (!this.candidate) return false;
-    return ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'stage_termine'].includes(this.candidate.status);
+    return ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'stage_termine'].includes(this.effectiveStatus);
   }
 
   shouldHideRhDocuments(): boolean {
     if (!this.candidate) return true;
     const showStatuses = ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'stage_termine'];
-    return !showStatuses.includes(this.candidate.status);
+    return !showStatuses.includes(this.effectiveStatus);
   }
 
   // ── Interview scheduling ────────────────────────────────────────────────────
