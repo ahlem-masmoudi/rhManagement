@@ -1063,15 +1063,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   onFingerprintLogin(): void {
-    if (!this.credentials.email) {
-      this.errorMessage = 'Veuillez saisir votre email.';
-      return;
-    }
-
     this.isLoading = true;
     this.resetMessages();
 
-    this.authService.loginWithFingerprint(this.credentials.email.trim().toLowerCase())
+    this.authService.loginWithFingerprint((this.credentials.email || '').trim().toLowerCase())
       .then(() => {
         this.isLoading = false;
         const user = this.authService.getCurrentUser();

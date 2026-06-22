@@ -11,6 +11,15 @@ try {
 const RP_NAME = process.env.WEBAUTHN_RP_NAME || 'INET RH Management';
 const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
+// In-memory challenge store for discoverable credential flow (no email)
+const discoverableChallenges = new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of discoverableChallenges) {
+    if (v.expiresAt < now) discoverableChallenges.delete(k);
+  }
+}, 60 * 1000);
+
 function getRpConfig(req) {
   if (process.env.WEBAUTHN_RP_ID) {
     const rpId = process.env.WEBAUTHN_RP_ID.trim();
@@ -148,11 +157,22 @@ exports.getAuthenticationOptions = async (req, res) => {
 
   try {
     const email = (req.body?.email || '').trim().toLowerCase();
-    if (!email) return res.status(400).json({ success: false, message: 'Email requis.' });
+    const { rpId } = getRpConfig(req);
 
+    // ── Discoverable flow (no email) ──────────────────────────────────────────
+    if (!email) {
+      const options = await simplewebauthn.generateAuthenticationOptions({
+        rpID: rpId,
+        allowCredentials: [],
+        userVerification: 'required'
+      });
+      discoverableChallenges.set(options.challenge, { expiresAt: Date.now() + CHALLENGE_TTL_MS });
+      return res.json({ success: true, data: options });
+    }
+
+    // ── Email-based flow ──────────────────────────────────────────────────────
     const user = await User.findOne({ email });
     if (!user || !user.webauthnCredentials?.length) {
-      // Generic message — don't reveal whether the email exists
       return res.status(404).json({
         success: false,
         code: 'NO_CREDENTIAL',
@@ -166,7 +186,6 @@ exports.getAuthenticationOptions = async (req, res) => {
       transports: c.transports || []
     }));
 
-    const { rpId } = getRpConfig(req);
     const options = await simplewebauthn.generateAuthenticationOptions({
       rpID: rpId,
       allowCredentials,
@@ -193,10 +212,66 @@ exports.verifyAuthentication = async (req, res) => {
     const email = (req.body?.email || '').trim().toLowerCase();
     const { credential } = req.body;
 
-    if (!email || !credential) {
+    if (!credential) {
       return res.status(400).json({ success: false, message: 'Données manquantes.' });
     }
 
+    const { rpId, rpOrigin } = getRpConfig(req);
+
+    // ── Discoverable flow (no email) ──────────────────────────────────────────
+    if (!email) {
+      const credId = credential.id;
+
+      // Decode challenge from clientDataJSON
+      const b64 = (credential.response?.clientDataJSON || '').replace(/-/g, '+').replace(/_/g, '/');
+      const clientData = JSON.parse(Buffer.from(b64, 'base64').toString('utf8'));
+      const usedChallenge = clientData.challenge;
+
+      const challengeEntry = discoverableChallenges.get(usedChallenge);
+      if (!challengeEntry || challengeEntry.expiresAt < Date.now()) {
+        return res.status(401).json({ success: false, code: 'CHALLENGE_EXPIRED', message: 'Session expirée. Recommencez.' });
+      }
+      discoverableChallenges.delete(usedChallenge);
+
+      const user = await User.findOne({ 'webauthnCredentials.credentialID': credId });
+      if (!user || !user.webauthnCredentials?.length) {
+        return res.status(401).json({ success: false, code: 'NO_CREDENTIAL', message: 'Empreinte non reconnue.' });
+      }
+      if (user.isLocked) {
+        return res.status(423).json({ success: false, code: 'ACCOUNT_LOCKED', message: 'Compte temporairement bloqué.' });
+      }
+
+      const storedCred = user.webauthnCredentials.find(c => c.credentialID === credId);
+      const verification = await simplewebauthn.verifyAuthenticationResponse({
+        response: credential,
+        expectedChallenge: usedChallenge,
+        expectedOrigin: rpOrigin,
+        expectedRPID: rpId,
+        credential: {
+          id: storedCred.credentialID,
+          publicKey: Buffer.from(storedCred.credentialPublicKey, 'base64url'),
+          counter: storedCred.counter,
+          transports: storedCred.transports || []
+        },
+        requireUserVerification: true
+      });
+
+      if (!verification.verified) {
+        return res.status(401).json({ success: false, code: 'VERIFICATION_FAILED', message: 'Authentification échouée.' });
+      }
+
+      storedCred.counter = verification.authenticationInfo?.newCounter ?? storedCred.counter;
+      user.lastLoginAt = new Date();
+      await user.save({ validateBeforeSave: false });
+
+      const token = generateToken(user._id);
+      return res.json({
+        success: true,
+        data: { user: { id: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role, profileComplete: user.profileComplete }, token }
+      });
+    }
+
+    // ── Email-based flow ──────────────────────────────────────────────────────
     const user = await User.findOne({ email }).select('+webauthnChallenge');
     if (!user || !user.webauthnCredentials?.length) {
       return res.status(401).json({ success: false, code: 'NO_CREDENTIAL', message: 'Authentification échouée.' });
@@ -210,13 +285,11 @@ exports.verifyAuthentication = async (req, res) => {
       return res.status(423).json({ success: false, code: 'ACCOUNT_LOCKED', message: 'Compte temporairement bloqué.' });
     }
 
-    // Find matching credential
     const storedCred = user.webauthnCredentials.find(c => c.credentialID === credential.id);
     if (!storedCred) {
       return res.status(401).json({ success: false, code: 'CREDENTIAL_NOT_FOUND', message: 'Empreinte non reconnue.' });
     }
 
-    const { rpId, rpOrigin } = getRpConfig(req);
     const verification = await simplewebauthn.verifyAuthenticationResponse({
       response: credential,
       expectedChallenge: user.webauthnChallenge,
@@ -235,9 +308,7 @@ exports.verifyAuthentication = async (req, res) => {
       return res.status(401).json({ success: false, code: 'VERIFICATION_FAILED', message: 'Authentification échouée.' });
     }
 
-    // Update counter to prevent replay attacks
     storedCred.counter = verification.authenticationInfo?.newCounter ?? storedCred.counter;
-
     user.webauthnChallenge = undefined;
     user.webauthnChallengeExpiresAt = undefined;
     user.lastLoginAt = new Date();
@@ -247,14 +318,7 @@ exports.verifyAuthentication = async (req, res) => {
     return res.json({
       success: true,
       data: {
-        user: {
-          id: user._id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-          profileComplete: user.profileComplete
-        },
+        user: { id: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role, profileComplete: user.profileComplete },
         token
       }
     });
