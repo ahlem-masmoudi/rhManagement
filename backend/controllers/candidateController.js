@@ -74,6 +74,97 @@ function buildSignedRequestHtml({ candidate, signatoryName, signatoryTitle, orig
 </html>`;
 }
 
+function buildSignedRequestPdf({ candidate, signatoryName, signatoryTitle, originalName,
+  entreprise, tel, fax, adresse, supervisorInfo, stageStartDate, stageEndDate, projectTitle, projectObjectives }) {
+  return new Promise((resolve, reject) => {
+    const PDFDocument = require('pdfkit');
+    const doc = new PDFDocument({ size: 'A4', margins: { top: 50, bottom: 50, left: 55, right: 55 } });
+    const chunks = [];
+    doc.on('data', chunk => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    const firstName = sanitize(candidate.userId?.firstName);
+    const lastName  = sanitize(candidate.userId?.lastName);
+    const fullName  = `${firstName} ${lastName}`.trim() || 'Candidat';
+    const school    = sanitize(candidate.school || candidate.educationLevel || '');
+    const degree    = sanitize(candidate.expectedDegree || candidate.educationLevel || '');
+    const dateStr   = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const W = 485;
+
+    // ── Signed banner ────────────────────────────────────────────────────────
+    doc.rect(55, 50, W, 28).fillColor('#d1fae5').fill();
+    doc.rect(55, 50, W, 28).strokeColor('#059669').lineWidth(1.2).stroke();
+    doc.fontSize(10).font('Helvetica-Bold').fillColor('#065f46')
+       .text('Demande de stage validee et signee par le service RH — a remettre a votre etablissement', 63, 59, { width: W - 16 });
+
+    // ── Title ─────────────────────────────────────────────────────────────────
+    doc.fontSize(13).font('Helvetica-Bold').fillColor('#000000')
+       .text('Fiche de PFE / Demande de Stage', 55, 92, { width: W, align: 'center' });
+
+    // ── Candidate info line ───────────────────────────────────────────────────
+    doc.moveDown(0.5);
+    doc.fontSize(10).font('Helvetica').fillColor('#000000')
+       .text(`Stagiaire : ${fullName}   |   Etablissement : ${school || '—'}   |   Filiere : ${degree || '—'}`, { width: W, align: 'left' });
+
+    // ── Data table ────────────────────────────────────────────────────────────
+    const rows = [
+      ["Entreprise d'accueil :",           sanitize(entreprise || '')],
+      ["Tel / Fax :",                       `${sanitize(tel || '')}   /   ${sanitize(fax || '')}`],
+      ["Adresse :",                         sanitize(adresse || '')],
+      ["Responsable du stagiaire, sa fonction et son email :", sanitize(supervisorInfo || '')],
+      ["Stage prevu du :",                  `${sanitize(stageStartDate || '')}   au :   ${sanitize(stageEndDate || '')}`],
+      ["Titre du projet :",                 sanitize(projectTitle || '')],
+      ["Objectifs du travail demande :",    sanitize(projectObjectives || '')],
+    ];
+
+    doc.moveDown(0.6);
+    let tableY = doc.y;
+    const col1W = W * 0.40;
+    const col2W = W - col1W;
+    const rowH  = 26;
+    rows.forEach(([label, value], i) => {
+      const y = tableY + i * rowH;
+      doc.rect(55, y, col1W, rowH).fillColor('#f9fafb').fill().strokeColor('#555555').lineWidth(0.5).stroke();
+      doc.rect(55 + col1W, y, col2W, rowH).fillColor('#ffffff').fill().strokeColor('#555555').lineWidth(0.5).stroke();
+      doc.fontSize(9).font('Helvetica-Bold').fillColor('#000000')
+         .text(label, 59, y + 8, { width: col1W - 8, lineBreak: false });
+      doc.fontSize(9).font('Helvetica')
+         .text(value, 59 + col1W, y + 8, { width: col2W - 8, lineBreak: false });
+    });
+
+    // ── Signature blocks ─────────────────────────────────────────────────────
+    const sigY = tableY + rows.length * rowH + 28;
+    const boxW = (W - 20) / 2;
+
+    // Left box
+    doc.rect(55, sigY, boxW, 80).strokeColor('#aaaaaa').lineWidth(0.8).stroke();
+    doc.fontSize(10).font('Helvetica').fillColor('#000000')
+       .text('Le Directeur des Stages', 55, sigY + 8, { width: boxW, align: 'center' });
+    doc.fontSize(10).font('Helvetica-Bold')
+       .text(school || 'Etablissement', 55, sigY + 60, { width: boxW, align: 'center' });
+
+    // Right box
+    const rBoxX = 55 + boxW + 20;
+    doc.rect(rBoxX, sigY, boxW, 80).strokeColor('#aaaaaa').lineWidth(0.8).stroke();
+    doc.fontSize(10).font('Helvetica').fillColor('#000000')
+       .text("Signature et cachet de l'Entreprise", rBoxX, sigY + 8, { width: boxW, align: 'center' });
+    doc.fontSize(9).font('Helvetica')
+       .text(`${sanitize(signatoryName || 'Service RH')}\n${sanitize(signatoryTitle || 'Responsable RH')}`, rBoxX, sigY + 26, { width: boxW, align: 'center' });
+    doc.fontSize(9).font('Helvetica-Bold')
+       .text(`Signe le ${dateStr}`, rBoxX, sigY + 62, { width: boxW, align: 'center' });
+
+    // ── Footer ────────────────────────────────────────────────────────────────
+    const footerY = sigY + 92;
+    doc.moveTo(55, footerY).lineTo(540, footerY).strokeColor('#e5e7eb').lineWidth(0.8).stroke();
+    doc.fontSize(8).font('Helvetica').fillColor('#6b7280')
+       .text(`Document genere electroniquement le ${dateStr} — Document original : ${sanitize(originalName || 'Demande de stage')}`,
+             55, footerY + 6, { width: W });
+
+    doc.end();
+  });
+}
+
 function buildAssignmentLetterHtml({
   candidate,
   instituteNameFr,
@@ -784,7 +875,7 @@ exports.generateSignedInternshipRequest = async (req, res) => {
     const sourceDoc = (candidate.documents || []).find(doc => String(doc.id) === req.params.docId);
     if (!sourceDoc) return res.status(404).json({ success: false, message: 'Source document not found' });
 
-    const html = buildSignedRequestHtml({
+    const pdfBuffer = await buildSignedRequestPdf({
       candidate,
       signatoryName: req.body.signatoryName,
       signatoryTitle: req.body.signatoryTitle,
@@ -803,9 +894,9 @@ exports.generateSignedInternshipRequest = async (req, res) => {
     const now = new Date();
     const signedDoc = {
       id: `${Date.now()}_${Math.random().toString(36).substr(2,8)}`,
-      name: `Demande_de_stage_signee_${sanitize(candidate.userId?.lastName || 'candidat')}.html`,
+      name: `Demande_de_stage_signee_${sanitize(candidate.userId?.lastName || 'candidat')}.pdf`,
       type: 'demande_stage',
-      content: html,
+      content: pdfBuffer.toString('base64'),
       status: 'signe',
       isSigned: true,
       signedBy: sanitize(req.body.signatoryName || `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || 'RH'),
