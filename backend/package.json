@@ -32,7 +32,8 @@
     "mongoose": "^8.0.3",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.13",
-    "pdf-parse": "^2.4.5"
+    "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.19.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
