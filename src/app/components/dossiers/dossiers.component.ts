@@ -210,6 +210,13 @@ interface DossierEntry {
                   <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none"
                          (change)="reuploadSignedDoc(entry, doc, $event)">
                 </label>
+                <button *ngIf="doc.isSigned"
+                        class="btn-icon btn-icon-danger" title="Supprimer ce document signé"
+                        (click)="deleteSignedDoc(entry, doc)">
+                  <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                  </svg>
+                </button>
               </div>
               <div *ngIf="entry.reuploadSuccess" class="alert alert-success" style="margin-top:6px">{{ entry.reuploadSuccess }}</div>
               <div *ngIf="entry.reuploadError" class="alert alert-error" style="margin-top:6px">{{ entry.reuploadError }}</div>
@@ -499,6 +506,8 @@ interface DossierEntry {
       cursor:pointer; color:#93C5FD; transition:all 0.2s;
     }
     .btn-icon:hover { background:#DBEAFE; color:#1565C0; border-color:#1976D2; }
+    .btn-icon-danger { border-color:#FECACA; color:#FCA5A5; }
+    .btn-icon-danger:hover { background:#FEE2E2; color:#DC2626; border-color:#DC2626; }
 
     .btn-sign {
       padding:7px 16px; background:linear-gradient(135deg,#1565C0,#1976D2); color:#fff;
@@ -673,6 +682,23 @@ export class DossiersComponent implements OnInit {
 
   viewProfile(candidateId: string): void {
     this.router.navigate(['/rh/profil', candidateId]);
+  }
+
+  deleteSignedDoc(entry: DossierEntry, doc: any): void {
+    const candidateId = entry.application.candidateId;
+    const docId = doc._id || doc.id;
+    this.openConfirmDialog({
+      title: 'Supprimer ce document signé ?',
+      message: `Le document <strong>${doc.name}</strong> sera supprimé définitivement.`,
+      confirmLabel: 'Supprimer',
+      iconType: 'danger',
+      action: () => {
+        this.candidateService.deleteDocument(candidateId, docId).subscribe({
+          next: () => { entry.documents = entry.documents.filter(d => (d._id || d.id) !== docId); },
+          error: (err: any) => { console.error('Erreur suppression document:', err); }
+        });
+      }
+    });
   }
 
   removeDossier(entry: DossierEntry): void {
