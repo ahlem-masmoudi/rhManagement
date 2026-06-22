@@ -1800,9 +1800,14 @@ export class ProfilComponent implements OnInit {
     this.candidateService.generateAssignmentLetter(this.candidate.id, {
       ...this.assignmentForm,
       outcome: this.assignmentForm.outcome || undefined
-    }).subscribe(() => {
-      this.loadCandidate(this.candidate!.id);
-      this.closeAssignmentLetterModal();
+    }).subscribe({
+      next: () => {
+        this.loadCandidate(this.candidate!.id);
+        this.closeAssignmentLetterModal();
+      },
+      error: (err: any) => {
+        alert(err?.error?.message || err?.message || 'Erreur lors de la génération de la lettre.');
+      }
     });
   }
 

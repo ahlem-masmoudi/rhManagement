@@ -776,10 +776,15 @@ exports.generateAssignmentLetter = async (req, res) => {
     const candidate = await Candidate.findById(req.params.id).populate('userId', '-password');
     if (!candidate) return res.status(404).json({ success: false, message: 'Candidate not found' });
 
-    if (!['preselectionne', 'offre_acceptee'].includes(candidate.status)) {
+    const Application = require('../models/Application');
+    const hasAcceptedApp = await Application.exists({
+      candidate: candidate._id,
+      status: { $in: ['offre_acceptee', 'offre_envoyee', 'en_attente_documents', 'documents_recus', 'stage_termine'] }
+    });
+    if (!hasAcceptedApp && !['preselectionne', 'offre_acceptee'].includes(candidate.status)) {
       return res.status(400).json({
         success: false,
-        message: 'La lettre d affectation est reservee aux candidats preselectionnes ou acceptes.'
+        message: 'La lettre d affectation est reservee aux candidats acceptes.'
       });
     }
 
