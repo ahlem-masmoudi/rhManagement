@@ -121,7 +121,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
                     id="email"
                     [(ngModel)]="credentials.email"
                     name="email"
-                    placeholder="rh@gmail.com"
+                    placeholder=""
                     required
                     autocomplete="new-password"
                     [class.input-invalid]="errorField === 'email'"
