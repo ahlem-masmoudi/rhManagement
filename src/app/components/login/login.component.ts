@@ -123,7 +123,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
                     name="email"
                     placeholder="rh@gmail.com"
                     required
-                    autocomplete="email"
+                    autocomplete="new-password"
                     [class.input-invalid]="errorField === 'email'"
                     [disabled]="isAccountTemporarilyLocked()">
                 </div>
@@ -150,7 +150,7 @@ type AuthView = 'login' | 'forgot' | 'reset';
                     name="password"
                     placeholder="••••••••"
                     required
-                    autocomplete="current-password"
+                    autocomplete="new-password"
                     [class.input-invalid]="errorField === 'password'"
                     [disabled]="isAccountTemporarilyLocked()">
                   <button type="button" class="password-toggle inside-input"
