@@ -682,7 +682,13 @@ export class DossiersComponent implements OnInit {
       message: `Vous êtes sur le point de supprimer le dossier de <strong>${name}</strong>. Cette action est irréversible.`,
       confirmLabel: 'Supprimer',
       iconType: 'danger',
-      action: () => { this.dossiers = this.dossiers.filter(d => d !== entry); }
+      action: () => {
+        const appId = (entry.application as any)._id || entry.application.id;
+        this.matchingService.deleteApplication(appId).subscribe({
+          next: () => { this.dossiers = this.dossiers.filter(d => d !== entry); },
+          error: (err: any) => { console.error('Erreur suppression:', err); }
+        });
+      }
     });
   }
 

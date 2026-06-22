@@ -487,6 +487,16 @@ exports.scheduleInterview = async (req, res) => {
 // @desc    Evaluate a candidate after internship
 // @route   PATCH /api/applications/:applicationId/evaluate
 // @access  Private (Recruiter)
+exports.deleteApplication = async (req, res) => {
+  try {
+    const application = await Application.findByIdAndDelete(req.params.applicationId);
+    if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
+    res.json({ success: true, message: 'Application supprimée' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.evaluateApplication = async (req, res) => {
   try {
     const { rating, outcome, comment } = req.body;

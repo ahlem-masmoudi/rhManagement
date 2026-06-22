@@ -7,7 +7,8 @@ const {
   updateApplicationStatus,
   getBookedSlots,
   scheduleInterview,
-  evaluateApplication
+  evaluateApplication,
+  deleteApplication
 } = require('../controllers/applicationController');
 const { protect, authorize } = require('../middleware/auth');
 const { scoreApplication } = require('../controllers/scoreController');
@@ -22,6 +23,8 @@ router.get('/offer/:offerId', protect, authorize('recruiter', 'admin', 'rh_candi
 router.put('/:applicationId/status', protect, authorize('recruiter', 'admin', 'rh_candidatures'), updateApplicationStatus);
 router.patch('/:applicationId/interview', protect, authorize('recruiter', 'admin', 'rh_candidatures'), scheduleInterview);
 router.patch('/:applicationId/evaluate', protect, authorize('recruiter', 'admin', 'rh_candidatures'), evaluateApplication);
+
+router.delete('/:applicationId', protect, authorize('recruiter', 'admin', 'rh_candidatures'), deleteApplication);
 
 // Score an application (upload resume + job text) and persist matching result
 router.post('/:applicationId/score', protect, authorize('recruiter', 'admin', 'rh_candidatures'), scoreApplication);

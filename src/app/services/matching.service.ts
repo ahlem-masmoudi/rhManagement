@@ -117,6 +117,17 @@ export class MatchingService {
     );
   }
 
+  deleteApplication(applicationId: string): Observable<any> {
+    return this.http.delete<{ success: boolean }>(
+      `${this.apiUrl}/applications/${applicationId}`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      catchError(error => {
+        return throwError(() => new Error(error.error?.message || 'Failed to delete application'));
+      })
+    );
+  }
+
   calculateMatchingScore(candidateId: string, offerId: string): MatchingScore {
     const candidate = this.candidateService.getCandidateById(candidateId);
     const offer = this.offerService.getOfferById(offerId);
