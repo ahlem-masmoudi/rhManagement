@@ -262,6 +262,10 @@ type AuthView = 'login' | 'forgot' | 'reset';
               </svg>
               {{ errorMessage }}
             </div>
+            <div *ngIf="devOtp" class="demo-otp-banner">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+              Mode démonstration — code : <strong>{{ devOtp }}</strong>
+            </div>
             <div class="form-group">
               <label for="otp">Code de vérification</label>
               <div class="input-with-icon">
@@ -582,6 +586,11 @@ type AuthView = 'login' | 'forgot' | 'reset';
     .alert-error  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
     .alert-success{ background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; flex-direction: column; }
     .alert-info   { background: #f5f3ff; color: #5b21b6; border: 1px solid #ddd6fe; }
+    .demo-otp-banner {
+      display: flex; align-items: center; gap: 8px;
+      background: #fffbeb; color: #92400e; border: 1px solid #fde68a;
+      border-radius: 10px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px;
+    }
 
     /* ── Labels ── */
     label {
@@ -800,6 +809,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   loginStep: 'credentials' | 'otp' = 'credentials';
   riskToken = '';
   otpCode = '';
+  devOtp = '';
   otpHint = 'Saisissez le code reçu pour finaliser la connexion.';
   isFingerprintSupported = typeof PublicKeyCredential !== 'undefined';
 
@@ -884,7 +894,8 @@ export class LoginComponent implements OnInit, OnDestroy {
         if (response && response.riskToken) {
           this.loginStep = 'otp';
           this.riskToken = response.riskToken;
-          this.otpCode = response.devOtp || '';
+          this.otpCode = '';
+          this.devOtp = response.devOtp || '';
           const delivery = response.delivery;
           if (delivery === 'email') {
             this.otpHint = 'Un code a été envoyé par email. Saisissez-le pour finaliser la connexion.';
@@ -1094,6 +1105,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.loginStep = 'credentials';
     this.riskToken = '';
     this.otpCode = '';
+    this.devOtp = '';
     this.otpHint = 'Saisissez le code reçu pour finaliser la connexion.';
     this.currentView = 'login';
   }
